@@ -1,0 +1,10 @@
+[
+  {
+    "name": "NightSky",
+    "version": "${version}",
+    "mcversion": "1.8.9",
+    "authorList": [
+      "YaoerStudent"
+    ]
+  }
+]
