@@ -44,6 +44,7 @@ public class TextField extends Gui {
     private boolean enableBackgroundDrawing = true;
 
     private int cursorCounter;
+    private int cursorBlinkSpeed = 6;
 
     private boolean shiftPressed;
 
@@ -343,7 +344,7 @@ public class TextField extends Gui {
             int k = this.selectionEnd - this.lineScrollOffset;
             String s = FontRenderer.trimStringToWidth(this.text.substring(this.lineScrollOffset), this.getWidth());
             boolean flag = j >= 0 && j <= s.length();
-            boolean flag1 = this.isFocused && this.cursorCounter / 6 % 2 == 0 && flag;
+            boolean flag1 = this.isFocused && this.cursorCounter / cursorBlinkSpeed % 2 == 0 && flag;
             int l = this.enableBackgroundDrawing ? (int) this.xPosition + 4 : (int) this.xPosition;
             int i1 = this.enableBackgroundDrawing ? (int) this.yPosition + (int) (this.height - 8) / 2 : (int) this.yPosition;
             int j1 = l;
@@ -528,6 +529,10 @@ public class TextField extends Gui {
 
     public void updateCursorCounter() {
         ++this.cursorCounter;
+    }
+    
+    public void setCursorBlinkSpeed(int speed) {
+        this.cursorBlinkSpeed = speed;
     }
 
     public void setXPosition(float xPosition) {

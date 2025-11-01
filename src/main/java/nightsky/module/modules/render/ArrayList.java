@@ -31,9 +31,7 @@ public class ArrayList extends Module {
     public final IntValue bgAlpha = new IntValue("Back Ground Alpha", 100, 1, 255);
     public final BooleanValue blurBackground = new BooleanValue("Blur", true);
     public final IntValue blurStrength = new IntValue("Blur Strength", 10, 1, 70);
-    //这个东西开启后会在你的modulelist周围拉屎。
-    //public final BooleanValue test = new BooleanValue("Test", false);
-    public final IntValue positionOffset = new IntValue("Position", 0, 0, 50);
+    public final IntValue positionOffset = new IntValue("Position", 0, -1, 100);
     public final FloatValue textHeight = new FloatValue("Text Height", 4f, 0f, 10f);
 
     public ArrayList() {
@@ -42,19 +40,7 @@ public class ArrayList extends Module {
     
     private String getFormattedTag(String tag) {
         if (tag == null || tag.isEmpty()) return "";
-        
-        switch ("Simple") {
-            case "None":
-                return "";
-            case "Simple":
-                return " " + tag;
-            case "Bracket":
-                return " [" + tag + "]";
-            case "Dash":
-                return " - " + tag;
-            default:
-                return " " + tag;
-        }
+        return " " + tag;
     }
 
     @EventTarget
@@ -102,11 +88,12 @@ public class ArrayList extends Module {
                     continue;
                 }
 
-                float leftSide = (float) (translate.getX() - 2f);
+                float bgWidth = moduleWidth + 4;
                 float bottom = FontRenderer.getFontHeight() + fontHeight;
+                float leftSide = (float) (translate.getX() - 0.7f - (bgWidth - moduleWidth) / 2.0f);
 
                 if (backgroundValue.getValue()) {
-                    moduleRects.add(new float[]{leftSide, (float) translate.getY(), moduleWidth + 3, bottom});
+                    moduleRects.add(new float[]{leftSide, (float) translate.getY(), bgWidth, bottom});
                 }
             }
 
@@ -154,8 +141,8 @@ public class ArrayList extends Module {
                 switch (rectangleValue.getModeString()) {
                     case "Top":
                         if (count == 1) {
-                            Gui.drawRect((int)(translate.getX() - 2), (int)translate.getY(),
-                                (int)(translate.getX() - 2 + moduleWidth + 3), (int)(translate.getY() + 1),
+                            Gui.drawRect((int)(translate.getX() - 5.35), (int)translate.getY(),
+                                (int)(translate.getX() + moduleWidth), (int)(translate.getY() + 1),
                                 interfaceModule.color(count));
                         }
                         break;
@@ -202,11 +189,12 @@ public class ArrayList extends Module {
 
                 float moduleWidth = FontRenderer.getStringWidth(module.getName() + getFormattedTag(module.getTag()));
                 float xValue = (screenWidth - moduleWidth - 1.0f - positionOffset.getValue());
-                float leftSide = xValue - 2f;
+                float bgWidth = moduleWidth + 6;
                 float bottom = FontRenderer.getFontHeight() + fontHeight;
+                float leftSide = xValue - 3.0f - (bgWidth - moduleWidth) / 2.0f;
 
                 if (backgroundValue.getValue()) {
-                    moduleRects.add(new float[]{leftSide - 1, yValue, moduleWidth + 3, bottom});
+                    moduleRects.add(new float[]{leftSide, yValue, bgWidth, bottom});
                 }
 
                 yValue += (float) (moduleAnimation.getOutput() * (FontRenderer.getFontHeight() + fontHeight));
@@ -265,8 +253,8 @@ public class ArrayList extends Module {
                 switch (rectangleValue.getModeString()) {
                     case "Top":
                         if (count == 1) {
-                            Gui.drawRect((int)(xValue - 3), (int)yValue,
-                                (int)(xValue - 3 + moduleWidth + 3), (int)(yValue + 1), textcolor);
+                            Gui.drawRect((int)(xValue - 5.35), (int)yValue,
+                                (int)(xValue + moduleWidth), (int)(yValue + 1), textcolor);
                         }
                         break;
                     case "Side":
@@ -301,95 +289,4 @@ public class ArrayList extends Module {
             }
         }
     }
-//    private void drawArrayListOutline(java.util.ArrayList<float[]> moduleRects) {
-//        if (moduleRects.isEmpty()) return;
-//
-//        nightsky.module.modules.render.Interface interfaceModule = (nightsky.module.modules.render.Interface) NightSky.moduleManager.getModule("Interface");
-//
-//        float minX = Float.MAX_VALUE;
-//        float maxX = Float.MIN_VALUE;
-//        float minY = Float.MAX_VALUE;
-//        float maxY = Float.MIN_VALUE;
-//
-//        for (float[] rect : moduleRects) {
-//            minX = Math.min(minX, rect[0] - 10);
-//            maxX = Math.max(maxX, rect[0] + rect[2] + 10);
-//            minY = Math.min(minY, rect[1] - 10);
-//            maxY = Math.max(maxY, rect[1] + rect[3] + 10);
-//        }
-//
-//        BlurUtil.blur(minX - 20, minY - 20, maxX + 20, maxY + 20, blurStrength.getValue().floatValue(), false, () -> {
-//            GlStateManager.enableBlend();
-//            GlStateManager.disableTexture2D();
-//            GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-//
-//            for (int i = 0; i < moduleRects.size(); i++) {
-//                float[] rect = moduleRects.get(i);
-//                float x = rect[0];
-//                float y = rect[1];
-//                float width = rect[2];
-//                float height = rect[3];
-//
-//                net.minecraft.client.gui.Gui.drawRect((int)(x - 10), (int)y, (int)x, (int)(y + height), interfaceModule.color(i + 1));
-//
-//                if (i == 0) {
-//                    net.minecraft.client.gui.Gui.drawRect((int)(x - 10), (int)(y - 10), (int)(x + width + 10), (int)y, interfaceModule.color(i + 1));
-//                }
-//
-//                if (i == moduleRects.size() - 1) {
-//                    net.minecraft.client.gui.Gui.drawRect((int)(x - 10), (int)(y + height), (int)(x + width + 10), (int)(y + height + 10), interfaceModule.color(i + 1));
-//                }
-//
-//                net.minecraft.client.gui.Gui.drawRect((int)(x + width), (int)y, (int)(x + width + 10), (int)(y + height), interfaceModule.color(i + 1));
-//
-//                if (i < moduleRects.size() - 1) {
-//                    float[] nextRect = moduleRects.get(i + 1);
-//                    float nextX = nextRect[0];
-//                    float nextY = nextRect[1];
-//
-//                    net.minecraft.client.gui.Gui.drawRect((int)(x - 10), (int)(y + height), (int)nextX, (int)(y + height + 10), interfaceModule.color(i + 1));
-//                    net.minecraft.client.gui.Gui.drawRect((int)(nextX - 10), (int)(y + height), (int)nextX, (int)nextY, interfaceModule.color(i + 1));
-//                }
-//            }
-//
-//            GlStateManager.enableTexture2D();
-//            GlStateManager.disableBlend();
-//        });
-//
-//        GlStateManager.enableBlend();
-//        GlStateManager.disableTexture2D();
-//        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-//
-//        for (int i = 0; i < moduleRects.size(); i++) {
-//            float[] rect = moduleRects.get(i);
-//            float x = rect[0];
-//            float y = rect[1];
-//            float width = rect[2];
-//            float height = rect[3];
-//
-//            net.minecraft.client.gui.Gui.drawRect((int)(x - 10), (int)y, (int)x, (int)(y + height), interfaceModule.color(i + 1));
-//
-//            if (i == 0) {
-//                net.minecraft.client.gui.Gui.drawRect((int)(x - 10), (int)(y - 10), (int)(x + width + 10), (int)y, interfaceModule.color(i + 1));
-//            }
-//
-//            if (i == moduleRects.size() - 1) {
-//                net.minecraft.client.gui.Gui.drawRect((int)(x - 10), (int)(y + height), (int)(x + width + 10), (int)(y + height + 10), interfaceModule.color(i + 1));
-//            }
-//
-//            net.minecraft.client.gui.Gui.drawRect((int)(x + width), (int)y, (int)(x + width + 10), (int)(y + height), interfaceModule.color(i + 1));
-//
-//            if (i < moduleRects.size() - 1) {
-//                float[] nextRect = moduleRects.get(i + 1);
-//                float nextX = nextRect[0];
-//                float nextY = nextRect[1];
-//
-//                net.minecraft.client.gui.Gui.drawRect((int)(x - 10), (int)(y + height), (int)nextX, (int)(y + height + 10), interfaceModule.color(i + 1));
-//                net.minecraft.client.gui.Gui.drawRect((int)(nextX - 10), (int)(y + height), (int)nextX, (int)nextY, interfaceModule.color(i + 1));
-//            }
-//        }
-//
-//        GlStateManager.enableTexture2D();
-//        GlStateManager.disableBlend();
-//    }
 }

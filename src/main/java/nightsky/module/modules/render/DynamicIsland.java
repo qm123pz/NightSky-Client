@@ -32,7 +32,7 @@ public class DynamicIsland extends Module {
 
     private final FloatValue animationSpeed = new FloatValue("AnimationSpeed", 12.0f, 1.0f, 20.0f);
     private final BooleanValue blur = new BooleanValue("Blur", true);
-    private final IntValue blurStrength = new IntValue("BlurStrength", 10, 1, 70);
+    private final IntValue blurStrength = new IntValue("BlurStrength", 100, 1, 200);
     private final BooleanValue dropShadow = new BooleanValue("Shadow", true);
     private final IntValue bgAlpha = new IntValue("BackgroundAlpha", 40, 1, 255);
     private final BooleanValue showNotifications = new BooleanValue("ShowNotifications", true);
@@ -978,8 +978,8 @@ public class DynamicIsland extends Module {
         float currentY = y;
         
         String serverInfo = getServerIP();
-        String clientName = "NightSky";
-        String clientVersion = "v2.0";
+        String clientName = nightsky.NightSky.clientName;
+        String clientVersion = nightsky.NightSky.clientVersion;
         String pingInfo = "Ping: " + (mc.getCurrentServerData() != null ? mc.getCurrentServerData().pingToServer + "ms" : "0ms");
         
         NickHider nickHider = (NickHider) nightsky.NightSky.moduleManager.modules.get(NickHider.class);

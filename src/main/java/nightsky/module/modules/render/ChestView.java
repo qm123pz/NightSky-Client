@@ -77,6 +77,7 @@ public class ChestView extends Module {
     
     @EventTarget
     public void onRender2D(Render2DEvent event) {
+        if(!this.isEnabled()) return;
         boolean chestOpen = mc.currentScreen instanceof GuiChest;
         
         if (chestOpen) {

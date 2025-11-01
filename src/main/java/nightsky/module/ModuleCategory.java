@@ -5,7 +5,7 @@ public enum ModuleCategory {
     MOVEMENT("Movement"),
     PLAYER("Player"),
     RENDER("Render"),
-    MISC("MISC");
+    MISC("Misc");
 
     public final String name;
 

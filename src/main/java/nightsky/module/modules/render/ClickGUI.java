@@ -3,13 +3,12 @@ package nightsky.module.modules.render;
 import nightsky.NightSky;
 import nightsky.module.Module;
 import nightsky.module.ModuleCategory;
-import nightsky.value.values.FloatValue;
 import nightsky.value.values.ModeValue;
 import org.lwjgl.input.Keyboard;
 
 public class ClickGUI extends Module {
     
-    private final ModeValue mode = new ModeValue("Mode", 0, new String[]{"IDEA", "Augustus"});
+    private final ModeValue mode = new ModeValue("Mode", 0, new String[]{"IDEA", "Augustus", "Best"});
 
     public ClickGUI() {
         super("ClickGUI", false);
@@ -19,16 +18,38 @@ public class ClickGUI extends Module {
     @Override
     public void onEnabled() {
         if (NightSky.guiManager != null) {
-            if (NightSky.guiManager.isClickGuiOpen() || NightSky.guiManager.isAugustusGuiOpen()) {
-                NightSky.guiManager.closeClickGui();
-                NightSky.guiManager.closeAugustusGui();
-            }
-            
             String selectedMode = mode.getModeString();
+            
             if (selectedMode.equals("IDEA")) {
-                NightSky.guiManager.openClickGui();
+                if (NightSky.guiManager.isClickGuiOpen()) {
+                    NightSky.guiManager.closeClickGui();
+                } else {
+                    if (NightSky.guiManager.isAugustusGuiOpen() || NightSky.guiManager.isBestGuiOpen()) {
+                        NightSky.guiManager.closeAugustusGui();
+                        NightSky.guiManager.closeBestGui();
+                    }
+                    NightSky.guiManager.openClickGui();
+                }
             } else if (selectedMode.equals("Augustus")) {
-                NightSky.guiManager.openAugustusGui();
+                if (NightSky.guiManager.isAugustusGuiOpen()) {
+                    NightSky.guiManager.closeAugustusGui();
+                } else {
+                    if (NightSky.guiManager.isClickGuiOpen() || NightSky.guiManager.isBestGuiOpen()) {
+                        NightSky.guiManager.closeClickGui();
+                        NightSky.guiManager.closeBestGui();
+                    }
+                    NightSky.guiManager.openAugustusGui();
+                }
+            } else if (selectedMode.equals("Best")) {
+                if (NightSky.guiManager.isBestGuiOpen()) {
+                    NightSky.guiManager.closeBestGui();
+                } else {
+                    if (NightSky.guiManager.isClickGuiOpen() || NightSky.guiManager.isAugustusGuiOpen()) {
+                        NightSky.guiManager.closeClickGui();
+                        NightSky.guiManager.closeAugustusGui();
+                    }
+                    NightSky.guiManager.openBestGui();
+                }
             }
         }
         this.setEnabled(false);

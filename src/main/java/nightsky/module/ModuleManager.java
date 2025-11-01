@@ -54,14 +54,12 @@ public class ModuleManager {
             (nightsky.module.modules.render.Interface) getModule("Interface");
         
         if (interfaceModule == null) {
-            System.out.println("[ModuleManager] Interface module is null, playing vanilla sound");
             SoundUtil.playSound("random.click");
             return;
         }
         
         String mode = interfaceModule.toggleSound.getModeString();
         String soundFile = enabled ? "enable" : "disable";
-        System.out.println("[ModuleManager] ToggleSound mode: " + mode + ", enabled: " + enabled);
         
         switch (mode) {
             case "Augustus":
