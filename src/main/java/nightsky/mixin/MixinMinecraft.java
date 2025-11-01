@@ -27,6 +27,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+
 @SideOnly(Side.CLIENT)
 @Mixin({Minecraft.class})
 public abstract class MixinMinecraft {
@@ -202,5 +207,83 @@ public abstract class MixinMinecraft {
             net.minecraft.client.gui.ScaledResolution scaledResolution = new net.minecraft.client.gui.ScaledResolution((Minecraft)(Object)this);
             this.currentScreen.setWorldAndResolution((Minecraft)(Object)this, scaledResolution.getScaledWidth(), scaledResolution.getScaledHeight());
         }
+    }
+
+    @Inject(method = "createDisplay", at = @At("RETURN"))
+    private void onCreateDisplay(CallbackInfo ci) {
+        org.lwjgl.opengl.Display.setTitle(NightSky.clientName + " " + NightSky.clientVersion);
+        setWindowIcon();
+    }
+    
+    private void setWindowIcon() {
+        try {
+            InputStream iconStream = this.getClass().getResourceAsStream("/assets/minecraft/nightsky/texture/title/nightsky.png");
+            if (iconStream == null) {
+                iconStream = Minecraft.class.getResourceAsStream("/assets/minecraft/nightsky/texture/title/nightsky.png");
+            }
+            if (iconStream == null) {
+                return;
+            }
+            BufferedImage originalImage = ImageIO.read(iconStream);
+            iconStream.close();
+            if (originalImage == null) {
+                return;
+            }
+            BufferedImage icon16 = resizeImage(originalImage, 16, 16);
+            BufferedImage icon32 = resizeImage(originalImage, 32, 32);
+            ByteBuffer buffer16 = convertImageToByteBuffer(icon16);
+            ByteBuffer buffer32 = convertImageToByteBuffer(icon32);
+            org.lwjgl.opengl.Display.setIcon(new ByteBuffer[]{buffer16, buffer32});
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private BufferedImage resizeImage(BufferedImage originalImage, int targetWidth, int targetHeight) {
+        int currentWidth = originalImage.getWidth();
+        int currentHeight = originalImage.getHeight();
+        BufferedImage currentImage = originalImage;
+        while (currentWidth > targetWidth * 2 || currentHeight > targetHeight * 2) {
+            currentWidth = Math.max(targetWidth, currentWidth / 2);
+            currentHeight = Math.max(targetHeight, currentHeight / 2);
+            BufferedImage tempImage = new BufferedImage(currentWidth, currentHeight, BufferedImage.TYPE_INT_ARGB);
+            java.awt.Graphics2D g = tempImage.createGraphics();
+            g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION, java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            g.setRenderingHint(java.awt.RenderingHints.KEY_RENDERING, java.awt.RenderingHints.VALUE_RENDER_QUALITY);
+            g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setRenderingHint(java.awt.RenderingHints.KEY_ALPHA_INTERPOLATION, java.awt.RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+            g.drawImage(currentImage, 0, 0, currentWidth, currentHeight, null);
+            g.dispose();
+            currentImage = tempImage;
+        }
+        if (currentWidth != targetWidth || currentHeight != targetHeight) {
+            BufferedImage finalImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
+            java.awt.Graphics2D g = finalImage.createGraphics();
+            g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION, java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            g.setRenderingHint(java.awt.RenderingHints.KEY_RENDERING, java.awt.RenderingHints.VALUE_RENDER_QUALITY);
+            g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setRenderingHint(java.awt.RenderingHints.KEY_ALPHA_INTERPOLATION, java.awt.RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+            g.drawImage(currentImage, 0, 0, targetWidth, targetHeight, null);
+            g.dispose();
+            return finalImage;
+        }
+        return currentImage;
+    }
+    
+    private ByteBuffer convertImageToByteBuffer(BufferedImage image) {
+        int[] pixels = new int[image.getWidth() * image.getHeight()];
+        image.getRGB(0, 0, image.getWidth(), image.getHeight(), pixels, 0, image.getWidth());
+        ByteBuffer buffer = ByteBuffer.allocateDirect(image.getWidth() * image.getHeight() * 4);
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                int pixel = pixels[y * image.getWidth() + x];
+                buffer.put((byte) ((pixel >> 16) & 0xFF));
+                buffer.put((byte) ((pixel >> 8) & 0xFF));
+                buffer.put((byte) (pixel & 0xFF));
+                buffer.put((byte) ((pixel >> 24) & 0xFF));
+            }
+        }
+        buffer.flip();
+        return buffer;
     }
 }
