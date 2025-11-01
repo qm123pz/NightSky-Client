@@ -17,7 +17,7 @@ import nightsky.value.ValueHandler;
 import java.lang.reflect.Field;
 public class NightSky {
     public static String clientName = "NightSky";
-    public static String clientVersion = "Release B1" ;
+    public static String clientVersion = "Release B1.1";
     public static RotationManager rotationManager;
     public static FloatManager floatManager;
     public static BlinkManager blinkManager;
