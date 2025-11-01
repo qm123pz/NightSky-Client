@@ -25,341 +25,500 @@ public class DevWeb extends PowerShell {
                     "            margin: 0;\n" +
                     "            padding: 0;\n" +
                     "            box-sizing: border-box;\n" +
-                    "            font-family: 'Consolas', 'Microsoft YaHei', monospace;\n" +
+                    "            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;\n" +
                     "        }\n" +
                     "        \n" +
                     "        body {\n" +
-                    "            background-color: #0a0a1a;\n" +
-                    "            color: #e0e0e0;\n" +
-                    "            line-height: 1.6;\n" +
-                    "            background-image: linear-gradient(rgba(10, 10, 26, 0.95), rgba(10, 10, 26, 0.95)), \n" +
-                    "                              url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100\" height=\"100\" viewBox=\"0 0 100 100\"><rect width=\"100\" height=\"100\" fill=\"none\"/><circle cx=\"20\" cy=\"20\" r=\"1\" fill=\"%23333\"/><circle cx=\"50\" cy=\"30\" r=\"1\" fill=\"%23333\"/><circle cx=\"80\" cy=\"20\" r=\"1\" fill=\"%23333\"/><circle cx=\"40\" cy=\"60\" r=\"1\" fill=\"%23333\"/><circle cx=\"70\" cy=\"70\" r=\"1\" fill=\"%23333\"/><circle cx=\"10\" cy=\"80\" r=\"1\" fill=\"%23333\"/></svg>');\n" +
+                    "            background: radial-gradient(ellipse at center, #0a0a1a 0%, #050515 50%, #000000 100%);\n" +
+                    "            color: #e0e0ff;\n" +
+                    "            min-height: 100vh;\n" +
+                    "            overflow-x: hidden;\n" +
+                    "            position: relative;\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        .particles {\n" +
+                    "            position: fixed;\n" +
+                    "            top: 0;\n" +
+                    "            left: 0;\n" +
+                    "            width: 100%;\n" +
+                    "            height: 100%;\n" +
+                    "            z-index: -2;\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        .particle {\n" +
+                    "            position: absolute;\n" +
+                    "            background: linear-gradient(45deg, #4a76ee, #6a11cb);\n" +
+                    "            border-radius: 50%;\n" +
+                    "            filter: blur(1px);\n" +
+                    "            animation: particleFloat 25s infinite linear;\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        @keyframes particleFloat {\n" +
+                    "            0% { transform: translateY(100vh) rotate(0deg) scale(0); opacity: 0; }\n" +
+                    "            10% { opacity: 0.8; transform: translateY(80vh) rotate(90deg) scale(1); }\n" +
+                    "            90% { opacity: 0.8; }\n" +
+                    "            100% { transform: translateY(-100px) rotate(360deg) scale(0); opacity: 0; }\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        .nebula {\n" +
+                    "            position: fixed;\n" +
+                    "            top: 0;\n" +
+                    "            left: 0;\n" +
+                    "            width: 100%;\n" +
+                    "            height: 100%;\n" +
+                    "            z-index: -1;\n" +
+                    "            opacity: 0.3;\n" +
+                    "            background: \n" +
+                    "                radial-gradient(circle at 20% 30%, rgba(74, 118, 238, 0.1) 0%, transparent 50%),\n" +
+                    "                radial-gradient(circle at 80% 70%, rgba(106, 17, 203, 0.1) 0%, transparent 50%),\n" +
+                    "                radial-gradient(circle at 40% 80%, rgba(42, 90, 170, 0.05) 0%, transparent 50%);\n" +
+                    "            animation: nebulaShift 15s ease-in-out infinite alternate;\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        @keyframes nebulaShift {\n" +
+                    "            0% { transform: scale(1) rotate(0deg); }\n" +
+                    "            100% { transform: scale(1.1) rotate(1deg); }\n" +
                     "        }\n" +
                     "        \n" +
                     "        .container {\n" +
-                    "            max-width: 1000px;\n" +
+                    "            max-width: 1200px;\n" +
                     "            margin: 0 auto;\n" +
-                    "            padding: 20px;\n" +
+                    "            padding: 40px 20px;\n" +
+                    "            position: relative;\n" +
+                    "            z-index: 1;\n" +
                     "        }\n" +
                     "        \n" +
-                    "        header {\n" +
+                    "        .hero {\n" +
                     "            text-align: center;\n" +
-                    "            padding: 40px 0;\n" +
-                    "            border-bottom: 1px solid #333366;\n" +
-                    "            margin-bottom: 40px;\n" +
+                    "            padding: 80px 0 60px;\n" +
+                    "            position: relative;\n" +
                     "        }\n" +
                     "        \n" +
-                    "        h1 {\n" +
-                    "            font-size: 2.5rem;\n" +
-                    "            color: #4a76ee;\n" +
-                    "            margin-bottom: 10px;\n" +
-                    "            text-shadow: 0 0 10px rgba(74, 118, 238, 0.5);\n" +
+                    "        .hero::before {\n" +
+                    "            content: '';\n" +
+                    "            position: absolute;\n" +
+                    "            top: 50%;\n" +
+                    "            left: 50%;\n" +
+                    "            transform: translate(-50%, -50%);\n" +
+                    "            width: 300px;\n" +
+                    "            height: 300px;\n" +
+                    "            background: radial-gradient(circle, rgba(74, 118, 238, 0.15) 0%, transparent 70%);\n" +
+                    "            border-radius: 50%;\n" +
+                    "            animation: heroOrbit 8s linear infinite;\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        @keyframes heroOrbit {\n" +
+                    "            0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); }\n" +
+                    "            50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.1); }\n" +
+                    "            100% { transform: translate(-50%, -50%) rotate(360deg) scale(1); }\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        .main-title {\n" +
+                    "            font-size: 4rem;\n" +
+                    "            font-weight: 300;\n" +
+                    "            letter-spacing: 4px;\n" +
+                    "            margin-bottom: 20px;\n" +
+                    "            position: relative;\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        .title-gradient {\n" +
+                    "            background: linear-gradient(135deg, #fff 0%, #4a76ee 25%, #6a11cb 50%, #4a76ee 75%, #fff 100%);\n" +
+                    "            background-size: 200% 200%;\n" +
+                    "            -webkit-background-clip: text;\n" +
+                    "            -webkit-text-fill-color: transparent;\n" +
+                    "            background-clip: text;\n" +
+                    "            animation: titleFlow 4s ease-in-out infinite;\n" +
+                    "            text-shadow: 0 0 60px rgba(74, 118, 238, 0.5);\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        @keyframes titleFlow {\n" +
+                    "            0%, 100% { background-position: 0% 50%; }\n" +
+                    "            50% { background-position: 100% 50%; }\n" +
                     "        }\n" +
                     "        \n" +
                     "        .subtitle {\n" +
-                    "            font-size: 1.1rem;\n" +
-                    "            color: #aaaacc;\n" +
-                    "            margin-bottom: 20px;\n" +
+                    "            font-size: 1.2rem;\n" +
+                    "            color: #a0a0ff;\n" +
+                    "            font-weight: 300;\n" +
+                    "            letter-spacing: 2px;\n" +
+                    "            animation: subtitleGlow 3s ease-in-out infinite alternate;\n" +
                     "        }\n" +
                     "        \n" +
-                    "        .devlog-container {\n" +
-                    "            position: relative;\n" +
-                    "            margin: 40px 0;\n" +
+                    "        @keyframes subtitleGlow {\n" +
+                    "            0% { text-shadow: 0 0 20px rgba(160, 160, 255, 0.3); }\n" +
+                    "            100% { text-shadow: 0 0 30px rgba(160, 160, 255, 0.6); }\n" +
                     "        }\n" +
                     "        \n" +
-                    "        /* 时间线样式 */\n" +
                     "        .timeline {\n" +
                     "            position: relative;\n" +
                     "            max-width: 800px;\n" +
                     "            margin: 0 auto;\n" +
+                    "            padding: 40px 0;\n" +
                     "        }\n" +
                     "        \n" +
-                    "        .timeline::after {\n" +
+                    "        .timeline::before {\n" +
                     "            content: '';\n" +
                     "            position: absolute;\n" +
-                    "            width: 4px;\n" +
-                    "            background-color: #333366;\n" +
+                    "            left: 50%;\n" +
                     "            top: 0;\n" +
                     "            bottom: 0;\n" +
-                    "            left: 50%;\n" +
-                    "            margin-left: -2px;\n" +
+                    "            width: 2px;\n" +
+                    "            background: linear-gradient(180deg, transparent, #4a76ee, #6a11cb, transparent);\n" +
+                    "            transform: translateX(-50%);\n" +
+                    "            animation: timelinePulse 3s ease-in-out infinite;\n" +
                     "        }\n" +
                     "        \n" +
-                    "        .log-entry {\n" +
-                    "            padding: 10px 40px;\n" +
+                    "        @keyframes timelinePulse {\n" +
+                    "            0%, 100% { opacity: 0.6; }\n" +
+                    "            50% { opacity: 1; }\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        .release {\n" +
                     "            position: relative;\n" +
-                    "            width: 50%;\n" +
-                    "            box-sizing: border-box;\n" +
+                    "            margin: 60px 0;\n" +
+                    "            width: 45%;\n" +
+                    "            opacity: 0;\n" +
+                    "            transform: translateY(50px);\n" +
+                    "            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);\n" +
                     "        }\n" +
                     "        \n" +
-                    "        .log-entry:nth-child(odd) {\n" +
+                    "        .release.visible {\n" +
+                    "            opacity: 1;\n" +
+                    "            transform: translateY(0);\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        .release:nth-child(odd) {\n" +
                     "            left: 0;\n" +
                     "        }\n" +
                     "        \n" +
-                    "        .log-entry:nth-child(even) {\n" +
-                    "            left: 50%;\n" +
+                    "        .release:nth-child(even) {\n" +
+                    "            left: 55%;\n" +
                     "        }\n" +
                     "        \n" +
-                    "        .log-content {\n" +
-                    "            padding: 20px;\n" +
-                    "            background-color: rgba(20, 20, 40, 0.7);\n" +
-                    "            border-radius: 8px;\n" +
-                    "            border: 1px solid #333366;\n" +
+                    "        .release-card {\n" +
+                    "            background: linear-gradient(135deg, rgba(20, 20, 40, 0.9), rgba(30, 30, 60, 0.7));\n" +
+                    "            backdrop-filter: blur(20px);\n" +
+                    "            border: 1px solid rgba(74, 118, 238, 0.2);\n" +
+                    "            border-radius: 20px;\n" +
+                    "            padding: 35px;\n" +
                     "            position: relative;\n" +
+                    "            overflow: hidden;\n" +
+                    "            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);\n" +
+                    "            transition: all 0.4s ease;\n" +
                     "        }\n" +
                     "        \n" +
-                    "        .log-entry:nth-child(odd) .log-content::after {\n" +
+                    "        .release-card::before {\n" +
                     "            content: '';\n" +
                     "            position: absolute;\n" +
-                    "            width: 20px;\n" +
-                    "            height: 20px;\n" +
-                    "            right: -10px;\n" +
-                    "            background-color: #4a76ee;\n" +
-                    "            top: 25px;\n" +
-                    "            border-radius: 50%;\n" +
-                    "            z-index: 1;\n" +
+                    "            top: -2px;\n" +
+                    "            left: -2px;\n" +
+                    "            right: -2px;\n" +
+                    "            bottom: -2px;\n" +
+                    "            background: linear-gradient(45deg, #4a76ee, #6a11cb, #4a76ee);\n" +
+                    "            border-radius: 22px;\n" +
+                    "            z-index: -1;\n" +
+                    "            opacity: 0;\n" +
+                    "            transition: opacity 0.4s ease;\n" +
+                    "            animation: borderRotate 3s linear infinite;\n" +
                     "        }\n" +
                     "        \n" +
-                    "        .log-entry:nth-child(even) .log-content::after {\n" +
-                    "            content: '';\n" +
-                    "            position: absolute;\n" +
-                    "            width: 20px;\n" +
-                    "            height: 20px;\n" +
-                    "            left: -10px;\n" +
-                    "            background-color: #4a76ee;\n" +
-                    "            top: 25px;\n" +
-                    "            border-radius: 50%;\n" +
-                    "            z-index: 1;\n" +
+                    "        @keyframes borderRotate {\n" +
+                    "            0% { transform: rotate(0deg); }\n" +
+                    "            100% { transform: rotate(360deg); }\n" +
                     "        }\n" +
                     "        \n" +
-                    "        .log-date {\n" +
-                    "            font-weight: bold;\n" +
-                    "            color: #6a9eff;\n" +
-                    "            margin-bottom: 10px;\n" +
-                    "            font-size: 1.1rem;\n" +
+                    "        .release-card:hover::before {\n" +
+                    "            opacity: 1;\n" +
                     "        }\n" +
                     "        \n" +
-                    "        .log-title {\n" +
-                    "            font-size: 1.3rem;\n" +
-                    "            color: #ffffff;\n" +
-                    "            margin-bottom: 10px;\n" +
-                    "            border-bottom: 1px solid #333366;\n" +
-                    "            padding-bottom: 5px;\n" +
+                    "        .release-card:hover {\n" +
+                    "            transform: translateY(-10px) scale(1.02);\n" +
+                    "            box-shadow: 0 25px 50px rgba(74, 118, 238, 0.3);\n" +
                     "        }\n" +
                     "        \n" +
-                    "        .log-details {\n" +
-                    "            margin-top: 15px;\n" +
+                    "        .release-header {\n" +
+                    "            display: flex;\n" +
+                    "            justify-content: space-between;\n" +
+                    "            align-items: center;\n" +
+                    "            margin-bottom: 20px;\n" +
+                    "            padding-bottom: 15px;\n" +
+                    "            border-bottom: 1px solid rgba(74, 118, 238, 0.3);\n" +
                     "        }\n" +
                     "        \n" +
-                    "        .log-details ul {\n" +
-                    "            margin-left: 20px;\n" +
-                    "            margin-bottom: 10px;\n" +
+                    "        .release-title {\n" +
+                    "            font-size: 1.8rem;\n" +
+                    "            font-weight: 500;\n" +
+                    "            color: #fff;\n" +
                     "        }\n" +
                     "        \n" +
-                    "        .log-details li {\n" +
-                    "            margin-bottom: 5px;\n" +
-                    "        }\n" +
-                    "        \n" +
-                    "        .status {\n" +
-                    "            display: inline-block;\n" +
-                    "            padding: 3px 8px;\n" +
-                    "            border-radius: 4px;\n" +
-                    "            font-size: 0.8rem;\n" +
-                    "            margin-left: 10px;\n" +
-                    "        }\n" +
-                    "        \n" +
-                    "        .status-completed {\n" +
-                    "            background-color: #2a5a2a;\n" +
-                    "            color: #90ee90;\n" +
-                    "        }\n" +
-                    "        \n" +
-                    "        .status-in-progress {\n" +
-                    "            background-color: #5a5a2a;\n" +
-                    "            color: #ffff90;\n" +
-                    "        }\n" +
-                    "        \n" +
-                    "        .status-planned {\n" +
-                    "            background-color: #5a2a2a;\n" +
-                    "            color: #ff9090;\n" +
-                    "        }\n" +
-                    "        \n" +
-                    "        .version-badge {\n" +
-                    "            display: inline-block;\n" +
+                    "        .version {\n" +
                     "            background: linear-gradient(135deg, #4a76ee, #6a11cb);\n" +
                     "            color: white;\n" +
-                    "            padding: 5px 10px;\n" +
+                    "            padding: 8px 16px;\n" +
                     "            border-radius: 15px;\n" +
                     "            font-size: 0.9rem;\n" +
-                    "            margin-left: 10px;\n" +
+                    "            font-weight: 600;\n" +
+                    "            box-shadow: 0 5px 15px rgba(74, 118, 238, 0.4);\n" +
+                    "            animation: versionGlow 2s ease-in-out infinite alternate;\n" +
                     "        }\n" +
                     "        \n" +
-                    "        .warning {\n" +
-                    "            background: rgba(120, 20, 20, 0.3);\n" +
-                    "            border-left: 4px solid #cc3333;\n" +
-                    "            padding: 15px;\n" +
-                    "            margin: 30px 0;\n" +
-                    "            border-radius: 0 8px 8px 0;\n" +
+                    "        @keyframes versionGlow {\n" +
+                    "            0% { box-shadow: 0 5px 15px rgba(74, 118, 238, 0.4); }\n" +
+                    "            100% { box-shadow: 0 5px 25px rgba(74, 118, 238, 0.7), 0 0 30px rgba(106, 17, 203, 0.3); }\n" +
                     "        }\n" +
                     "        \n" +
-                    "        .warning h3 {\n" +
-                    "            color: #ff6666;\n" +
-                    "            margin-bottom: 10px;\n" +
+                    "        .release-content {\n" +
+                    "            color: #ccccff;\n" +
+                    "            line-height: 1.8;\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        .release-item {\n" +
+                    "            margin: 12px 0;\n" +
+                    "            padding-left: 20px;\n" +
+                    "            position: relative;\n" +
+                    "            transition: all 0.3s ease;\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        .release-item::before {\n" +
+                    "            content: '▶';\n" +
+                    "            position: absolute;\n" +
+                    "            left: 0;\n" +
+                    "            color: #4a76ee;\n" +
+                    "            font-size: 0.8rem;\n" +
+                    "            transition: all 0.3s ease;\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        .release-item:hover {\n" +
+                    "            transform: translateX(10px);\n" +
+                    "            color: #fff;\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        .release-item:hover::before {\n" +
+                    "            transform: scale(1.5);\n" +
+                    "            color: #6a11cb;\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        .milestone {\n" +
+                    "            background: linear-gradient(135deg, rgba(42, 90, 42, 0.3), rgba(58, 122, 58, 0.2));\n" +
+                    "            border: 1px solid rgba(144, 255, 144, 0.3);\n" +
+                    "            color: #90ff90;\n" +
+                    "            padding: 8px 16px;\n" +
+                    "            border-radius: 15px;\n" +
+                    "            font-size: 0.8rem;\n" +
+                    "            font-weight: 600;\n" +
+                    "            display: inline-block;\n" +
+                    "            margin-top: 15px;\n" +
+                    "            animation: milestonePulse 3s ease-in-out infinite;\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        @keyframes milestonePulse {\n" +
+                    "            0%, 100% { \n" +
+                    "                box-shadow: 0 0 20px rgba(144, 255, 144, 0.2);\n" +
+                    "                transform: scale(1);\n" +
+                    "            }\n" +
+                    "            50% { \n" +
+                    "                box-shadow: 0 0 30px rgba(144, 255, 144, 0.4);\n" +
+                    "                transform: scale(1.05);\n" +
+                    "            }\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        .timeline-node {\n" +
+                    "            position: absolute;\n" +
+                    "            top: 50%;\n" +
+                    "            width: 16px;\n" +
+                    "            height: 16px;\n" +
+                    "            background: linear-gradient(135deg, #4a76ee, #6a11cb);\n" +
+                    "            border-radius: 50%;\n" +
+                    "            border: 3px solid #0a0a1a;\n" +
+                    "            z-index: 2;\n" +
+                    "            animation: nodePulse 2s ease-in-out infinite;\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        .release:nth-child(odd) .timeline-node {\n" +
+                    "            right: -8px;\n" +
+                    "            transform: translateY(-50%);\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        .release:nth-child(even) .timeline-node {\n" +
+                    "            left: -8px;\n" +
+                    "            transform: translateY(-50%);\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        @keyframes nodePulse {\n" +
+                    "            0%, 100% { \n" +
+                    "                box-shadow: 0 0 0 0 rgba(74, 118, 238, 0.4);\n" +
+                    "                transform: translateY(-50%) scale(1);\n" +
+                    "            }\n" +
+                    "            50% { \n" +
+                    "                box-shadow: 0 0 0 10px rgba(74, 118, 238, 0);\n" +
+                    "                transform: translateY(-50%) scale(1.1);\n" +
+                    "            }\n" +
                     "        }\n" +
                     "        \n" +
                     "        footer {\n" +
                     "            text-align: center;\n" +
-                    "            padding: 20px;\n" +
-                    "            margin-top: 40px;\n" +
-                    "            border-top: 1px solid #333366;\n" +
+                    "            padding: 60px 20px 40px;\n" +
+                    "            margin-top: 80px;\n" +
                     "            color: #8888aa;\n" +
                     "            font-size: 0.9rem;\n" +
+                    "            position: relative;\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        footer::before {\n" +
+                    "            content: '';\n" +
+                    "            position: absolute;\n" +
+                    "            top: 0;\n" +
+                    "            left: 50%;\n" +
+                    "            transform: translateX(-50%);\n" +
+                    "            width: 200px;\n" +
+                    "            height: 1px;\n" +
+                    "            background: linear-gradient(90deg, transparent, #4a76ee, transparent);\n" +
                     "        }\n" +
                     "        \n" +
                     "        @media (max-width: 768px) {\n" +
-                    "            .timeline::after {\n" +
-                    "                left: 31px;\n" +
+                    "            .timeline::before {\n" +
+                    "                left: 30px;\n" +
                     "            }\n" +
                     "            \n" +
-                    "            .log-entry {\n" +
-                    "                width: 100%;\n" +
-                    "                padding-left: 70px;\n" +
-                    "                padding-right: 25px;\n" +
+                    "            .release {\n" +
+                    "                width: calc(100% - 60px);\n" +
+                    "                left: 30px !important;\n" +
                     "            }\n" +
                     "            \n" +
-                    "            .log-entry:nth-child(even) {\n" +
-                    "                left: 0;\n" +
+                    "            .release:nth-child(even) .timeline-node,\n" +
+                    "            .release:nth-child(odd) .timeline-node {\n" +
+                    "                left: -23px;\n" +
+                    "                right: auto;\n" +
                     "            }\n" +
                     "            \n" +
-                    "            .log-content::after {\n" +
-                    "                left: 21px !important;\n" +
-                    "                right: auto !important;\n" +
+                    "            .main-title {\n" +
+                    "                font-size: 2.5rem;\n" +
                     "            }\n" +
                     "        }\n" +
                     "    </style>\n" +
                     "</head>\n" +
                     "<body>\n" +
+                    "    <div class=\"nebula\"></div>\n" +
+                    "    <div class=\"particles\" id=\"particles\"></div>\n" +
+                    "    \n" +
                     "    <div class=\"container\">\n" +
-                    "        <header>\n" +
-                    "            <h1>NightSky Devlog</h1>\n" +
-                    "            <div class=\"subtitle\">记录每一次傻逼更新</div>\n" +
-                    "        </header>\n" +
+                    "        <div class=\"hero\">\n" +
+                    "            <h1 class=\"main-title\">\n" +
+                    "                <span class=\"title-gradient\">NIGHTSKY</span>\n" +
+                    "            </h1>\n" +
+                    "            <div class=\"subtitle\">DEVELOPMENT LOG</div>\n" +
+                    "        </div>\n" +
                     "        \n" +
-                    "        <div class=\"devlog-container\">\n" +
-                    "            <div class=\"timeline\">\n" +
-                    "                <div class=\"log-entry\">\n" +
-                    "                    <div class=\"log-content\">\n" +
-                    "                        <div class=\"log-date\">2025年10月26日 <span class=\"version-badge\">Release b1</span></div>\n" +
-                    "                        <div class=\"log-title\">ChangeLog v5<span class=\"status status-completed\">已完成</span></div>\n" +
-                    "                        <div class=\"log-details\">\n" +
-                    "                            <p>PartySpammer</p>\n" +
-                    "                            <ul>\n" +
-                    "                                <li>[Important]OpenSrc</li>\n" +
-                    "                                <li>[Refactor]DynamicIsland</li>\n" +
-                    "                                <li>[Improved]ChestStealer</li>\n" +
-                    "                                <li>[Added]PartySpammer</li>\n" +
-                    "                                <li>[Added]AugustusClickGui</li>\n" +
-                    "                                <li>[Added]SimulationRotation</li>\n" +
-                    "                                <li>[Added]Camera</li>\n" +
-                    "                                <li>[Added]ExhibitionTargetHUD</li>\n" +
-                    "                                <li>[Added]ExhibitionWaterMark</li>\n" +
-                    "                                <li>[Added]NotificationDisplay</li>\n" +
-                    "                                <li>[Added]ChestView</li>\n" +
-                    "                                <li>[Added]Rotate-JumpReset</li>\n" +
-                    "                                <li>[Added]DropShadow</li>\n" +
-                    "                                <li>[Added]PlaySounds</li>\n" +
-                    "                                <li>[Added]ProtectedNyaIP</li>\n" +
-                    "                            </ul>\n" +
-                    "                        </div>\n" +
+                    "        <div class=\"timeline\">\n" +
+                    "            <div class=\"release\">\n" +
+                    "                <div class=\"timeline-node\"></div>\n" +
+                    "                <div class=\"release-card\">\n" +
+                    "                    <div class=\"release-header\">\n" +
+                    "                        <div class=\"release-title\">Release B1.1</div>\n" +
+                    "                        <div class=\"version\">v1.1</div>\n" +
+                    "                    </div>\n" +
+                    "                    <div class=\"release-content\">\n" +
+                    "                        <div class=\"release-item\">Added BlockAnimation</div>\n" +
+                    "                        <div class=\"release-item\">Added window title and icon</div>\n" +
+                    "                        <div class=\"release-item\">Fix some bugs</div>\n" +
+                    "                        <div class=\"release-item\">Improved somethings</div>\n" +
                     "                    </div>\n" +
                     "                </div>\n" +
-                    "                \n" +
-                    "                <div class=\"log-entry\">\n" +
-                    "                    <div class=\"log-content\">\n" +
-                    "                        <div class=\"log-date\">2025年10月12日 <span class=\"version-badge\">Private v2</span></div>\n" +
-                    "                        <div class=\"log-title\">ChangeLog v4<span class=\"status status-completed\">已完成</span></div>\n" +
-                    "                        <div class=\"log-details\">\n" +
-                    "                            <p>更新日志</p>\n" +
-                    "                            <ul>\n" +
-                    "                                <li>[Added]DynamicIsland</li>\n" +
-                    "                            </ul>\n" +
-                    "                        </div>\n" +
+                    "            </div>\n" +
+                    "            \n" +
+                    "            <div class=\"release\">\n" +
+                    "                <div class=\"timeline-node\"></div>\n" +
+                    "                <div class=\"release-card\">\n" +
+                    "                    <div class=\"release-header\">\n" +
+                    "                        <div class=\"release-title\">Release B1</div>\n" +
+                    "                        <div class=\"version\">v1.0</div>\n" +
                     "                    </div>\n" +
-                    "                </div>\n" +
-                    "                \n" +
-                    "                <div class=\"log-entry\">\n" +
-                    "                    <div class=\"log-content\">\n" +
-                    "                        <div class=\"log-date\">2025年10月7日 <span class=\"version-badge\">Private v1</span></div>\n" +
-                    "                        <div class=\"log-title\">ChangeLog v3<span class=\"status status-completed\">已完成</span></div>\n" +
-                    "                        <div class=\"log-details\">\n" +
-                    "                            <p>更新日志</p>\n" +
-                    "                            <ul>\n" +
-                    "                                <li>[Improved]AutoProjectile-Prediction</li>\n" +
-                    "                                <li>[Fixed]ClickGuiBug</li>\n" +
-                    "                                <li>[Added]BlurShader</li>\n" +
-                    "                                <li>[Added]Velocity-Prediction</li>\n" +
-                    "                                <li>[Added]GuiMainMenu</li>\n" +
-                    "                                <li>[Added]验证？</li>\n" +
-                    "                            </ul>\n" +
-                    "                        </div>\n" +
-                    "                    </div>\n" +
-                    "                </div>\n" +
-                    "                \n" +
-                    "                <div class=\"log-entry\">\n" +
-                    "                    <div class=\"log-content\">\n" +
-                    "                        <div class=\"log-date\">2025年10月6日 <span class=\"version-badge\">test2</span></div>\n" +
-                    "                        <div class=\"log-title\">ChangeLog v2<span class=\"status status-completed\">已完成</span></div>\n" +
-                    "                        <div class=\"log-details\">\n" +
-                    "                            <p>更新日志</p>\n" +
-                    "                            <ul>\n" +
-                    "                                <li>[Added]FontRenderer</li>\n" +
-                    "                                <li>[Added]AutoProjectile</li>\n" +
-                    "                                <li>[Added]FullAutoBlock</li>\n" +
-                    "                                <li>[Added]AutoBlockNoSlow</li>\n" +
-                    "                            </ul>\n" +
-                    "                        </div>\n" +
-                    "                    </div>\n" +
-                    "                </div>\n" +
-                    "                \n" +
-                    "                <div class=\"log-entry\">\n" +
-                    "                    <div class=\"log-content\">\n" +
-                    "                        <div class=\"log-date\">2025年10月5日 <span class=\"version-badge\">test1</span></div>\n" +
-                    "                        <div class=\"log-title\">ChangeLog v1<span class=\"status status-completed\">已完成</span></div>\n" +
-                    "                        <div class=\"log-details\">\n" +
-                    "                            <p>更新日志</p>\n" +
-                    "                            <ul>\n" +
-                    "                                <li>[Refactor]ClickGui</li>\n" +
-                    "                                <li>[Refactor]HUD</li>\n" +
-                    "                                <li>[Fixed]BlinkManager</li>\n" +
-                    "                                <li>[Fixed]AutoBlock</li>\n" +
-                    "                                <li>[Added]ArrayList</li>\n" +
-                    "                                <li>[Added]JumpCircle</li>\n" +
-                    "                            </ul>\n" +
-                    "                        </div>\n" +
-                    "                    </div>\n" +
-                    "                </div>\n" +
-                    "                \n" +
-                    "                <div class=\"log-entry\">\n" +
-                    "                    <div class=\"log-content\">\n" +
-                    "                        <div class=\"log-date\">2025年10月3日 <span class=\"version-badge\">Test</span></div>\n" +
-                    "                        <div class=\"log-title\">更换base <span class=\"status status-completed\">已完成</span></div>\n" +
-                    "                        <div class=\"log-details\">\n" +
-                    "                            <p>更换3次base</p>\n" +
-                    "                            <ul>\n" +
-                    "                                <li>我们的大神dev先把主base从moonlight更换为myau</li>\n" +
-                    "                                <li>之后发现渲染难写换回moonlight</li>\n" +
-                    "                                <li>之后发现绕过难滑所以换回myau</li>\n" +
-                    "                                <li>(实际上NightSky在没选定好方向前已经换过10余次base了)</li>\n" +
-                    "                            </ul>\n" +
-                    "                        </div>\n" +
+                    "                    <div class=\"release-content\">\n" +
+                    "                        <div class=\"release-item\">First Release</div>\n" +
+                    "                        <div class=\"release-item\">这是NightSky 的第一个正式版本！</div>\n" +
+                    "                        <div class=\"milestone\">里程碑</div>\n" +
                     "                    </div>\n" +
                     "                </div>\n" +
                     "            </div>\n" +
                     "        </div>\n" +
                     "        \n" +
                     "        <footer>\n" +
-                    "            <p>NightSky DevLog 2025</p>\n" +
+                    "            <p>© 2025 NightSky Development Team</p>\n" +
                     "        </footer>\n" +
                     "    </div>\n" +
+                    "    \n" +
+                    "    <script>\n" +
+                    "        function createParticles() {\n" +
+                    "            const container = document.getElementById('particles');\n" +
+                    "            const count = 80;\n" +
+                    "            \n" +
+                    "            for (let i = 0; i < count; i++) {\n" +
+                    "                const particle = document.createElement('div');\n" +
+                    "                particle.className = 'particle';\n" +
+                    "                \n" +
+                    "                const size = Math.random() * 3 + 1;\n" +
+                    "                particle.style.width = size + 'px';\n" +
+                    "                particle.style.height = size + 'px';\n" +
+                    "                \n" +
+                    "                particle.style.left = Math.random() * 100 + '%';\n" +
+                    "                \n" +
+                    "                const delay = Math.random() * 25;\n" +
+                    "                const duration = 20 + Math.random() * 20;\n" +
+                    "                particle.style.animationDelay = delay + 's';\n" +
+                    "                particle.style.animationDuration = duration + 's';\n" +
+                    "                \n" +
+                    "                container.appendChild(particle);\n" +
+                    "            }\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        function animateOnScroll() {\n" +
+                    "            const releases = document.querySelectorAll('.release');\n" +
+                    "            releases.forEach((release, index) => {\n" +
+                    "                const rect = release.getBoundingClientRect();\n" +
+                    "                const isVisible = rect.top < window.innerHeight * 0.8;\n" +
+                    "                \n" +
+                    "                if (isVisible) {\n" +
+                    "                    setTimeout(() => {\n" +
+                    "                        release.classList.add('visible');\n" +
+                    "                    }, index * 200);\n" +
+                    "                }\n" +
+                    "            });\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        document.addEventListener('DOMContentLoaded', () => {\n" +
+                    "            createParticles();\n" +
+                    "            animateOnScroll();\n" +
+                    "        });\n" +
+                    "        \n" +
+                    "        window.addEventListener('scroll', animateOnScroll);\n" +
+                    "        \n" +
+                    "        document.addEventListener('mousemove', (e) => {\n" +
+                    "            const cards = document.querySelectorAll('.release-card');\n" +
+                    "            const mouseX = e.clientX / window.innerWidth;\n" +
+                    "            const mouseY = e.clientY / window.innerHeight;\n" +
+                    "            \n" +
+                    "            cards.forEach(card => {\n" +
+                    "                const rect = card.getBoundingClientRect();\n" +
+                    "                const cardX = rect.left + rect.width / 2;\n" +
+                    "                const cardY = rect.top + rect.height / 2;\n" +
+                    "                \n" +
+                    "                const distanceX = e.clientX - cardX;\n" +
+                    "                const distanceY = e.clientY - cardY;\n" +
+                    "                \n" +
+                    "                const rotateY = distanceX / 50;\n" +
+                    "                const rotateX = -distanceY / 50;\n" +
+                    "                \n" +
+                    "                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(10px)`;\n" +
+                    "            });\n" +
+                    "        });\n" +
+                    "        \n" +
+                    "        document.addEventListener('mouseleave', () => {\n" +
+                    "            const cards = document.querySelectorAll('.release-card');\n" +
+                    "            cards.forEach(card => {\n" +
+                    "                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateZ(0)';\n" +
+                    "            });\n" +
+                    "        });\n" +
+                    "    </script>\n" +
                     "</body>\n" +
                     "</html>";
 
