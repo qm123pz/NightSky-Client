@@ -13,8 +13,6 @@ public class StencilUtil {
 
     public static void dispose() {
         glDisable(GL_STENCIL_TEST);
-        GlStateManager.disableAlpha();
-        GlStateManager.disableBlend();
     }
 
     public static void erase(boolean invert) {

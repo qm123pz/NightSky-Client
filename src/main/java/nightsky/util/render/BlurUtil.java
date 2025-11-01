@@ -216,10 +216,15 @@ public class BlurUtil {
         GlStateManager.depthMask(true);
         GlStateManager.colorMask(true, true, true, true);
         GlStateManager.popMatrix();
-        GlStateManager.disableBlend();
 
         StencilUtil.dispose();
+        
         GlStateManager.enableAlpha();
+        GlStateManager.enableBlend();
+        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+        GlStateManager.enableTexture2D();
+        GlStateManager.disableLighting();
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     public static void blurArea(float x, float y, float x2, float y2, float blurStrength) {

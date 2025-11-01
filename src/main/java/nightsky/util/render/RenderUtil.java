@@ -90,23 +90,24 @@ public class RenderUtil {
         GL11.glColor4f(f1, f2, f3, f);
         GlStateManager.enableBlend();
         glEnable(GL11.GL_LINE_SMOOTH);
+        GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST);
 
         GL11.glBegin(GL11.GL_POLYGON);
         final double v = Math.PI / 180;
 
-        for (int i = 0; i <= 90; i += 3) {
+        for (int i = 0; i <= 90; i += 1) {
             GL11.glVertex2d(x + radius + Math.sin(i * v) * (radius * -1), y + radius + Math.cos(i * v) * (radius * -1));
         }
 
-        for (int i = 90; i <= 180; i += 3) {
+        for (int i = 90; i <= 180; i += 1) {
             GL11.glVertex2d(x + radius + Math.sin(i * v) * (radius * -1), y1 - radius + Math.cos(i * v) * (radius * -1));
         }
 
-        for (int i = 0; i <= 90; i += 3) {
+        for (int i = 0; i <= 90; i += 1) {
             GL11.glVertex2d(x1 - radius + Math.sin(i * v) * radius, y1 - radius + Math.cos(i * v) * radius);
         }
 
-        for (int i = 90; i <= 180; i += 3) {
+        for (int i = 90; i <= 180; i += 1) {
             GL11.glVertex2d(x1 - radius + Math.sin(i * v) * radius, y + radius + Math.cos(i * v) * radius);
         }
 
