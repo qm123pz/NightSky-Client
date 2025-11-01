@@ -10,7 +10,7 @@ import java.util.regex.Matcher;
 
 public class NickHider extends Module {
     private static final Minecraft mc = Minecraft.getMinecraft();
-    public final TextValue protectName = new TextValue("Name", "91大神");
+    public final TextValue protectName = new TextValue("Name", "91av");
     public final BooleanValue scoreboard = new BooleanValue("Scoreboard", true);
     public final BooleanValue level = new BooleanValue("Level", true);
 
