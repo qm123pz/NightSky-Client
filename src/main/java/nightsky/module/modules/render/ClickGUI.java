@@ -8,7 +8,7 @@ import org.lwjgl.input.Keyboard;
 
 public class ClickGUI extends Module {
     
-    private final ModeValue mode = new ModeValue("Mode", 0, new String[]{"IDEA", "Augustus", "Best"});
+    private final ModeValue mode = new ModeValue("Mode", 0, new String[]{"IDEA", "Augustus", "Best", "Dropdown"});
 
     public ClickGUI() {
         super("ClickGUI", false);
@@ -44,11 +44,23 @@ public class ClickGUI extends Module {
                 if (NightSky.guiManager.isBestGuiOpen()) {
                     NightSky.guiManager.closeBestGui();
                 } else {
-                    if (NightSky.guiManager.isClickGuiOpen() || NightSky.guiManager.isAugustusGuiOpen()) {
+                    if (NightSky.guiManager.isClickGuiOpen() || NightSky.guiManager.isAugustusGuiOpen() || NightSky.guiManager.isDropdownGuiOpen()) {
                         NightSky.guiManager.closeClickGui();
                         NightSky.guiManager.closeAugustusGui();
+                        NightSky.guiManager.closeDropdownGui();
                     }
                     NightSky.guiManager.openBestGui();
+                }
+            } else if (selectedMode.equals("Dropdown")) {
+                if (NightSky.guiManager.isDropdownGuiOpen()) {
+                    NightSky.guiManager.closeDropdownGui();
+                } else {
+                    if (NightSky.guiManager.isClickGuiOpen() || NightSky.guiManager.isAugustusGuiOpen() || NightSky.guiManager.isBestGuiOpen()) {
+                        NightSky.guiManager.closeClickGui();
+                        NightSky.guiManager.closeAugustusGui();
+                        NightSky.guiManager.closeBestGui();
+                    }
+                    NightSky.guiManager.openDropdownGui();
                 }
             }
         }

@@ -4,17 +4,20 @@ import nightsky.ui.clickgui.ClickGui;
 import nightsky.ui.clickgui.augustus.AugustusClickGui;
 import net.minecraft.client.Minecraft;
 import nightsky.ui.clickgui.best.BestClickGui;
+import nightsky.ui.clickgui.dropdown.DropdownClickGui;
 
 public class GuiManager {
     private final Minecraft mc = Minecraft.getMinecraft();
     private ClickGui clickGui;
     private AugustusClickGui augustusClickGui;
     private BestClickGui bestClickGui;
+    private DropdownClickGui dropdownClickGui;
     
     public GuiManager() {
         this.clickGui = new ClickGui();
         this.augustusClickGui = new AugustusClickGui();
         this.bestClickGui = new BestClickGui();
+        this.dropdownClickGui = new DropdownClickGui();
     }
     
     public void openClickGui() {
@@ -75,5 +78,25 @@ public class GuiManager {
     
     public BestClickGui getBestClickGui() {
         return bestClickGui;
+    }
+    
+    public void openDropdownGui() {
+        if (mc.currentScreen == null) {
+            mc.displayGuiScreen(dropdownClickGui);
+        }
+    }
+    
+    public void closeDropdownGui() {
+        if (mc.currentScreen == dropdownClickGui) {
+            mc.displayGuiScreen(null);
+        }
+    }
+    
+    public boolean isDropdownGuiOpen() {
+        return mc.currentScreen == dropdownClickGui;
+    }
+    
+    public DropdownClickGui getDropdownClickGui() {
+        return dropdownClickGui;
     }
 }
