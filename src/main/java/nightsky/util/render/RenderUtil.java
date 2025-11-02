@@ -125,4 +125,17 @@ public class RenderUtil {
     public static void drawRoundedRect(float x, float y, float width, float height, float radius, Color color) {
         drawRoundedRect(x, y, width, height, radius, color.getRGB());
     }
+    
+    public static void scissorStart(float x, float y, float width, float height) {
+        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getMinecraft();
+        net.minecraft.client.gui.ScaledResolution sr = new net.minecraft.client.gui.ScaledResolution(mc);
+        int factor = sr.getScaleFactor();
+        GL11.glScissor((int)(x * factor), (int)((sr.getScaledHeight() - (y + height)) * factor), 
+            (int)(width * factor), (int)(height * factor));
+        glEnable(GL11.GL_SCISSOR_TEST);
+    }
+    
+    public static void scissorEnd() {
+        GL11.glDisable(GL11.GL_SCISSOR_TEST);
+    }
 }
