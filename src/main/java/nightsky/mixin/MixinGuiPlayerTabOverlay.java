@@ -22,7 +22,7 @@ public abstract class MixinGuiPlayerTabOverlay {
     private void onRenderPlayerlist(int width, net.minecraft.scoreboard.Scoreboard scoreboard, ScoreObjective scoreObjective, CallbackInfo ci) {
         if (NightSky.moduleManager != null) {
             DynamicIsland dynamicIsland = (DynamicIsland) NightSky.moduleManager.modules.get(DynamicIsland.class);
-            if (dynamicIsland != null && dynamicIsland.isEnabled() && dynamicIsland.shouldHideTabList()) {
+            if (dynamicIsland != null && dynamicIsland.isEnabled()) {
                 ci.cancel();
             }
         }

@@ -120,63 +120,8 @@ public class DynamicIsland extends Module {
             "群体智慧.hivemind                "
     };
 
-    //别问我这一坨是啥。
-    //我不知道。ds写的。不是我写的。
-    //糖丸了。
-
-//    private String islandPoemText1 = "荧屏闪烁乱真假，数据洪流没年华。\n" +
-//            "热键空按心已麻，表情虚掷笑渐沙。\n" +
-//            "旧梦沉入代码海，新魂困于云端枷。\n" +
-//            "报错界面觅归舟，长夜独坐待曦霞。";
-//    private String islandPoemText2 = "指尖划过冷光屏，万千消息乱心庭\n" +
-//            "点赞评论如潮涌，真实自我渐飘零\n" +
-//            "旧日书信尘封柜，今朝言语化数据\n" +
-//            "欲向虚空觅知音，只听机器复回音";
-//    private String islandPoemText3 = "朝朝暮暮对荧屏，世事皆成二维码\n" +
-//            "美食先让手机尝，美景终归滤镜下\n" +
-//            "忽忆年少奔跑时，风拂脸颊是真切\n" +
-//            "今陷数字迷宫中，何处寻回当初我";
-//    private String islandPoemText4 = "区块链上说永恒，智能合约写誓言\n" +
-//            "代码或可保长久，难护真心易变迁\n" +
-//            "昨夜更新系统后，旧情竟成兼容难\n" +
-//            "爱情若作应用程序，终将面临卸载时";
-//    private String islandPoemText5 = "一生记忆传云端，却怕某天服务器崩\n" +
-//            "电子相册存笑貌，难载当时温暖风\n" +
-//            "欲将心事托云储，又恐黑客破隐私\n" +
-//            "虚实之间徘徊久，不知何处安魂灵";
-//    private String islandPoemText6 = "短视频里度春秋，注意力经济中游\n" +
-//            "十五秒换一世界，三分钟忘旧时忧\n" +
-//            "信息爆炸填满脑，知识碎片难成舟\n" +
-//            "夜深人静扪心问，可还存有沉思力";
-//    private String islandPoemText7 = "虚拟现实头盔戴，进入完美新世界\n" +
-//            "触感反馈虽逼真，难比清风拂面切\n" +
-//            "游戏角色已满级，现实人生却卡关\n" +
-//            "摘下设备茫然顾，哪个才是真实我";
-//    private String islandPoemText8 = "推荐内容精准投，困在信息茧房中\n" +
-//            "万千世界虽广阔，只见相似观点浓\n" +
-//            "欲破此牢寻异见，算法笑我太天真\n" +
-//            "你之选择你造就，何怪代码太精通";
-//    private String islandPoemText9 = "区域突然断网络，始觉已陷数字依赖\n" +
-//            "坐立难安无所事，方知除却屏幕外\n" +
-//            "尚有书本可阅读，尚有亲人可交谈\n" +
-//            "此夜过后深思量，生活当有线下版";
-//    private String islandPoemText0 = "生命若似电子设备，终有关机那一天\n" +
-//            "所有数据成遗产，所有账号变纪念\n" +
-//            "但愿回首这一生，不全是虚拟交互\n" +
-//            "曾真实爱过痛过，方不负人间此行";
-//    private String islandPoemTitle1 = "《网逝》";
-//    private String islandPoemTitle2 = "《芯囚》";
-//    private String islandPoemTitle3 = "《网境》";
-//    private String islandPoemTitle4 = "《链情》";
-//    private String islandPoemTitle5 = "《云踪》";
-//    private String islandPoemTitle6 = "《流年》";
-//    private String islandPoemTitle7 = "《拟真》";
-//    private String islandPoemTitle8 = "《算法》";
-//    private String islandPoemTitle9 = "《寂夜》";
-//    private String islandPoemTitle0 = "《终局》";
-
     public DynamicIsland() {
-        super("DynamicIsland", false);
+        super("DynamicIsland", true);
         initializeTextIndices();
     }
     

@@ -144,6 +144,7 @@ public class TargetESP extends Module {
 
     @EventTarget
     public void onRender3D(Render3DEvent event) {
+        if(!this.isEnabled()) return;
         if (target != null) {
             if (mode.getValue() == 0)
                 points(event);

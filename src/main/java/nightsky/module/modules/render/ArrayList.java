@@ -110,10 +110,6 @@ public class ArrayList extends Module {
                 }
             }
 
-//            if (test.getValue() && !moduleRects.isEmpty()) {
-//                drawArrayListOutline(moduleRects);
-//            }
-
             yValue = 1 + positionOffset.getValue();
             count = 1;
 
@@ -212,10 +208,6 @@ public class ArrayList extends Module {
                         new Color(21, 21, 21, (int)bgAlpha.getValue().floatValue()).getRGB());
                 }
             }
-
-//            if (test.getValue() && !moduleRects.isEmpty()) {
-//                drawArrayListOutline(moduleRects);
-//            }
 
             yValue = 1 + positionOffset.getValue();
 

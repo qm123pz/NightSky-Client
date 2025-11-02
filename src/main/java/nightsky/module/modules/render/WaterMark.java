@@ -14,7 +14,7 @@ import nightsky.NightSky;
 public class WaterMark extends Module {
     private final Minecraft mc = Minecraft.getMinecraft();
     public final FloatValue scale = new FloatValue("Scale", 5.0F, 1.0F, 7.0F);
-    public final ModeValue mode = new ModeValue("Mode", 2, new String[]{"Logo1", "Logo2","Logo3", "YuanShen", "Exhibition"});
+    public final ModeValue mode = new ModeValue("Mode", 4, new String[]{"Logo1", "Logo2","Logo3", "YuanShen", "Exhibition"});
     private final ResourceLocation logoTexture = new ResourceLocation("minecraft", "nightsky/logo/Logo1.png");
     private final ResourceLocation logoTexture2 = new ResourceLocation("minecraft", "nightsky/logo/Logo2.png");
     private final ResourceLocation logoTexture3 = new ResourceLocation("minecraft", "nightsky/logo/Logo3.png");
