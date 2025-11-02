@@ -5,6 +5,9 @@ import nightsky.ui.clickgui.augustus.AugustusClickGui;
 import net.minecraft.client.Minecraft;
 import nightsky.ui.clickgui.best.BestClickGui;
 import nightsky.ui.clickgui.dropdown.DropdownClickGui;
+import nightsky.webgui.WebServer;
+
+import java.awt.Desktop;
 
 public class GuiManager {
     private final Minecraft mc = Minecraft.getMinecraft();
@@ -12,24 +15,31 @@ public class GuiManager {
     private AugustusClickGui augustusClickGui;
     private BestClickGui bestClickGui;
     private DropdownClickGui dropdownClickGui;
+    private WebServer webServer;
     
     public GuiManager() {
         this.clickGui = new ClickGui();
         this.augustusClickGui = new AugustusClickGui();
         this.bestClickGui = new BestClickGui();
         this.dropdownClickGui = new DropdownClickGui();
+        this.webServer = new WebServer();
+    }
+    
+    public void closeAllGuis() {
+        closeClickGui();
+        closeAugustusGui();
+        closeBestGui();
+        closeDropdownGui();
     }
     
     public void openClickGui() {
-        if (mc.currentScreen == null) {
-            mc.displayGuiScreen(clickGui);
-        }
+        closeAllGuis();
+        mc.displayGuiScreen(clickGui);
     }
     
     public void openAugustusGui() {
-        if (mc.currentScreen == null) {
-            mc.displayGuiScreen(augustusClickGui);
-        }
+        closeAllGuis();
+        mc.displayGuiScreen(augustusClickGui);
     }
     
     public void closeClickGui() {
@@ -61,9 +71,8 @@ public class GuiManager {
     }
     
     public void openBestGui() {
-        if (mc.currentScreen == null) {
-            mc.displayGuiScreen(bestClickGui);
-        }
+        closeAllGuis();
+        mc.displayGuiScreen(bestClickGui);
     }
     
     public void closeBestGui() {
@@ -81,9 +90,8 @@ public class GuiManager {
     }
     
     public void openDropdownGui() {
-        if (mc.currentScreen == null) {
-            mc.displayGuiScreen(dropdownClickGui);
-        }
+        closeAllGuis();
+        mc.displayGuiScreen(dropdownClickGui);
     }
     
     public void closeDropdownGui() {
@@ -98,5 +106,29 @@ public class GuiManager {
     
     public DropdownClickGui getDropdownClickGui() {
         return dropdownClickGui;
+    }
+    
+    public void openWebGui() {
+        if (!webServer.isRunning()) {
+            webServer.start();
+        }
+        openWebGuiInBrowser();
+    }
+    
+    private void openWebGuiInBrowser() {
+        new Thread(() -> {
+            try {
+                Thread.sleep(500);
+                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                    Desktop.getDesktop().browse(new java.net.URI("http://localhost:1337"));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+    
+    public WebServer getWebServer() {
+        return webServer;
     }
 }
