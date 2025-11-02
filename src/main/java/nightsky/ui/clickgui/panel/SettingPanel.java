@@ -106,11 +106,14 @@ public class SettingPanel implements Screen {
         for (Value<?> value : values) {
             if (value instanceof BooleanValue) {
                 drawBooleanValue((BooleanValue) value, xOffset, yOffset, keywordColor, variableColor, textColor);
-            } else if (value instanceof FloatValue) {
-                drawFloatValue((FloatValue) value, xOffset, yOffset, mouseX, mouseY, 
+            } else if (value instanceof PercentValue) {
+                drawPercentValue((PercentValue) value, xOffset, yOffset, mouseX, mouseY,
                     keywordColor, variableColor, textColor, numberColor, commentColor);
             } else if (value instanceof IntValue) {
                 drawIntValue((IntValue) value, xOffset, yOffset, mouseX, mouseY, 
+                    keywordColor, variableColor, textColor, numberColor, commentColor);
+            } else if (value instanceof FloatValue) {
+                drawFloatValue((FloatValue) value, xOffset, yOffset, mouseX, mouseY, 
                     keywordColor, variableColor, textColor, numberColor, commentColor);
             } else if (value instanceof ModeValue) {
                 drawModeValue((ModeValue) value, xOffset, yOffset, 
@@ -120,9 +123,6 @@ public class SettingPanel implements Screen {
                     keywordColor, variableColor, textColor, numberColor);
                 yOffset += extraLines;
                 continue;
-            } else if (value instanceof PercentValue) {
-                drawPercentValue((PercentValue) value, xOffset, yOffset, mouseX, mouseY,
-                    keywordColor, variableColor, textColor, numberColor, commentColor);
             } else if (value instanceof TextValue) {
                 drawTextValue((TextValue) value, xOffset, yOffset, mouseX, mouseY,
                     keywordColor, variableColor, textColor);
@@ -586,20 +586,20 @@ public class SettingPanel implements Screen {
         float yOffset = y + fontRenderer.FONT_HEIGHT + fontRenderer.FONT_HEIGHT + 10 + (fontRenderer.FONT_HEIGHT + 2) + (fontRenderer.FONT_HEIGHT + 6) - scrollOffset;
         
         for (Value<?> value : values) {
-            if (value instanceof FloatValue || value instanceof IntValue || value instanceof PercentValue) {
+            if (value instanceof PercentValue || value instanceof IntValue || value instanceof FloatValue) {
                 String fullText = "";
-                if (value instanceof FloatValue) {
-                    FloatValue floatValue = (FloatValue) value;
-                    float val = Math.min(Math.max(floatValue.getMinimum(), floatValue.getValue()), floatValue.getMaximum());
-                    fullText = "public float " + value.getName() + " = " + val + ";//" + value.getName() + ".range(" + floatValue.getMinimum() + "," + floatValue.getMaximum() + ")";
+                if (value instanceof PercentValue) {
+                    PercentValue percentValue = (PercentValue) value;
+                    int val = Math.min(Math.max(percentValue.getMinimum(), percentValue.getValue()), percentValue.getMaximum());
+                    fullText = "public int " + value.getName() + " = " + val + "%;//" + value.getName() + ".range(" + percentValue.getMinimum() + "%-" + percentValue.getMaximum() + "%)";
                 } else if (value instanceof IntValue) {
                     IntValue intValue = (IntValue) value;
                     int val = Math.min(Math.max(intValue.getMinimum(), intValue.getValue()), intValue.getMaximum());
                     fullText = "public int " + value.getName() + " = " + val + ";//" + value.getName() + ".range(" + intValue.getMinimum() + "," + intValue.getMaximum() + ")";
-                } else if (value instanceof PercentValue) {
-                    PercentValue percentValue = (PercentValue) value;
-                    int val = Math.min(Math.max(percentValue.getMinimum(), percentValue.getValue()), percentValue.getMaximum());
-                    fullText = "public int " + value.getName() + " = " + val + "%;//" + value.getName() + ".range(" + percentValue.getMinimum() + "%-" + percentValue.getMaximum() + "%)";
+                } else if (value instanceof FloatValue) {
+                    FloatValue floatValue = (FloatValue) value;
+                    float val = Math.min(Math.max(floatValue.getMinimum(), floatValue.getValue()), floatValue.getMaximum());
+                    fullText = "public float " + value.getName() + " = " + val + ";//" + value.getName() + ".range(" + floatValue.getMinimum() + "," + floatValue.getMaximum() + ")";
                 }
                 
                 float width = fontRenderer.getStringWidth(fullText);
