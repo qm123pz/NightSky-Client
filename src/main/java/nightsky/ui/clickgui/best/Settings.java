@@ -152,12 +152,12 @@ public class Settings {
 
         if (value instanceof BooleanValue) {
             drawBooleanSetting(gui, (BooleanValue) value, x, valueY, width, mouseX, mouseY, textAlpha);
+        } else if (value instanceof PercentValue) {
+            drawPercentSetting(gui, (PercentValue) value, x, valueY, width, mouseX, mouseY, textAlpha);
         } else if (value instanceof IntValue) {
             drawIntSetting(gui, (IntValue) value, x, valueY, width, mouseX, mouseY, textAlpha);
         } else if (value instanceof FloatValue) {
             drawFloatSetting(gui, (FloatValue) value, x, valueY, width, mouseX, mouseY, textAlpha);
-        } else if (value instanceof PercentValue) {
-            drawPercentSetting(gui, (PercentValue) value, x, valueY, width, mouseX, mouseY, textAlpha);
         } else if (value instanceof ModeValue) {
             drawModeSetting(gui, (ModeValue) value, x, valueY, width, mouseX, mouseY, textAlpha);
         } else if (value instanceof ColorValue) {
@@ -323,10 +323,13 @@ public class Settings {
 
     private static void drawPercentSetting(BestClickGui gui, PercentValue value, float x, float y, float width,
                                            int mouseX, int mouseY, int textAlpha) {
-        float current = value.getValue();
-        float progress = current / 100f;
+        int min = value.getMinimum();
+        int max = value.getMaximum();
+        int current = value.getValue();
 
         float sliderX = x + width / 2 - SLIDER_WIDTH / 2;
+        float progress = (float)(current - min) / (float)(max - min);
+
         int bgAlpha = Math.max(0, Math.min(255, (int)(30 * gui.openAnimation)));
         RenderUtil.drawRoundedRect(sliderX, y, SLIDER_WIDTH, SLIDER_HEIGHT, 2f, new Color(0, 0, 0, bgAlpha));
 
@@ -334,7 +337,7 @@ public class Settings {
         RenderUtil.drawRoundedRect(sliderX, y, SLIDER_WIDTH * progress, SLIDER_HEIGHT, 2f,
                 new Color(100, 150, 255, progressAlpha));
 
-        String valueText = String.format("%.0f%%", current);
+        String valueText = String.format("%d%%", current);
         float valueX = sliderX + SLIDER_WIDTH + 8;
         float valueTextY = y - (float) CustomFontRenderer.getFontHeight(gui.settingFont) / 2;
         CustomFontRenderer.drawString(valueText, valueX, valueTextY, 0xFFFFFF | (textAlpha << 24), gui.settingFont);
@@ -557,16 +560,18 @@ public class Settings {
 
                 float progress = Math.max(0, Math.min(1, (mouseX - sliderX) / SLIDER_WIDTH));
 
-                if (value instanceof IntValue) {
+                if (value instanceof PercentValue) {
+                    PercentValue percentValue = (PercentValue) value;
+                    int newValue = (int)Math.round(percentValue.getMinimum() + progress * (percentValue.getMaximum() - percentValue.getMinimum()));
+                    percentValue.setValue(newValue);
+                } else if (value instanceof IntValue) {
                     IntValue intValue = (IntValue) value;
-                    int newValue = (int)(intValue.getMinimum() + progress * (intValue.getMaximum() - intValue.getMinimum()));
+                    int newValue = (int)Math.round(intValue.getMinimum() + progress * (intValue.getMaximum() - intValue.getMinimum()));
                     intValue.setValue(newValue);
                 } else if (value instanceof FloatValue) {
                     FloatValue floatValue = (FloatValue) value;
                     float newValue = floatValue.getMinimum() + progress * (floatValue.getMaximum() - floatValue.getMinimum());
                     floatValue.setValue(newValue);
-                } else if (value instanceof PercentValue) {
-                    ((PercentValue) value).setValue(progress * 100f);
                 }
             }
             currentY += itemHeight;
