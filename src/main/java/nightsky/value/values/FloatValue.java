@@ -14,7 +14,7 @@ public class FloatValue extends Value<Float> {
     }
 
     public FloatValue(String string, Float value, Float minimum, Float maximum, BooleanSupplier check) {
-        super(string, value, floatV -> floatV >= 0 && floatV <= Float.MAX_VALUE, check);
+        super(string, value, floatV -> floatV >= minimum && floatV <= maximum, check);
         this.minimum = minimum;
         this.maximum = maximum;
     }
