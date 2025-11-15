@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class DevWeb extends PowerShell {
+public class ChangeLog extends PowerShell {
     private static final String HTML_CONTENT =
             "<!DOCTYPE html>\n" +
                     "<html lang=\"zh-CN\">\n" +
@@ -414,6 +414,20 @@ public class DevWeb extends PowerShell {
                     "                <div class=\"timeline-node\"></div>\n" +
                     "                <div class=\"release-card\">\n" +
                     "                    <div class=\"release-header\">\n" +
+                    "                        <div class=\"release-title\">Release B1.2-pre1</div>\n" +
+                    "                        <div class=\"version\">v1.2-pre1</div>\n" +
+                    "                    </div>\n" +
+                    "                    <div class=\"release-content\">\n" +
+                    "                        <div class=\"release-item\">Improved somethings</div>\n" +
+                    "                        <div class=\"release-item\">Fixed fontrenderer</div>\n" +
+                    "                    </div>\n" +
+                    "                </div>\n" +
+                    "            </div>\n" +
+                    "            \n" +
+                    "            <div class=\"release\">\n" +
+                    "                <div class=\"timeline-node\"></div>\n" +
+                    "                <div class=\"release-card\">\n" +
+                    "                    <div class=\"release-header\">\n" +
                     "                        <div class=\"release-title\">Release B1.2</div>\n" +
                     "                        <div class=\"version\">v1.2</div>\n" +
                     "                    </div>\n" +
@@ -537,7 +551,7 @@ public class DevWeb extends PowerShell {
                     "</body>\n" +
                     "</html>";
 
-    public DevWeb() {
+    public ChangeLog() {
         super(new ArrayList<>(Arrays.asList("ChangeLog")));
     }
 

@@ -275,7 +275,7 @@ public class Handler {
             case "denick":
                 return "Denick command executed";
             case "devweb":
-                return "DevWeb command executed";
+                return "ChangeLog command executed";
             case "binds":
                 return "Binds list displayed";
             case "verticalclip":
