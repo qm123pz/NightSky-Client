@@ -3,7 +3,6 @@ package nightsky.ui.clickgui.dropdown.components.settings;
 import nightsky.ui.clickgui.dropdown.components.SettingComponent;
 import nightsky.ui.clickgui.dropdown.utils.DropdownFontRenderer;
 import nightsky.util.render.ColorUtil;
-import nightsky.util.render.RoundedUtil;
 import nightsky.util.render.animations.advanced.Animation;
 import nightsky.util.render.animations.advanced.Direction;
 import nightsky.util.render.animations.advanced.impl.EaseInOutQuad;
@@ -49,7 +48,7 @@ public class BooleanComponent extends SettingComponent<BooleanValue> {
         
         DropdownFontRenderer.drawString(name, x + 5, y + DropdownFontRenderer.getMiddleOfBox(height, 18), nameColor.getRGB(), 18);
 
-        Color accentColor = new Color(0, 255, 255);
+        Color accentColor = new Color(255, 255, 255);
         Color offColor = ColorUtil.applyOpacity(settingRectColor.brighter().brighter(), alpha);
         Color rectColor = ColorUtil.interpolateColorC(offColor, 
             ColorUtil.applyOpacity(accentColor, alpha), (float) toggleAnimation.getOutput());

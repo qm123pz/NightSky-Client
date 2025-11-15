@@ -45,7 +45,7 @@ public class CustomFontRenderer {
         return 1 << power;
     }
     
-    public static void drawString(String text, float x, float y, int color, Font font) {
+    public static void drawString(String text, float x, double y, int color, Font font) {
         if (text == null || text.isEmpty() || font == null) {
             return;
         }
@@ -54,7 +54,7 @@ public class CustomFontRenderer {
         renderer.drawStringInternal(text, x, y, color);
     }
     
-    private void drawStringInternal(String text, float x, float y, int color) {
+    private void drawStringInternal(String text, float x, double y, int color) {
         y = y - 2;
         x *= 2;
         y *= 2;
@@ -79,7 +79,7 @@ public class CustomFontRenderer {
         GL11.glPopMatrix();
     }
     
-    private int drawChar(char chr, float x, float y) {
+    private int drawChar(char chr, float x, double y) {
         int region = chr >> 8;
         int id = chr & 0xFF;
         int xTexCoord = (id & 0xF) * fontWidth;
@@ -93,13 +93,13 @@ public class CustomFontRenderer {
         
         GL11.glBegin(GL11.GL_QUADS);
         GL11.glTexCoord2d(wrapTextureCoord(xTexCoord, textureWidth), wrapTextureCoord(yTexCoord, textureHeight));
-        GL11.glVertex2f(x, y);
+        GL11.glVertex2f(x, (float) y);
         GL11.glTexCoord2d(wrapTextureCoord(xTexCoord, textureWidth), wrapTextureCoord(yTexCoord + fontHeight, textureHeight));
-        GL11.glVertex2f(x, y + fontHeight);
+        GL11.glVertex2f(x, (float) (y + fontHeight));
         GL11.glTexCoord2d(wrapTextureCoord(xTexCoord + width, textureWidth), wrapTextureCoord(yTexCoord + fontHeight, textureHeight));
-        GL11.glVertex2f(x + width, y + fontHeight);
+        GL11.glVertex2f(x + width, (float) (y + fontHeight));
         GL11.glTexCoord2d(wrapTextureCoord(xTexCoord + width, textureWidth), wrapTextureCoord(yTexCoord, textureHeight));
-        GL11.glVertex2f(x + width, y);
+        GL11.glVertex2f(x + width, (float) y);
         GL11.glEnd();
         
         return width;

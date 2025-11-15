@@ -3,7 +3,6 @@ package nightsky.ui.clickgui.dropdown.components.settings;
 import nightsky.ui.clickgui.dropdown.components.SettingComponent;
 import nightsky.ui.clickgui.dropdown.utils.DropdownFontRenderer;
 import nightsky.util.render.ColorUtil;
-import nightsky.util.render.RoundedUtil;
 import nightsky.util.render.animations.advanced.Animation;
 import nightsky.util.render.animations.advanced.Direction;
 import nightsky.util.render.animations.advanced.impl.DecelerateAnimation;
@@ -93,7 +92,7 @@ public class NumberComponent extends SettingComponent {
         float widthPercentage = (float) ((value - min) / (max - min));
         float animatedWidth = sliderWidth * widthPercentage;
 
-        Color accentColor = ColorUtil.applyOpacity(new Color(0, 255, 255), alpha);
+        Color accentColor = ColorUtil.applyOpacity(new Color(255, 255, 255), alpha);
         net.minecraft.client.gui.Gui.drawRect((int)sliderX, (int)sliderY, (int)(sliderX + animatedWidth), (int)(sliderY + sliderHeight), accentColor.getRGB());
 
         float size = (float) (8f + 2f * hoverAnimation.getOutput());

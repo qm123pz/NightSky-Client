@@ -31,12 +31,12 @@ public class DropdownFontRenderer {
         }
     }
     
-    public static void drawString(String text, float x, float y, int color, int size) {
+    public static void drawString(String text, float x, double y, int color, int size) {
         Font font = size == 35 ? opensansSemibold35 : (size == 20 ? opensansSemibold20 : opensansSemibold18);
         CustomFontRenderer.drawString(text, x, y, color, font);
     }
     
-    public static void drawCenteredString(String text, float x, float y, int color, int size) {
+    public static void drawCenteredString(String text, float x, double y, int color, int size) {
         Font font = size == 35 ? opensansSemibold35 : (size == 20 ? opensansSemibold20 : opensansSemibold18);
         float width = CustomFontRenderer.getStringWidth(text, font);
         CustomFontRenderer.drawString(text, x - width / 2f, y, color, font);
@@ -52,7 +52,7 @@ public class DropdownFontRenderer {
         return CustomFontRenderer.getFontHeight(font);
     }
     
-    public static float getMiddleOfBox(float boxHeight, int size) {
+    public static double getMiddleOfBox(double boxHeight, int size) {
         return boxHeight / 2f - getHeight(size) / 2f;
     }
 }

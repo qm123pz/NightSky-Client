@@ -11,7 +11,6 @@ import nightsky.value.values.*;
 import nightsky.util.misc.HoverUtil;
 import nightsky.util.render.RenderUtil;
 import nightsky.util.render.Render2DUtil;
-import nightsky.util.render.ColorUtil;
 import nightsky.util.render.animations.AnimationUtil;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.util.MathHelper;

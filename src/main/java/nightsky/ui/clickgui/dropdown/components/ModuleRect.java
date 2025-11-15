@@ -5,7 +5,6 @@ import nightsky.module.Module;
 import nightsky.ui.clickgui.dropdown.utils.DropdownFontRenderer;
 import nightsky.util.render.ColorUtil;
 import nightsky.util.render.RenderUtil;
-import nightsky.util.render.RoundedUtil;
 import nightsky.util.render.animations.advanced.Animation;
 import nightsky.util.render.animations.advanced.Direction;
 import nightsky.util.render.animations.advanced.impl.DecelerateAnimation;
@@ -96,7 +95,7 @@ public class ModuleRect {
         Color textColor = ColorUtil.applyOpacity(Color.WHITE, alpha);
 
         if (module.isEnabled() || !toggleAnimation.isDone()) {
-            Color toggleColor = new Color(0, 255, 255);
+            Color toggleColor = new Color(255, 255, 255);
             bgColor = ColorUtil.interpolateColorC(new Color(0, 0, 0, 0), toggleColor, 
                 (float) toggleAnimation.getOutput());
         }

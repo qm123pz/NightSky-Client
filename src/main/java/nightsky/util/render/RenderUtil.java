@@ -70,9 +70,9 @@ public class RenderUtil {
         GL11.glColor4ub((byte) (color >> 16 & 0xFF), (byte) (color >> 8 & 0xFF), (byte) (color & 0xFF), (byte) (color >> 24 & 0xFF));
     }
 
-    public static void drawRoundedRect(float x, float y, float width, float height, float radius, int color) {
+    public static void drawRoundedRect(float x, double y, float width, double height, float radius, int color) {
         float x1 = x + width;
-        float y1 = y + height;
+        double y1 = y + height;
         final float f = (color >> 24 & 0xFF) / 255.0F;
         final float f1 = (color >> 16 & 0xFF) / 255.0F;
         final float f2 = (color >> 8 & 0xFF) / 255.0F;

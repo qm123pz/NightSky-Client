@@ -3,7 +3,6 @@ package nightsky.ui.clickgui.dropdown.components.settings;
 import nightsky.ui.clickgui.dropdown.components.SettingComponent;
 import nightsky.ui.clickgui.dropdown.utils.DropdownFontRenderer;
 import nightsky.util.render.ColorUtil;
-import nightsky.util.render.RoundedUtil;
 import nightsky.util.render.animations.advanced.Animation;
 import nightsky.util.render.animations.advanced.Direction;
 import nightsky.util.render.animations.advanced.impl.DecelerateAnimation;
@@ -57,7 +56,7 @@ public class ModeComponent extends SettingComponent<ModeValue> {
 
         boolean hoveringBox = isHovering(boxX, boxY, boxWidth, boxHeight, mouseX, mouseY);
 
-        Color outlineColor = opened ? ColorUtil.applyOpacity(new Color(60, 120, 255), alpha * 0.8f) : 
+        Color outlineColor = opened ? ColorUtil.applyOpacity(new Color(255, 255, 255, 255), alpha * 0.8f) :
             ColorUtil.applyOpacity(settingRectColor.brighter(), alpha);
         if (hoveringBox) {
             outlineColor = ColorUtil.brighter(outlineColor, 0.2f);

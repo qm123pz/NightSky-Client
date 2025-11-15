@@ -6,7 +6,6 @@ import nightsky.module.ModuleCategory;
 import nightsky.ui.clickgui.dropdown.components.ModuleRect;
 import nightsky.ui.clickgui.dropdown.utils.DropdownFontRenderer;
 import nightsky.ui.clickgui.dropdown.utils.ScrollUtil;
-import nightsky.util.render.RoundedUtil;
 import nightsky.util.render.ColorUtil;
 import nightsky.util.render.StencilUtil;
 import nightsky.util.render.BlurUtil;
@@ -94,7 +93,7 @@ public class CategoryPanel {
             ColorUtil.applyOpacity(new Color(20, 20, 20), alphaValue * 0.8f).getRGB());
         
         Gui.drawRect((int)x, (int)y, (int)(x + rectWidth), (int)(y + categoryRectHeight), 
-            ColorUtil.applyOpacity(new Color(0, 255, 255, 255), alphaValue * 0.8f).getRGB());
+            ColorUtil.applyOpacity(new Color(255, 255, 255, 255), alphaValue * 0.8f).getRGB());
 
         StencilUtil.write(false);
         Gui.drawRect((int)(x + 1), (int)(y + categoryRectHeight + 1), (int)(x + rectWidth - 1), (int)(y + realHeight + categoryRectHeight - 1), 
