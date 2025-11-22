@@ -48,7 +48,7 @@ public class BooleanComponent extends SettingComponent<BooleanValue> {
         
         DropdownFontRenderer.drawString(name, x + 5, y + DropdownFontRenderer.getMiddleOfBox(height, 18), nameColor.getRGB(), 18);
 
-        Color accentColor = new Color(255, 255, 255);
+        Color accentColor = new Color(255, 255, 255, 190);
         Color offColor = ColorUtil.applyOpacity(settingRectColor.brighter().brighter(), alpha);
         Color rectColor = ColorUtil.interpolateColorC(offColor, 
             ColorUtil.applyOpacity(accentColor, alpha), (float) toggleAnimation.getOutput());
