@@ -24,20 +24,23 @@ import net.minecraft.network.play.server.S19PacketEntityStatus;
 import net.minecraft.network.play.server.S27PacketExplosion;
 import net.minecraft.potion.Potion;
 
+import java.util.Random;
+
 public class Velocity extends Module {
     private static final Minecraft mc = Minecraft.getMinecraft();
     private int chanceCounter = 0;
     private int delayChanceCounter = 0;
     private boolean pendingExplosion = false;
     private boolean allowNext = true;
-    private boolean jumpFlag = false;
     private boolean reverseFlag = false;
+    private boolean pendingJumpReset = false;
+    private boolean jumpFlag = false;
     private boolean delayActive = false;
     private int rotatoTickCounter = 0;
     private float[] targetRotation = null;
     private double knockbackX = 0;
     private double knockbackZ = 0;
-    public final ModeValue mode = new ModeValue("mode", 0, new String[]{"Vanilla", "Jump", "Delay", "Reverse"});
+    public final ModeValue mode = new ModeValue("mode", 0, new String[]{"Vanilla", "Jump", "Delay", "Reverse", "Reduce"});
     public final IntValue delayTicks = new IntValue("delay-ticks", 3, 1, 20, () -> this.mode.getValue() == 2);
     public final PercentValue delayChance = new PercentValue("delay-chance", 100, () -> this.mode.getValue() == 2);
     public final PercentValue chance = new PercentValue("chance", 100);
@@ -50,6 +53,10 @@ public class Velocity extends Module {
     public final IntValue rotateTick = new IntValue("RotateTick", 2, 1, 12, () -> this.mode.getValue() == 1 && this.rotate.getValue());
     public final BooleanValue autoMove = new BooleanValue("AutoMove", false, () -> this.mode.getValue() == 1 && this.rotate.getValue());
     public final BooleanValue debugLog = new BooleanValue("debug-log", false);
+    public final PercentValue reduceChance = new PercentValue("reduce-chance", 100, () -> this.mode.getValue() == 4);
+    public final BooleanValue requireMoving = new BooleanValue("require-moving", true, () -> this.mode.getValue() == 4);
+    public final BooleanValue jumpReset = new BooleanValue("jump-reset", false, () -> this.mode.getValue() == 4);
+
     private boolean isInLiquidOrWeb() {
         return mc.thePlayer.isInWater() || mc.thePlayer.isInLava() || ((IAccessorEntity) mc.thePlayer).getIsInWeb();
     }
@@ -65,6 +72,25 @@ public class Velocity extends Module {
 
     @EventTarget
     public void onKnockback(KnockbackEvent event) {
+        if (this.mode.getValue() == 4) {
+            if (this.requireMoving.getValue() && Velocity.mc.thePlayer.moveForward == 0.0f && Velocity.mc.thePlayer.moveStrafing == 0.0f) {
+                return;
+            }
+            if (new Random().nextInt(100) >= this.reduceChance.getValue()) {
+                return;
+            }
+            if (this.jumpReset.getValue() && Velocity.mc.thePlayer.onGround) {
+                this.pendingJumpReset = true;
+                if (this.debugLog.getValue()) {
+                    ChatUtil.sendFormatted(String.format("%s[REDUCE] Jump reset triggered&r", NightSky.clientName));
+                }
+            }
+            this.applyHorizontalVertical(event);
+            if (this.debugLog.getValue()) {
+                ChatUtil.sendFormatted(String.format("%s[REDUCE] Applied with chance %d%% %s&r", NightSky.clientName, this.reduceChance.getValue(), (Boolean)this.jumpReset.getValue() != false ? "+ JUMP" : ""));
+            }
+            return;
+        }
         if (!this.isEnabled() || event.isCancelled()) {
             this.pendingExplosion = false;
             this.allowNext = true;
@@ -209,6 +235,15 @@ public class Velocity extends Module {
             }
         }
         if (event.getType() == EventType.POST) {
+
+            if (this.pendingJumpReset && Velocity.mc.thePlayer != null) {
+                Velocity.mc.thePlayer.jump();
+                this.pendingJumpReset = false;
+                if (this.debugLog.getValue()) {
+                    ChatUtil.sendFormatted(String.format("%s[REDUCE] Jump executed&r", NightSky.clientName));
+                }
+            }
+
             if (this.reverseFlag
                     && (
                     this.canDelay()
@@ -233,6 +268,22 @@ public class Velocity extends Module {
                 }
             }
         }
+
+    }
+
+    private void applyHorizontalVertical(KnockbackEvent event) {
+        if (this.horizontal.getValue() > 0) {
+            event.setX(event.getX() * (double)(this.horizontal.getValue()) / 100.0);
+            event.setZ(event.getZ() * (double)(this.horizontal.getValue()) / 100.0);
+        } else {
+            event.setX(0.0);
+            event.setZ(0.0);
+        }
+        if (this.vertical.getValue() > 0) {
+            event.setY(event.getY() * (double)(this.vertical.getValue()) / 100.0);
+        } else {
+            event.setY(0.0);
+        }
     }
 
     @EventTarget
@@ -253,6 +304,15 @@ public class Velocity extends Module {
     }
 
     @Override
+    public void onEnabled() {
+        this.pendingExplosion = false;
+        this.allowNext = true;
+        this.reverseFlag = false;
+        this.pendingJumpReset = false;
+        this.chanceCounter = 0;
+    }
+
+    @Override
     public void onDisabled() {
         this.pendingExplosion = false;
         this.allowNext = true;
@@ -260,6 +320,8 @@ public class Velocity extends Module {
         this.targetRotation = null;
         this.knockbackX = 0;
         this.knockbackZ = 0;
+        this.pendingJumpReset = false;
+        NightSky.delayManager.delayedPacket.clear();
     }
 
     @Override

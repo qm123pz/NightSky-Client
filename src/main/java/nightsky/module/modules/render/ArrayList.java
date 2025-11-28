@@ -276,7 +276,7 @@ public class ArrayList extends Module {
                     RenderUtil.scaleEnd();
                 }
 
-                yValue += (float) (moduleAnimation.getOutput() * (FontRenderer.getFontHeight() + fontHeight));
+                yValue += (float) (moduleAnimation.getOutput() * (FontRenderer.getFontHeight() + fontHeight) - 2);
                 count -= 2;
             }
         }

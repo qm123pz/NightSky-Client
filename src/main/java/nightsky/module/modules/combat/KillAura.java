@@ -325,7 +325,7 @@ public class KillAura extends Module {
         this.mode = new ModeValue("Mode", 0, new String[]{"Single", "Switch"});
         this.sort = new ModeValue("Sort", 0, new String[]{"Distance", "Health", "HurtTime", "FOV"});
         this.autoBlock = new ModeValue(
-                "AutoBlock", 3, new String[]{"NONE", "Vanilla", "Spoof", "Hypixel", "Blink", "Interact", "Swap", "Legit", "Fake"}
+                "AutoBlock", 3, new String[]{"NONE", "Vanilla", "Spoof", "HypixelBlink", "Blink", "Interact", "Swap", "Legit", "Fake", "HypixelFull"}
         );
         this.autoBlockCPS = new FloatValue("AutoBlockCPS", 10.0F, 1.0F, 10.0F);
         this.autoBlockRequirePress = new BooleanValue("AutoBlockRequirePress", false);
@@ -667,35 +667,44 @@ public class KillAura extends Module {
                             if (this.hasValidTarget()) {
                                 if (!NightSky.playerStateManager.digging && !NightSky.playerStateManager.placing) {
                                     switch (this.blockTick) {
-                                        case 0:
+                                        case 0: {
+                                            this.setCurrentSlot();
                                             if (!this.isPlayerBlocking()) {
                                                 swap = true;
                                             }
+                                            blocked = true;
                                             this.blockTick = 1;
                                             break;
-                                        case 1:
+                                        }
+                                        case 1: {
                                             if (this.isPlayerBlocking()) {
-                                                PacketUtil.sendPacket(
-                                                        new C07PacketPlayerDigging(C07PacketPlayerDigging.Action.RELEASE_USE_ITEM, BlockPos.ORIGIN, EnumFacing.DOWN)
-                                                );
+                                                this.stopBlock();
                                                 attack = false;
                                             }
-                                            if (this.attackDelayMS <= 50L) {
-                                                this.blockTick = 0;
-                                            }
-                                            break;
-                                        default:
+                                            if (this.attackDelayMS > 50L) break;
+                                            this.setNextSlot();
                                             this.blockTick = 0;
+                                            break;
+                                        }
+                                        default: {
+                                            this.blockTick = 0;
+                                            this.setCurrentSlot();
+                                        }
                                     }
                                 }
                                 this.isBlocking = true;
                                 this.fakeBlockState = true;
-                            } else {
-                                NightSky.blinkManager.setBlinkState(false, BlinkModules.AUTO_BLOCK);
-                                this.isBlocking = false;
-                                this.fakeBlockState = false;
+                                break;
+                        }
+                            if (this.blockTick == 1 && this.isPlayerBlocking()) {
+                                this.stopBlock();
+                                this.setNextSlot();
                             }
-                            break;
+                            this.blockTick = 0;
+                            this.setCurrentSlot();
+                            NightSky.blinkManager.setBlinkState(false, BlinkModules.AUTO_BLOCK);
+                            this.isBlocking = false;
+                            this.fakeBlockState = false;
                     }
                 }
                 boolean attacked = false;

@@ -414,6 +414,23 @@ public class ChangeLog extends PowerShell {
                     "                <div class=\"timeline-node\"></div>\n" +
                     "                <div class=\"release-card\">\n" +
                     "                    <div class=\"release-header\">\n" +
+                    "                        <div class=\"release-title\">Release B1.2-pre2</div>\n" +
+                    "                        <div class=\"version\">v1.2-pre2</div>\n" +
+                    "                    </div>\n" +
+                    "                    <div class=\"release-content\">\n" +
+                    "                        <div class=\"milestone\">爱来自现代履带拖拉机（2919469954）。</div>\n" +
+                    "                        <div class=\"release-item\">Added HypixelFull AutoBlock On KillAura</div>\n" +
+                    "                        <div class=\"release-item\">Added Reduce Velocity</div>\n" +
+                    "                        <div class=\"release-item\">Added BlinkNoSlow (maybe useless)</div>\n" +
+                    "                        <div class=\"milestone\">Bypass Updata</div>\n" +
+                    "                    </div>\n" +
+                    "                </div>\n" +
+                    "            </div>\n" +
+                    "            \n" +
+                    "            <div class=\"release\">\n" +
+                    "                <div class=\"timeline-node\"></div>\n" +
+                    "                <div class=\"release-card\">\n" +
+                    "                    <div class=\"release-header\">\n" +
                     "                        <div class=\"release-title\">Release B1.2-pre1</div>\n" +
                     "                        <div class=\"version\">v1.2-pre1</div>\n" +
                     "                    </div>\n" +
