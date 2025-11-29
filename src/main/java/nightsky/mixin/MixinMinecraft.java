@@ -192,6 +192,10 @@ public abstract class MixinMinecraft {
 
     @Inject(method = "displayGuiScreen", at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;currentScreen:Lnet/minecraft/client/gui/GuiScreen;", shift = At.Shift.AFTER))
     private void replaceMainMenu(GuiScreen guiScreenIn, CallbackInfo ci) {
+
+        //-----警告-您已进入安卓区域-不适合新手游玩-----
+        if (!NightSky.android) {
+
         if (this.currentScreen instanceof net.minecraft.client.gui.GuiMainMenu) {
             //dev模式
             boolean devtest = GuiAuth.isDevTestMode();
@@ -206,6 +210,7 @@ public abstract class MixinMinecraft {
             }
             net.minecraft.client.gui.ScaledResolution scaledResolution = new net.minecraft.client.gui.ScaledResolution((Minecraft)(Object)this);
             this.currentScreen.setWorldAndResolution((Minecraft)(Object)this, scaledResolution.getScaledWidth(), scaledResolution.getScaledHeight());
+            }
         }
     }
 

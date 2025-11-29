@@ -18,6 +18,11 @@ import java.lang.reflect.Field;
 public class NightSky {
     public static String clientName = "NightSky ";
     public static String clientVersion = "Release B1.2-pre2(BypassUpdata)";
+
+    //-----警告-您已进入安卓区域-不适合新手游玩-----
+    public static Boolean android = false;
+    //-----警告-您已进入安卓区域-不适合新手游玩-----
+
     public static RotationManager rotationManager;
     public static FloatManager floatManager;
     public static BlinkManager blinkManager;
