@@ -90,7 +90,7 @@ public class ArrayList extends Module {
 
                 float bgWidth = moduleWidth + 4;
                 float bottom = FontRenderer.getFontHeight() + fontHeight;
-                float leftSide = (float) (translate.getX() - 0.7f - (bgWidth - moduleWidth) / 2.0f);
+                float leftSide = (float) (translate.getX() - 2.0f);
 
                 if (backgroundValue.getValue()) {
                     moduleRects.add(new float[]{leftSide, (float) translate.getY(), bgWidth, bottom});
@@ -128,23 +128,25 @@ public class ArrayList extends Module {
                     continue;
                 }
 
-                float leftSide = (float) (translate.getX() - 2f);
-                float bottom = FontRenderer.getFontHeight() + fontHeight;
-                float textYOffset = (bottom - FontRenderer.getFontHeight()) / 2.0f;
-
-
+                float bgWidth = moduleWidth + 4;
+                float bgHeight = FontRenderer.getFontHeight() + fontHeight;
+                float bgLeft = (float) (translate.getX() - 2.0f);
+                float bgTop = (float) translate.getY();
+                
+                float textLeft = bgLeft + 2.0f;
+                float textTop = bgTop + fontHeight / 2.0f;
 
                 switch (rectangleValue.getModeString()) {
                     case "Top":
                         if (count == 1) {
-                            Gui.drawRect((int)(translate.getX() - 5.35), (int)translate.getY(),
-                                (int)(translate.getX() + moduleWidth), (int)(translate.getY() + 1),
+                            Gui.drawRect((int)bgLeft, (int)bgTop,
+                                (int)(bgLeft + bgWidth), (int)(bgTop + 1),
                                 interfaceModule.color(count));
                         }
                         break;
                     case "Side":
-                        Gui.drawRect((int)(translate.getX() + moduleWidth + 0.1), (int)(translate.getY() + 0.2),
-                            (int)(translate.getX() + moduleWidth + 1.1), (int)(translate.getY() + 0.2 + bottom),
+                        Gui.drawRect((int)(bgLeft + bgWidth), (int)bgTop,
+                            (int)(bgLeft + bgWidth + 1), (int)(bgTop + bgHeight),
                             interfaceModule.color(count));
                         break;
                 }
@@ -153,15 +155,15 @@ public class ArrayList extends Module {
                 String moduleTag = getFormattedTag(module.getTag());
 
                 FontRenderer.drawStringWithShadow(moduleName,
-                        (float) translate.getX() - 0.7f,
-                        (float) translate.getY() + textYOffset,
+                        textLeft,
+                        textTop,
                         interfaceModule.color(count));
 
                 if (!moduleTag.isEmpty()) {
                     float nameWidth = FontRenderer.getStringWidth(moduleName);
                     FontRenderer.drawStringWithShadow(moduleTag,
-                            (float) translate.getX() - 0.7f + nameWidth,
-                            (float) translate.getY() + textYOffset,
+                            textLeft + nameWidth,
+                            textTop,
                             0xFF888888);
                 }
 
@@ -185,9 +187,9 @@ public class ArrayList extends Module {
 
                 float moduleWidth = FontRenderer.getStringWidth(module.getName() + getFormattedTag(module.getTag()));
                 float xValue = (screenWidth - moduleWidth - 1.0f - positionOffset.getValue());
-                float bgWidth = moduleWidth + 6;
+                float bgWidth = moduleWidth + 4;
                 float bottom = FontRenderer.getFontHeight() + fontHeight;
-                float leftSide = xValue - 3.0f - (bgWidth - moduleWidth) / 2.0f;
+                float leftSide = xValue - 2.0f;
 
                 if (backgroundValue.getValue()) {
                     moduleRects.add(new float[]{leftSide, yValue, bgWidth, bottom});
@@ -219,39 +221,45 @@ public class ArrayList extends Module {
                 if (!module.isEnabled() && moduleAnimation.finished(Direction.BACKWARDS)) continue;
 
                 float moduleWidth = FontRenderer.getStringWidth(module.getName() + getFormattedTag(module.getTag()));
-                float xValue = (screenWidth - moduleWidth - 1.0f - positionOffset.getValue());
+                float bgWidth = moduleWidth + 4;
+                float bgHeight = FontRenderer.getFontHeight() + fontHeight;
+                
+                float baseX = screenWidth - moduleWidth - 1.0f - positionOffset.getValue();
+                float bgLeft = baseX - 2.0f;
+                float bgTop = yValue;
+                
+                float textLeft = baseX;
+                float textTop = bgTop + fontHeight / 2;
 
                 float alphaAnimation = 1.0f;
 
                 switch (animation.getModeString()) {
                     case "Move In":
-                        xValue += (float) Math.abs((moduleAnimation.getOutput() - 1.0) * (2.0 + moduleWidth));
+                        float moveOffset = (float) Math.abs((moduleAnimation.getOutput() - 1.0) * (2.0 + moduleWidth));
+                        textLeft = baseX + moveOffset;
+                        bgLeft = baseX + moveOffset - 2.0f;
                         break;
                     case "Scale In":
-                        RenderUtil.scaleStart(xValue + (moduleWidth / 2.0f), yValue + FontRenderer.getFontHeight(),
-                            (float) moduleAnimation.getOutput());
-                        alphaAnimation = (float) moduleAnimation.getOutput();
+                        float scale = (float) moduleAnimation.getOutput();
+                        float centerX = baseX + moduleWidth / 2.0f;
+                        float centerY = bgTop + bgHeight / 2.0f;
+                        RenderUtil.scaleStart(centerX, centerY, scale);
+                        alphaAnimation = scale;
                         break;
                 }
 
-                float leftSide = xValue - 2f;
-                float bottom = FontRenderer.getFontHeight() + fontHeight;
-                float textYOffset = (bottom - FontRenderer.getFontHeight()) / 2.0f;
-
                 int textcolor = ColorUtil.swapAlpha(interfaceModule.color(count), alphaAnimation * 255);
-
-
 
                 switch (rectangleValue.getModeString()) {
                     case "Top":
                         if (count == 1) {
-                            Gui.drawRect((int)(xValue - 5.35), (int)yValue,
-                                (int)(xValue + moduleWidth), (int)(yValue + 1), textcolor);
+                            Gui.drawRect((int)bgLeft, (int)bgTop,
+                                (int)(bgLeft + bgWidth), (int)(bgTop + 1), textcolor);
                         }
                         break;
                     case "Side":
-                        Gui.drawRect((int)(xValue + moduleWidth + 0.2), (int)yValue,
-                            (int)(xValue + moduleWidth + 1.2), (int)(yValue + bottom), textcolor);
+                        Gui.drawRect((int)(bgLeft + bgWidth), (int)bgTop,
+                            (int)(bgLeft + bgWidth + 1), (int)(bgTop + bgHeight), textcolor);
                         break;
                 }
 
@@ -259,16 +267,16 @@ public class ArrayList extends Module {
                 String moduleTag = getFormattedTag(module.getTag());
 
                 FontRenderer.drawStringWithShadow(moduleName,
-                        xValue - 3.0f,
-                        yValue + textYOffset,
+                        textLeft,
+                        textTop,
                         textcolor);
 
                 if (!moduleTag.isEmpty()) {
                     float nameWidth = FontRenderer.getStringWidth(moduleName);
                     int tagColor = ColorUtil.swapAlpha(0xFF888888, alphaAnimation * 255);
                     FontRenderer.drawStringWithShadow(moduleTag,
-                            xValue - 3.0f + nameWidth,
-                            yValue + textYOffset,
+                            textLeft + nameWidth,
+                            textTop,
                             tagColor);
                 }
 
@@ -276,7 +284,7 @@ public class ArrayList extends Module {
                     RenderUtil.scaleEnd();
                 }
 
-                yValue += (float) (moduleAnimation.getOutput() * (FontRenderer.getFontHeight() + fontHeight) - 2);
+                yValue += (float) (moduleAnimation.getOutput() * (FontRenderer.getFontHeight() + fontHeight));
                 count -= 2;
             }
         }
