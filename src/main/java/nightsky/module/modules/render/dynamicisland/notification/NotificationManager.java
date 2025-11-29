@@ -1,4 +1,4 @@
-package nightsky.notification;
+package nightsky.module.modules.render.dynamicisland.notification;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.List;
@@ -33,8 +33,16 @@ public class NotificationManager {
             if (existing.getTitle().equals(moduleName) &&
                 (existing.getType() == Notification.NotificationType.MODULE_ENABLED ||
                  existing.getType() == Notification.NotificationType.MODULE_DISABLED)) {
-                notifications.remove(i);
-                break;
+                
+                String title = moduleName;
+                String message = enabled ? "Enabled" : "Disabled";
+                Notification.NotificationType type = enabled ? 
+                    Notification.NotificationType.MODULE_ENABLED : 
+                    Notification.NotificationType.MODULE_DISABLED;
+                
+                Notification updatedNotification = new Notification(title, message, type, 800);
+                notifications.set(i, updatedNotification);
+                return;
             }
         }
         

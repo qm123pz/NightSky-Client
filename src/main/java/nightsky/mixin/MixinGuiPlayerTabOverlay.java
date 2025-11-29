@@ -1,7 +1,7 @@
 package nightsky.mixin;
 
 import nightsky.NightSky;
-import nightsky.module.modules.render.DynamicIsland;
+import nightsky.module.modules.render.dynamicisland.DynamicIsland;
 import net.minecraft.client.gui.GuiPlayerTabOverlay;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraftforge.fml.relauncher.Side;

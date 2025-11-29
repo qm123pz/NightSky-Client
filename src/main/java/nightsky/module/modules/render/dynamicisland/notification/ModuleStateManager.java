@@ -1,4 +1,4 @@
-package nightsky.notification;
+package nightsky.module.modules.render.dynamicisland.notification;
 
 import java.util.HashMap;
 import java.util.Map;

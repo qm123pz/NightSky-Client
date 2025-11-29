@@ -9,7 +9,7 @@ import nightsky.module.modules.misc.*;
 import nightsky.module.modules.movement.*;
 import nightsky.module.modules.player.*;
 import nightsky.module.modules.render.*;
-import nightsky.module.modules.render.DynamicIsland;
+import nightsky.module.modules.render.dynamicisland.DynamicIsland;
 import nightsky.module.ModuleManager;
 import nightsky.value.Value;
 import nightsky.value.ValueHandler;

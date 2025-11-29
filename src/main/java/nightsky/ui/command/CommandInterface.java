@@ -1,10 +1,10 @@
 package nightsky.ui.command;
 
 import nightsky.NightSky;
-import nightsky.font.FontRenderer;
 import nightsky.font.FontTransformer;
 import nightsky.font.CustomFontRenderer;
 import nightsky.module.Module;
+import nightsky.module.modules.render.dynamicisland.DynamicIsland;
 import nightsky.powershell.PowerShell;
 import nightsky.util.render.BlurUtil;
 import nightsky.util.render.RenderUtil;
@@ -15,7 +15,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-//dynamicisland . command
+//notification . command
 public class CommandInterface {
     private static final String[][] MAIN_KEYBOARD = {
             {"`", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "BACKSPACE"},
@@ -367,9 +367,9 @@ public class CommandInterface {
     private void showKeyBindSuccessMessage(String moduleName, String keyName) {
         Module dynamicIslandModule = NightSky.moduleManager.getModule("DynamicIsland");
         if (dynamicIslandModule != null && dynamicIslandModule.isEnabled() &&
-                dynamicIslandModule instanceof nightsky.module.modules.render.DynamicIsland) {
-            nightsky.module.modules.render.DynamicIsland dynamicIsland =
-                    (nightsky.module.modules.render.DynamicIsland) dynamicIslandModule;
+                dynamicIslandModule instanceof DynamicIsland) {
+            DynamicIsland dynamicIsland =
+                    (DynamicIsland) dynamicIslandModule;
             dynamicIsland.showCommandResult("Info", "Key Bound Successfully",
                     "Module '" + moduleName + "' bound to key: " + keyName + "\nPress " + keyName + " to toggle the module");
         }
@@ -451,9 +451,9 @@ public class CommandInterface {
 
         nightsky.powershell.Handler.CommandResult result = NightSky.handler.handleCommandWithResult(command);
 
-        if (dynamicIslandModule instanceof nightsky.module.modules.render.DynamicIsland) {
-            nightsky.module.modules.render.DynamicIsland dynamicIsland =
-                    (nightsky.module.modules.render.DynamicIsland) dynamicIslandModule;
+        if (dynamicIslandModule instanceof DynamicIsland) {
+            DynamicIsland dynamicIsland =
+                    (DynamicIsland) dynamicIslandModule;
 
             if (result.success) {
                 dynamicIsland.showCommandResult("Info", result.title, result.message);
@@ -475,9 +475,9 @@ public class CommandInterface {
     private void showBindMessage(String moduleName) {
         Module dynamicIslandModule = NightSky.moduleManager.getModule("DynamicIsland");
         if (dynamicIslandModule != null && dynamicIslandModule.isEnabled() &&
-                dynamicIslandModule instanceof nightsky.module.modules.render.DynamicIsland) {
-            nightsky.module.modules.render.DynamicIsland dynamicIsland =
-                    (nightsky.module.modules.render.DynamicIsland) dynamicIslandModule;
+                dynamicIslandModule instanceof DynamicIsland) {
+            DynamicIsland dynamicIsland =
+                    (DynamicIsland) dynamicIslandModule;
             dynamicIsland.showCommandResult("Info", "Key Binding",
                     "Key binding initiated for module: " + moduleName + "\nPress any key to bind...");
         }
@@ -486,9 +486,9 @@ public class CommandInterface {
     private void showBindErrorMessage(String moduleName) {
         Module dynamicIslandModule = NightSky.moduleManager.getModule("DynamicIsland");
         if (dynamicIslandModule != null && dynamicIslandModule.isEnabled() &&
-                dynamicIslandModule instanceof nightsky.module.modules.render.DynamicIsland) {
-            nightsky.module.modules.render.DynamicIsland dynamicIsland =
-                    (nightsky.module.modules.render.DynamicIsland) dynamicIslandModule;
+                dynamicIslandModule instanceof DynamicIsland) {
+            DynamicIsland dynamicIsland =
+                    (DynamicIsland) dynamicIslandModule;
             dynamicIsland.showCommandResult("Warning", "Module Not Found",
                     "Module '" + moduleName + "' not found\nUse .help to see available commands");
         }
@@ -497,9 +497,9 @@ public class CommandInterface {
     private void showBindUsageMessage() {
         Module dynamicIslandModule = NightSky.moduleManager.getModule("DynamicIsland");
         if (dynamicIslandModule != null && dynamicIslandModule.isEnabled() &&
-                dynamicIslandModule instanceof nightsky.module.modules.render.DynamicIsland) {
-            nightsky.module.modules.render.DynamicIsland dynamicIsland =
-                    (nightsky.module.modules.render.DynamicIsland) dynamicIslandModule;
+                dynamicIslandModule instanceof DynamicIsland) {
+            DynamicIsland dynamicIsland =
+                    (DynamicIsland) dynamicIslandModule;
             dynamicIsland.showCommandResult("Warning", "Invalid Usage",
                     "Usage: .bind <module>\nBinds a key to toggle the specified module");
         }

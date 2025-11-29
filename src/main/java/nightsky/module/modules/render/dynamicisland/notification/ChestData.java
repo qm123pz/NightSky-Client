@@ -1,4 +1,4 @@
-package nightsky.notification;
+package nightsky.module.modules.render.dynamicisland.notification;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiChest;

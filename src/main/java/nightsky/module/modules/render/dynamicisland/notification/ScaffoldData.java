@@ -1,4 +1,4 @@
-package nightsky.notification;
+package nightsky.module.modules.render.dynamicisland.notification;
 
 public class ScaffoldData {
     private static ScaffoldData instance;

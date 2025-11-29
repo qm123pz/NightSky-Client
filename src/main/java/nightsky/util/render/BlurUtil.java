@@ -121,13 +121,19 @@ public class BlurUtil {
                         net.minecraft.client.shader.Shader shader = listShaders.get(i);
                         if (shader != null && shader.getShaderManager() != null) {
                             if (shader.getShaderManager().getShaderUniform("Radius") != null) {
-                                shader.getShaderManager().getShaderUniform("Radius").set(strength);
+                                shader.getShaderManager().getShaderUniform("Radius").set(strength * 1.5f);
                             }
                             if (shader.getShaderManager().getShaderUniform("BlurXY") != null) {
                                 shader.getShaderManager().getShaderUniform("BlurXY").set(x, height - y - h);
                             }
                             if (shader.getShaderManager().getShaderUniform("BlurCoord") != null) {
                                 shader.getShaderManager().getShaderUniform("BlurCoord").set(w, h);
+                            }
+                            if (shader.getShaderManager().getShaderUniform("Resolution") != null) {
+                                shader.getShaderManager().getShaderUniform("Resolution").set(width, height);
+                            }
+                            if (shader.getShaderManager().getShaderUniform("Samples") != null) {
+                                shader.getShaderManager().getShaderUniform("Samples").set(12.0f);
                             }
                         }
                     }

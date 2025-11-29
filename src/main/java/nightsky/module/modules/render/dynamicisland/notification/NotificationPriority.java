@@ -1,4 +1,4 @@
-package nightsky.notification;
+package nightsky.module.modules.render.dynamicisland.notification;
 
 public enum NotificationPriority {
     BED_NUKER(5),

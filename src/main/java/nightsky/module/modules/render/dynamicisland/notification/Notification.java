@@ -1,4 +1,4 @@
-package nightsky.notification;
+package nightsky.module.modules.render.dynamicisland.notification;
 //why。do。i。do。it。🤔
 public class Notification {
     private final String title;

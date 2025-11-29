@@ -11,7 +11,7 @@ public abstract class Shader {
             "gl_TexCoord[0] = gl_MultiTexCoord0;\n" +
             "gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n" +
             "}";
-    private final Map<String, Integer> uniformLocations;
+    final Map<String, Integer> uniformLocations;
     protected int programId;
 
     private int compileShader(String source, int type) {

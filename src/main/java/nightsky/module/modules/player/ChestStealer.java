@@ -8,7 +8,7 @@ import nightsky.events.WindowClickEvent;
 import nightsky.module.Module;
 import nightsky.util.ChatUtil;
 import nightsky.util.ItemUtil;
-import nightsky.notification.ChestData;
+import nightsky.module.modules.render.dynamicisland.notification.ChestData;
 import nightsky.value.values.BooleanValue;
 import nightsky.value.values.IntValue;
 import net.minecraft.client.Minecraft;

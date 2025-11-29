@@ -6,7 +6,7 @@ import net.minecraft.client.gui.inventory.GuiContainer;
 import nightsky.NightSky;
 import nightsky.module.modules.player.ChestStealer;
 import nightsky.module.modules.render.ChestView;
-import nightsky.module.modules.render.DynamicIsland;
+import nightsky.module.modules.render.dynamicisland.DynamicIsland;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

@@ -1,4 +1,4 @@
-package nightsky.notification;
+package nightsky.module.modules.render.dynamicisland.notification;
 
 import nightsky.font.FontTransformer;
 import nightsky.font.CustomFontRenderer;
@@ -16,7 +16,7 @@ public class NotificationRenderer {
     private static final Map<String, Float> toggleSizeAnimations = new HashMap<>();
     private static final Map<String, Float> bedNukerProgressAnimations = new HashMap<>();
     private static final Map<String, Float> scaffoldProgressAnimations = new HashMap<>();
-    private static final float ANIMATION_SPEED = 0.15f;
+    private static final float ANIMATION_SPEED = 0.2475f;
     
     public static float toggleBgRadius = 17f;
     public static float toggleButtonRadius = 13f;

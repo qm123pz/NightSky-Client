@@ -1,4 +1,4 @@
-package nightsky.module.modules.render;
+package nightsky.module.modules.render.dynamicisland;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
@@ -12,7 +12,7 @@ import nightsky.events.Render2DEvent;
 import nightsky.module.Module;
 import nightsky.module.modules.player.ChestStealer;
 import nightsky.module.modules.misc.NickHider;
-import nightsky.notification.*;
+import nightsky.module.modules.render.dynamicisland.notification.*;
 import nightsky.util.GetIPUtil;
 import nightsky.value.values.BooleanValue;
 import nightsky.value.values.IntValue;
@@ -771,7 +771,7 @@ public class DynamicIsland extends Module {
         FontTransformer transformer = FontTransformer.getInstance();
         Font otherFont = transformer.getFont("OpenSansSemiBold", 35);
         
-        nightsky.notification.BedNukerData bedNukerData = nightsky.notification.BedNukerData.getInstance();
+        nightsky.module.modules.render.dynamicisland.notification.BedNukerData bedNukerData = nightsky.module.modules.render.dynamicisland.notification.BedNukerData.getInstance();
         
         String breakingText = "Breaking " + bedNukerData.getTargetBlockName();
         double breakingWidth = CustomFontRenderer.getStringWidth(breakingText, otherFont);

@@ -2,7 +2,7 @@ package nightsky.module;
 
 import nightsky.NightSky;
 import nightsky.module.modules.render.NotificationDisplay;
-import nightsky.notification.NotificationManager;
+import nightsky.module.modules.render.dynamicisland.notification.NotificationManager;
 import nightsky.util.KeyBindUtil;
 import nightsky.util.render.animations.Translate;
 import nightsky.util.render.animations.advanced.Animation;
