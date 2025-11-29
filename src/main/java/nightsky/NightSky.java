@@ -134,6 +134,7 @@ public class NightSky {
         moduleManager.modules.put(WaterMark.class, new WaterMark());
         moduleManager.modules.put(Wtap.class, new Wtap());
         moduleManager.modules.put(Xray.class, new Xray());
+        moduleManager.modules.put(AntiOBS.class, new AntiOBS());
         handler.powerShells.add(new Bind());
         handler.powerShells.add(new Config());
         handler.powerShells.add(new Denick());
