@@ -117,6 +117,7 @@ public class NightSky {
         moduleManager.modules.put(SafeWalk.class, new SafeWalk());
         moduleManager.modules.put(Scaffold.class, new Scaffold());
         moduleManager.modules.put(Scoreboard.class, new Scoreboard());
+        moduleManager.modules.put(Session.class, new Session());
         moduleManager.modules.put(Spammer.class, new Spammer());
         moduleManager.modules.put(Speed.class, new Speed());
         moduleManager.modules.put(SpeedMine.class, new SpeedMine());
