@@ -83,6 +83,7 @@ public class NightSky {
         moduleManager.modules.put(ChestView.class, new ChestView());
         moduleManager.modules.put(ClickGUI.class, new ClickGUI());
         moduleManager.modules.put(DynamicIsland.class, new DynamicIsland());
+        moduleManager.modules.put(Disabler.class, new Disabler());
         moduleManager.modules.put(Eagle.class, new Eagle());
         moduleManager.modules.put(ESP.class, new ESP());
         moduleManager.modules.put(FastPlace.class, new FastPlace());
