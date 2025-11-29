@@ -55,6 +55,7 @@ public class Disabler extends Module {
                 event.setCancelled(true);
                 packetsQueue.add(packet);
             } else if (packet instanceof C0EPacketClickWindow) {
+                event.setCancelled(true);
                 packetsQueue.add(packet);
             } else if (packet instanceof C0DPacketCloseWindow) {
                 if (!packetsQueue.isEmpty()) {
