@@ -302,36 +302,11 @@ public class InvManager extends Module {
                             }
                         } else if(this.mode.getValue() == 1) {
                             ArrayList<Integer> itemsToDrop = new ArrayList<>();
-                            if (this.dropTrash.getValue()) {
-                                int currentBlockCount = this.getStackSize(inventoryBlocksSlot);
-                                int totalThrowsCount = this.getTotalThrowsCount();
-                                
-                                if (totalThrowsCount > this.throwsAmount.getValue()) {
-                                    for (int i = 35; i >= 0; i--) {
-                                        if (!equippedArmorSlots.contains(i)
-                                                && !inventoryArmorSlots.contains(i)
-                                                && equippedSwordSlot != i
-                                                && inventorySwordSlot != i
-                                                && equippedPickaxeSlot != i
-                                                && inventoryPickaxeSlot != i
-                                                && equippedShovelSlot != i
-                                                && inventoryShovelSlot != i
-                                                && equippedAxeSlot != i
-                                                && inventoryAxeSlot != i
-                                                && inventoryBlocksSlot != i
-                                                && equippedThrowsSlot != i
-                                                && inventoryThrowsSlot != i
-                                                && equippedGappleSlot != i
-                                                && inventoryGappleSlot != i) {
-                                            ItemStack stack = mc.thePlayer.inventory.getStackInSlot(i);
-                                            if (stack != null && this.isThrowable(stack)) {
-                                                itemsToDrop.add(i);
-                                            }
-                                        }
-                                    }
-                                }
-                                
-                                for (int i = 0; i < 36; i++) {
+                            int currentBlockCount = this.getStackSize(inventoryBlocksSlot);
+                            int totalThrowsCount = this.getTotalThrowsCount();
+                            
+                            if (totalThrowsCount > this.throwsAmount.getValue()) {
+                                for (int i = 35; i >= 0; i--) {
                                     if (!equippedArmorSlots.contains(i)
                                             && !inventoryArmorSlots.contains(i)
                                             && equippedSwordSlot != i
@@ -346,28 +321,51 @@ public class InvManager extends Module {
                                             && equippedThrowsSlot != i
                                             && inventoryThrowsSlot != i
                                             && equippedGappleSlot != i
-                                            && inventoryGappleSlot != i
-                                            && !itemsToDrop.contains(i)) {
+                                            && inventoryGappleSlot != i) {
                                         ItemStack stack = mc.thePlayer.inventory.getStackInSlot(i);
-                                        if (stack != null) {
-                                            boolean isBlock = ItemUtil.isBlock(stack);
-                                            boolean isThrowable = this.isThrowable(stack);
-                                            boolean isGapple = this.isGapple(stack);
-                                            
-                                            if (!isThrowable && !isGapple && (ItemUtil.isNotSpecialItem(stack) || (isBlock && currentBlockCount >= this.blocks.getValue()))) {
-                                                itemsToDrop.add(i);
-                                            }
-                                            
-                                            if (isBlock) {
-                                                currentBlockCount += stack.stackSize;
-                                            }
+                                        if (stack != null && this.isThrowable(stack)) {
+                                            itemsToDrop.add(i);
                                         }
                                     }
                                 }
-                                
-                                for (int slot : itemsToDrop) {
-                                    this.clickSlot(mc.thePlayer.inventoryContainer.windowId, this.convertSlotIndex(slot), 1, 4);
+                            }
+                            
+                            for (int i = 0; i < 36; i++) {
+                                if (!equippedArmorSlots.contains(i)
+                                        && !inventoryArmorSlots.contains(i)
+                                        && equippedSwordSlot != i
+                                        && inventorySwordSlot != i
+                                        && equippedPickaxeSlot != i
+                                        && inventoryPickaxeSlot != i
+                                        && equippedShovelSlot != i
+                                        && inventoryShovelSlot != i
+                                        && equippedAxeSlot != i
+                                        && inventoryAxeSlot != i
+                                        && inventoryBlocksSlot != i
+                                        && equippedThrowsSlot != i
+                                        && inventoryThrowsSlot != i
+                                        && equippedGappleSlot != i
+                                        && inventoryGappleSlot != i
+                                        && !itemsToDrop.contains(i)) {
+                                    ItemStack stack = mc.thePlayer.inventory.getStackInSlot(i);
+                                    if (stack != null) {
+                                        boolean isBlock = ItemUtil.isBlock(stack);
+                                        boolean isThrowable = this.isThrowable(stack);
+                                        boolean isGapple = this.isGapple(stack);
+                                        
+                                        if (!isThrowable && !isGapple && (ItemUtil.isNotSpecialItem(stack) || (isBlock && currentBlockCount >= this.blocks.getValue()))) {
+                                            itemsToDrop.add(i);
+                                        }
+                                        
+                                        if (isBlock) {
+                                            currentBlockCount += stack.stackSize;
+                                        }
+                                    }
                                 }
+                            }
+                            
+                            for (int slot : itemsToDrop) {
+                                this.clickSlot(mc.thePlayer.inventoryContainer.windowId, this.convertSlotIndex(slot), 1, 4);
                             }
                             
                             if (this.autoArmor.getValue()) {
@@ -438,6 +436,70 @@ public class InvManager extends Module {
                                 if (equippedGappleSlot != preferredGappleHotbarSlot && inventoryGappleSlot != preferredGappleHotbarSlot) {
                                     int slot = equippedGappleSlot != -1 ? equippedGappleSlot : inventoryGappleSlot;
                                     this.clickSlot(mc.thePlayer.inventoryContainer.windowId, this.convertSlotIndex(slot), preferredGappleHotbarSlot, 2);
+                                }
+                            }
+                        }
+                        if (this.mode.getValue() == 0 && this.dropTrash.getValue()) {
+                            int currentBlockCount = this.getStackSize(inventoryBlocksSlot);
+                            int totalThrowsCount = this.getTotalThrowsCount();
+                            
+                            if (totalThrowsCount > this.throwsAmount.getValue()) {
+                                for (int i = 35; i >= 0; i--) {
+                                    if (!equippedArmorSlots.contains(i)
+                                            && !inventoryArmorSlots.contains(i)
+                                            && equippedSwordSlot != i
+                                            && inventorySwordSlot != i
+                                            && equippedPickaxeSlot != i
+                                            && inventoryPickaxeSlot != i
+                                            && equippedShovelSlot != i
+                                            && inventoryShovelSlot != i
+                                            && equippedAxeSlot != i
+                                            && inventoryAxeSlot != i
+                                            && inventoryBlocksSlot != i
+                                            && equippedThrowsSlot != i
+                                            && inventoryThrowsSlot != i
+                                            && equippedGappleSlot != i
+                                            && inventoryGappleSlot != i) {
+                                        ItemStack stack = mc.thePlayer.inventory.getStackInSlot(i);
+                                        if (stack != null && this.isThrowable(stack)) {
+                                            this.clickSlot(mc.thePlayer.inventoryContainer.windowId, this.convertSlotIndex(i), 1, 4);
+                                            return;
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            for (int i = 0; i < 36; i++) {
+                                if (!equippedArmorSlots.contains(i)
+                                        && !inventoryArmorSlots.contains(i)
+                                        && equippedSwordSlot != i
+                                        && inventorySwordSlot != i
+                                        && equippedPickaxeSlot != i
+                                        && inventoryPickaxeSlot != i
+                                        && equippedShovelSlot != i
+                                        && inventoryShovelSlot != i
+                                        && equippedAxeSlot != i
+                                        && inventoryAxeSlot != i
+                                        && inventoryBlocksSlot != i
+                                        && equippedThrowsSlot != i
+                                        && inventoryThrowsSlot != i
+                                        && equippedGappleSlot != i
+                                        && inventoryGappleSlot != i) {
+                                    ItemStack stack = mc.thePlayer.inventory.getStackInSlot(i);
+                                    if (stack != null) {
+                                        boolean isBlock = ItemUtil.isBlock(stack);
+                                        boolean isThrowable = this.isThrowable(stack);
+                                        boolean isGapple = this.isGapple(stack);
+                                        
+                                        if (!isThrowable && !isGapple && (ItemUtil.isNotSpecialItem(stack) || (isBlock && currentBlockCount >= this.blocks.getValue()))) {
+                                            this.clickSlot(mc.thePlayer.inventoryContainer.windowId, this.convertSlotIndex(i), 1, 4);
+                                            return;
+                                        }
+                                        
+                                        if (isBlock) {
+                                            currentBlockCount += stack.stackSize;
+                                        }
+                                    }
                                 }
                             }
                         }
