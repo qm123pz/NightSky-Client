@@ -285,17 +285,12 @@ public class Scaffold extends Module {
                 int count = ItemUtil.isBlock(stack) ? stack.stackSize : 0;
                 this.blockCount = Math.min(this.blockCount, count);
                 if (this.blockCount <= 0) {
-                    int slot = mc.thePlayer.inventory.currentItem;
-                    if (this.blockCount == 0) {
-                        slot--;
-                    }
-                    for (int i = slot; i > slot - 9; i--) {
-                        int hotbarSlot = (i % 9 + 9) % 9;
-                        ItemStack candidate = mc.thePlayer.inventory.getStackInSlot(hotbarSlot);
+                    for (int i = 0; i < 9; i++) {
+                        ItemStack candidate = mc.thePlayer.inventory.getStackInSlot(i);
                         if (ItemUtil.isBlock(candidate)) {
-                            mc.thePlayer.inventory.currentItem = hotbarSlot;
-                            this.blockCount = candidate.stackSize;
-                            break;
+                          mc.thePlayer.inventory.currentItem = i;
+                          this.blockCount = candidate.stackSize;
+                           break;
                         }
                     }
                 }

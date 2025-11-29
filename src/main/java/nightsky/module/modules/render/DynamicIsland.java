@@ -4,6 +4,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.item.ItemStack;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import nightsky.event.EventTarget;
 import nightsky.events.Render2DEvent;
@@ -11,7 +13,7 @@ import nightsky.module.Module;
 import nightsky.module.modules.player.ChestStealer;
 import nightsky.module.modules.misc.NickHider;
 import nightsky.notification.*;
-import nightsky.util.IpProtected;
+import nightsky.util.GetIPUtil;
 import nightsky.value.values.BooleanValue;
 import nightsky.value.values.IntValue;
 import nightsky.value.values.FloatValue;
@@ -67,10 +69,10 @@ public class DynamicIsland extends Module {
     
     private final long breathingStartTime = System.currentTimeMillis();
 
-
-    //这个东西爆炸了。所以被注释掉了。
     private boolean chestExpanded = false;
-
+    private float currentRadius = 32.0f;
+    private float targetRadius = 32.0f;
+    private float lastTargetRadius = 32.0f;
 
     private final CommandInterface commandInterface = new CommandInterface();
     
@@ -95,6 +97,11 @@ public class DynamicIsland extends Module {
     
     private float minLine2Width = 0.0f;
     private float currentDisplayWidth = 0.0f;
+
+    private String cachedServerIP = "";
+    private int cachedPing = 0;
+    private long lastServerInfoUpdate = 0;
+    private static final long SERVER_INFO_UPDATE_INTERVAL = 1000;
 
     //神秘。
     private final String[] islandText = new String[]{
@@ -207,14 +214,14 @@ public class DynamicIsland extends Module {
         }
 
         double padding = 12;
-        
-//        if (chestExpanded) {
-//            ChestData chestData = ChestData.getInstance();
-//            int chestSize = chestData.getChestSize();
-//            int rows = Math.max(3, chestSize / 9);
-//            targetWidth = 9 * 20 + padding * 3;
-//            targetHeight = rows * 20 + padding * 3;
-//        } else
+
+            if (chestExpanded) {
+            ChestData chestData = ChestData.getInstance();
+            int chestSize = chestData.getChestSize();
+            int rows = Math.max(3, chestSize / 9);
+            targetWidth = 9 * 20 + 12 * 3;
+            targetHeight = rows * 20 + 12 * 3;
+            } else
             if (commandInterface.isActive()) {
             targetWidth = commandInterface.getExpandedWidth();
             targetHeight = commandInterface.getExpandedHeight();
@@ -414,7 +421,29 @@ public class DynamicIsland extends Module {
         
         List<Notification> activeNotifications = NotificationManager.getInstance().getActiveNotifications();
         boolean hasNotifications = !activeNotifications.isEmpty() && showNotifications.getValue();
-        
+
+        updateTargetRadius(chestExpanded, hasNotifications);
+        if (targetRadius != lastTargetRadius) {
+            lastTargetRadius = targetRadius;
+        }
+
+        float radiusDiff = targetRadius - currentRadius;
+        float speed = animationSpeed.getValue() * 0.01f;
+
+        if (Math.abs(radiusDiff) > 0.1f) {
+            currentRadius += radiusDiff * speed;
+        } else {
+            currentRadius = targetRadius;
+        }
+
+        if (chestExpanded) {
+        ChestData chestData = ChestData.getInstance();
+        int chestSize = chestData.getChestSize();
+        int rows = Math.max(3, chestSize / 9);
+        targetWidth = 9 * 20 + 12 * 3;
+        targetHeight = rows * 20 + 12 * 3;
+    }
+
         if (targetWidth != lastTargetWidth || targetHeight != lastTargetHeight) {
             animationStartTime = currentTime;
             bounceStartTime = currentTime;
@@ -428,16 +457,36 @@ public class DynamicIsland extends Module {
         
         double widthDiff = targetWidth - currentWidth;
         double heightDiff = targetHeight - currentHeight;
-        
-        float speed = animationSpeed.getValue() * 0.01f;
+
+        speed = animationSpeed.getValue() * 0.01f;
+
+        if (Math.abs(widthDiff) > 0.1) {
         currentWidth += widthDiff * speed;
-        currentHeight += heightDiff * speed;
+        } else {
+           currentWidth = targetWidth;
+        }
+
+        if (Math.abs(heightDiff) > 0.1) {
+            currentHeight += heightDiff * speed;
+        } else {
+        currentHeight = targetHeight;
+        }
         
         if (Math.abs(widthDiff) < 0.5) {
             currentWidth = targetWidth;
         }
         if (Math.abs(heightDiff) < 0.5) {
             currentHeight = targetHeight;
+        }
+    }
+
+    private void updateTargetRadius(boolean isChestExpanded, boolean hasNotifications) {
+        if (isChestExpanded) {
+            targetRadius = 12.0f;
+        } else if (hasNotifications) {
+            targetRadius = 36.0f;
+        } else {
+            targetRadius = 32.0f;
         }
     }
     
@@ -582,15 +631,32 @@ public class DynamicIsland extends Module {
         double y;
         y = 8;
 
+        float radius = currentRadius;
+
+        GlStateManager.enableBlend();
+        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+        GL11.glEnable(GL11.GL_LINE_SMOOTH);
+        GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST);
+
+        if (dropShadow.getValue()) {
+            drawDropShadowBackground((float)x, (float)y, (float)width, (float)height, radius);
+        }
+
+        if (blur.getValue()) {
+            BlurUtil.blurAreaRounded((float)x, (float)y, (float)(x + width), (float)(y + height), radius, blurStrength.getValue().floatValue());
+        }
+
+        nightsky.util.render.RenderUtil.drawRoundedRect((float)x, (float)y, (float)width, (float)height, radius, new Color(0, 0, 0, bgAlpha.getValue()));
+
+
         List<Notification> activeNotifications = NotificationManager.getInstance().getActiveNotifications();
         boolean hasNotifications = !activeNotifications.isEmpty() && showNotifications.getValue();
 
-        float radius;
-//        if (chestExpanded) {
-//            radius = 12.0f;
-//        } else
+        if (chestExpanded) {
+            radius = 12.0f;
+        } else
                 if(hasNotifications){
-            radius = 39.0f;
+            radius = 36.0f;
         } else {
             radius = 32.0f;
         }
@@ -628,9 +694,9 @@ public class DynamicIsland extends Module {
         int scissorHeight = (int) (height * scaleFactor);
         GL11.glScissor(scissorX, scissorY, scissorWidth, scissorHeight);
 
-//        if (chestExpanded) {
-//            drawChestInterface((float)contentX, (float)y, (float)contentWidth, (float)contentHeight);
-//        } else
+        if (chestExpanded) {
+            drawChestInterface((float)contentX, (float)y, (float)contentWidth, (float)contentHeight);
+        } else
             if (commandInterface.isActive()) {
             commandInterface.render((float)contentX, (float)y, (float)contentWidth, (float)contentHeight);
         } else if (showingPlayerList) {
@@ -925,7 +991,7 @@ public class DynamicIsland extends Module {
         String serverInfo = getServerIP();
         String clientName = nightsky.NightSky.clientName;
         String clientVersion = nightsky.NightSky.clientVersion;
-        String pingInfo = "Ping: " + (mc.getCurrentServerData() != null ? mc.getCurrentServerData().pingToServer + "ms" : "0ms");
+        String pingInfo = "Ping: " + getPing() + "ms";
         
         NickHider nickHider = (NickHider) nightsky.NightSky.moduleManager.modules.get(NickHider.class);
         if (nickHider != null && nickHider.isEnabled()) {
@@ -970,87 +1036,101 @@ public class DynamicIsland extends Module {
     
     
     private String getServerIP() {
-        if (mc.getCurrentServerData() != null) {
-            if (IpProtected.containsPattern("us-test")) {
-                return "hypixel.net";
-            } else {
-                return mc.getCurrentServerData().serverIP;
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastServerInfoUpdate > SERVER_INFO_UPDATE_INTERVAL) {
+            updateCachedServerInfo();
+            lastServerInfoUpdate = currentTime;
+        }
+        return cachedServerIP;
+    }
+
+    private void updateCachedServerInfo() {
+    if (mc.getCurrentServerData() != null) {
+        if (GetIPUtil.containsPattern("us-test")) {
+            cachedServerIP = "hypixel.net";
+        } else if (GetIPUtil.containsPattern(".de")) {
+            cachedServerIP = "NyaProxy";
+        } else {
+            cachedServerIP = mc.getCurrentServerData().serverIP;
+        }
+        cachedPing = (int) mc.getCurrentServerData().pingToServer;
+    } else {
+        cachedServerIP = "Singleplayer";
+        cachedPing = 0;
+    }
+}
+
+    private void drawChestInterface(float x, float y, float width, float height) {
+        FontTransformer transformer = FontTransformer.getInstance();
+        Font otherFont = transformer.getFont("OpenSansSemiBold", 35);
+
+        ChestData chestData = ChestData.getInstance();
+        if (!chestData.isChestOpen()) return;
+
+        float padding = 8;
+        float slotSize = 18;
+        int chestSize = chestData.getChestSize();
+
+        if (chestData.isChestEmpty()) {
+            String emptyText = "Empty Chest";
+            float textX = x + (width - CustomFontRenderer.getStringWidth(emptyText, otherFont)) / 2.0f;
+            float textY = y + (height - CustomFontRenderer.getFontHeight(otherFont)) / 2.0f;
+            CustomFontRenderer.drawStringWithShadow(emptyText, textX, textY, 0xAAAAAA, otherFont);
+            return;
+        }
+
+        float startX = x + padding;
+        float startY = y + padding;
+
+        GlStateManager.enableRescaleNormal();
+        RenderHelper.enableGUIStandardItemLighting();
+
+        for (int slot = 0; slot < chestSize; slot++) {
+            int row = slot / 9;
+            int col = slot % 9;
+
+            float slotX = startX + col * 20;
+            float slotY = startY + row * 20;
+
+            ItemStack itemStack = chestData.getItemInSlot(slot);
+            if (itemStack != null) {
+                mc.getRenderItem().renderItemAndEffectIntoGUI(itemStack, (int)slotX + 1, (int)slotY + 1);
+                mc.getRenderItem().renderItemOverlayIntoGUI(mc.fontRendererObj, itemStack, (int)slotX + 1, (int)slotY + 1, null);
+            }
+
+            ChestData.ClickAnimation animation = chestData.getClickAnimations().get(slot);
+            if (animation != null) {
+                float alpha = animation.getAlpha();
+                if (alpha > 0) {
+                    float centerX = slotX + slotSize / 2;
+                    float centerY = slotY + slotSize / 2;
+                    float radius = slotSize / 2;
+
+                    GlStateManager.pushMatrix();
+                    GlStateManager.enableBlend();
+                    GlStateManager.disableTexture2D();
+
+                    nightsky.util.render.RenderUtil.drawRoundedRect(centerX - radius, centerY - radius, radius * 2, radius * 2, radius, new Color(255, 255, 255, (int)(alpha * 255)));
+
+                    GlStateManager.enableTexture2D();
+                    GlStateManager.disableBlend();
+                    GlStateManager.popMatrix();
+                }
             }
         }
-        return "Singleplayer";
+
+        RenderHelper.disableStandardItemLighting();
+        GlStateManager.disableRescaleNormal();
+
+        String stealingText = "Stealing Chest...";
+        float textX = x + (width - CustomFontRenderer.getStringWidth(stealingText, otherFont)) / 2.0f;
+        float textY = y + height - CustomFontRenderer.getFontHeight(otherFont) - 4;
+        CustomFontRenderer.drawStringWithShadow(stealingText, textX, textY, 0x888888, otherFont);
     }
-//
-//    private void drawChestInterface(float x, float y, float width, float height) {
-//        FontTransformer transformer = FontTransformer.getInstance();
-//        Font otherFont = transformer.getFont("OpenSansSemiBold", 35);
-//
-//        ChestData chestData = ChestData.getInstance();
-//        if (!chestData.isChestOpen()) return;
-//
-//        float padding = 8;
-//        float slotSize = 18;
-//        int chestSize = chestData.getChestSize();
-//
-//        if (chestData.isChestEmpty()) {
-//            String emptyText = "Empty Chest";
-//            float textX = x + (width - CustomFontRenderer.getStringWidth(emptyText, otherFont)) / 2.0f;
-//            float textY = y + (height - CustomFontRenderer.getFontHeight(otherFont)) / 2.0f;
-//            CustomFontRenderer.drawStringWithShadow(emptyText, textX, textY, 0xAAAAAA, otherFont);
-//            return;
-//        }
-//
-//        float startX = x + padding;
-//        float startY = y + padding;
-//
-//        GlStateManager.enableRescaleNormal();
-//        RenderHelper.enableGUIStandardItemLighting();
-//
-//        for (int slot = 0; slot < chestSize; slot++) {
-//            int row = slot / 9;
-//            int col = slot % 9;
-//
-//            float slotX = startX + col * 20;
-//            float slotY = startY + row * 20;
-//
-//            ItemStack itemStack = chestData.getItemInSlot(slot);
-//            if (itemStack != null) {
-//                mc.getRenderItem().renderItemAndEffectIntoGUI(itemStack, (int)slotX + 1, (int)slotY + 1);
-//                mc.getRenderItem().renderItemOverlayIntoGUI(mc.fontRendererObj, itemStack, (int)slotX + 1, (int)slotY + 1, null);
-//            }
-//
-//            ChestData.ClickAnimation animation = chestData.getClickAnimations().get(slot);
-//            if (animation != null) {
-//                float alpha = animation.getAlpha();
-//                if (alpha > 0) {
-//                    float centerX = slotX + slotSize / 2;
-//                    float centerY = slotY + slotSize / 2;
-//                    float radius = slotSize / 2;
-//
-//                    GlStateManager.pushMatrix();
-//                    GlStateManager.enableBlend();
-//                    GlStateManager.disableTexture2D();
-//
-//                    nightsky.util.render.RenderUtil.drawRoundedRect(centerX - radius, centerY - radius, radius * 2, radius * 2, radius, new Color(255, 255, 255, (int)(alpha * 255)));
-//
-//                    GlStateManager.enableTexture2D();
-//                    GlStateManager.disableBlend();
-//                    GlStateManager.popMatrix();
-//                }
-//            }
-//        }
-//
-//        RenderHelper.disableStandardItemLighting();
-//        GlStateManager.disableRescaleNormal();
-//
-//        String stealingText = "Stealing Chest...";
-//        float textX = x + (width - CustomFontRenderer.getStringWidth(stealingText, otherFont)) / 2.0f;
-//        float textY = y + height - CustomFontRenderer.getFontHeight(otherFont) - 4;
-//        CustomFontRenderer.drawStringWithShadow(stealingText, textX, textY, 0x888888, otherFont);
-//    }
 
     private void drawMainInterface(float x, float y, float width) {
         String serverIP = getServerIP();
-        int ping = mc.getCurrentServerData() != null ? (int)mc.getCurrentServerData().pingToServer : 0;
+        int ping = getPing();
         int fps = net.minecraft.client.Minecraft.getDebugFPS();
 
         float scale = 0.7f;
@@ -1284,6 +1364,15 @@ public class DynamicIsland extends Module {
             CustomFontRenderer.drawStringWithShadow(line, x + padding, currentY, 0xFFFFFF, otherFont);
             currentY += fontHeight + 2;
         }
+    }
+
+    private int getPing() {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastServerInfoUpdate > SERVER_INFO_UPDATE_INTERVAL) {
+            updateCachedServerInfo();
+            lastServerInfoUpdate = currentTime;
+        }
+        return cachedPing;
     }
     private Color getPingColor() {
         if (mc.getCurrentServerData() != null) {

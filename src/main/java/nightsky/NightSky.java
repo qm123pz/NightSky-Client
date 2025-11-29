@@ -16,7 +16,7 @@ import nightsky.value.ValueHandler;
 
 import java.lang.reflect.Field;
 public class NightSky {
-    public static String clientName = "NightSky &6";
+    public static String clientName = "NightSky ";
     public static String clientVersion = "Release B1.2-pre2(BypassUpdata)";
     public static RotationManager rotationManager;
     public static FloatManager floatManager;
@@ -116,6 +116,7 @@ public class NightSky {
         moduleManager.modules.put(Speed.class, new Speed());
         moduleManager.modules.put(SpeedMine.class, new SpeedMine());
         moduleManager.modules.put(Sprint.class, new Sprint());
+        moduleManager.modules.put(SuperKnockBack.class, new SuperKnockBack());
         moduleManager.modules.put(TargetESP.class, new TargetESP());
         moduleManager.modules.put(TargetHUD.class, new TargetHUD());
         moduleManager.modules.put(TargetStrafe.class, new TargetStrafe());

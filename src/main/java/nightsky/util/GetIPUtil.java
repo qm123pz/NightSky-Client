@@ -3,7 +3,7 @@ package nightsky.util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 
-public class IpProtected {
+public class GetIPUtil {
     public static boolean containsPattern(String pattern) {
         String serverIP = getServerIP();
         if (serverIP == null) return false;

@@ -123,7 +123,7 @@ public class NotificationRenderer {
         float switchX = padding;
         float switchY = height / scale / 2 - switchHeight / 2;
         
-        drawModernToggleButton(switchX, switchY, height / scale, enabled, alpha, moduleName);
+        drawToggleButton(switchX, switchY, height / scale, enabled, alpha, moduleName);
         
         FontTransformer transformer = FontTransformer.getInstance();
         Font notifFont = transformer.getFont("OpenSansSemiBold", 37);
@@ -400,7 +400,7 @@ public class NotificationRenderer {
         }
     }
     
-    private static void drawModernToggleButton(float startX, float startY, float bigBoardHeight, boolean moduleState, float alpha, String uniqueKey) {
+    private static void drawToggleButton(float startX, float startY, float bigBoardHeight, boolean moduleState, float alpha, String uniqueKey) {
         float buttonHeight = 19f;
         float buttonWidth = 32f;
         float buttonRounded = toggleBgRadius;
