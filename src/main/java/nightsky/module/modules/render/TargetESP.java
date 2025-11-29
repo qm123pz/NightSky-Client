@@ -42,7 +42,7 @@ public class TargetESP extends Module {
     private static final Minecraft mc = Minecraft.getMinecraft();
 
     private final ModeValue mode = new ModeValue("MarkMode", 0, new String[]{"Points", "Ghost", "Image", "Exhi", "Circle"});
-    private final ModeValue imageMode = new ModeValue("ImageMode", 0, new String[]{"Rectangle", "QuadStapple", "TriangleStapple", "TriangleStipple"}, () -> mode.getValue() == 2);
+    private final ModeValue imageMode = new ModeValue("ImageMode", 0, new String[]{"Rectangle", "QuadStapple", "TriangleStapple", "TriangleStipple", "ShenMi"}, () -> mode.getValue() == 2);
     private final FloatValue circleSpeed = new FloatValue("CircleSpeed", 2.0F, 1.0F, 5.0F, () -> mode.getValue() == 4);
     private final BooleanValue onlyPlayer = new BooleanValue("OnlyPlayer", false);
     
@@ -58,6 +58,7 @@ public class TargetESP extends Module {
     private final ResourceLocation quadstapple = new ResourceLocation("minecraft", "nightsky/texture/targetesp/quadstapple.png");
     private final ResourceLocation trianglestapple = new ResourceLocation("minecraft", "nightsky/texture/targetesp/trianglestapple.png");
     private final ResourceLocation trianglestipple = new ResourceLocation("minecraft", "nightsky/texture/targetesp/trianglestipple.png");
+    private final ResourceLocation shenmi = new ResourceLocation("minecraft", "nightsky/texture/targetesp/shenmi.png");
     public double prevCircleStep;
     public double circleStep;
     
@@ -423,6 +424,9 @@ public class TargetESP extends Module {
                 break;
             case 3:
                 RenderUtil.drawImage(trianglestipple, renderX, renderY, x2, y2, color, color2, color3, color4);
+                break;
+            case 4:
+                RenderUtil.drawImage(shenmi, renderX, renderY, x2, y2, color, color2, color3, color4);
                 break;
         }
 
