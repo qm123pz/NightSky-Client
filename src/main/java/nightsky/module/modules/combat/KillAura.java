@@ -325,7 +325,7 @@ public class KillAura extends Module {
         this.mode = new ModeValue("Mode", 0, new String[]{"Single", "Switch"});
         this.sort = new ModeValue("Sort", 0, new String[]{"Distance", "Health", "HurtTime", "FOV"});
         this.autoBlock = new ModeValue(
-                "AutoBlock", 3, new String[]{"NONE", "Vanilla", "Spoof", "HypixelBlink", "Blink", "Interact", "Swap", "Legit", "Fake", "HypixelFull"}
+                "AutoBlock", 9, new String[]{"NONE", "Vanilla", "Spoof", "HypixelBlink", "Blink", "Interact", "Swap", "Legit", "Fake", "HypixelFull"}
         );
         this.autoBlockCPS = new FloatValue("AutoBlockCPS", 10.0F, 1.0F, 10.0F);
         this.autoBlockRequirePress = new BooleanValue("AutoBlockRequirePress", false);
