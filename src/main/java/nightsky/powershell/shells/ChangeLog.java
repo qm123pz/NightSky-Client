@@ -418,11 +418,19 @@ public class ChangeLog extends PowerShell {
                     "                        <div class=\"version\">v1.2-pre2</div>\n" +
                     "                    </div>\n" +
                     "                    <div class=\"release-content\">\n" +
+                    "                        <div class=\"release-item\">Added DynamicIsland ChestDisplay</div>\n" +
+                    "                        <div class=\"release-item\">Added DynamicIsland DynamicButton</div>\n" +
+                    "                        <div class=\"release-item\">Added DynamicIsland CustomAnimationCurve</div>\n" +
+                    "                        <div class=\"release-item\">Added ShenMi🤔 TargetESP Mode</div>\n" +
+                    "                        <div class=\"release-item\">Improved Blur Better</div>\n" +
+                    "                        <div class=\"milestone\">Android and Render Update</div>\n" +
+                    "                    </div>\n" +
+                    "                    <div class=\"release-content\">\n" +
                     "                        <div class=\"milestone\">爱来自现代履带拖拉机（2919469954）。</div>\n" +
                     "                        <div class=\"release-item\">Added HypixelFull AutoBlock On KillAura</div>\n" +
                     "                        <div class=\"release-item\">Added Reduce Velocity</div>\n" +
                     "                        <div class=\"release-item\">Added BlinkNoSlow (maybe useless)</div>\n" +
-                    "                        <div class=\"milestone\">Bypass Updata</div>\n" +
+                    "                        <div class=\"milestone\">Bypass Update</div>\n" +
                     "                    </div>\n" +
                     "                </div>\n" +
                     "            </div>\n" +

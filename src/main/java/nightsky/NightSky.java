@@ -17,7 +17,7 @@ import nightsky.value.ValueHandler;
 import java.lang.reflect.Field;
 public class NightSky {
     public static String clientName = "NightSky ";
-    public static String clientVersion = "Release B1.2-pre2(BypassUpdata)";
+    public static String clientVersion = "Release B2";
 
     //-----警告-您已进入安卓区域-不适合新手游玩-----
     public static Boolean android = false;
