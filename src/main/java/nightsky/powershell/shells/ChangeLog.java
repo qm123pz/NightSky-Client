@@ -414,8 +414,8 @@ public class ChangeLog extends PowerShell {
                     "                <div class=\"timeline-node\"></div>\n" +
                     "                <div class=\"release-card\">\n" +
                     "                    <div class=\"release-header\">\n" +
-                    "                        <div class=\"release-title\">Release B1.2-pre2</div>\n" +
-                    "                        <div class=\"version\">v1.2-pre2</div>\n" +
+                    "                        <div class=\"release-title\">Release B2</div>\n" +
+                    "                        <div class=\"version\">v2</div>\n" +
                     "                    </div>\n" +
                     "                    <div class=\"release-content\">\n" +
                     "                        <div class=\"release-item\">Added DynamicIsland ChestDisplay</div>\n" +

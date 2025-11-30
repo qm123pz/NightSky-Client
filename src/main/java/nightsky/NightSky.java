@@ -20,7 +20,7 @@ public class NightSky {
     public static String clientVersion = "Release B2";
 
     //-----警告-您已进入安卓区域-不适合新手游玩-----
-    public static Boolean android = false;
+    public static Boolean android = true;
     //-----警告-您已进入安卓区域-不适合新手游玩-----
 
     public static RotationManager rotationManager;
