@@ -12,6 +12,19 @@ import nightsky.module.modules.render.dynamicisland.notification.ChestData;
 import nightsky.value.values.BooleanValue;
 import nightsky.value.values.IntValue;
 import nightsky.value.values.ModeValue;
+import nightsky.value.values.FloatValue;
+import nightsky.management.RotationState;
+import nightsky.util.RotationUtil;
+import nightsky.util.MoveUtil;
+import nightsky.events.MoveInputEvent;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockChest;
+import net.minecraft.block.BlockEnderChest;
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.Vec3;
+import net.minecraft.item.ItemStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiChest;
 import net.minecraft.client.resources.I18n;
@@ -28,6 +41,12 @@ public class ChestStealer extends Module {
     private int oDelay = 0;
     private boolean inChest = false;
     private boolean warnedFull = false;
+    private long lastAuraTime = 0;
+    private BlockPos currentTarget = null;
+    private float[] targetRotation = null;
+    private boolean isRotating = false;
+    private final java.util.Set<BlockPos> markedChests = new java.util.HashSet<>();
+    
     public final IntValue minDelay = new IntValue("MinDelay", 1, 0, 20);
     public final IntValue maxDelay = new IntValue("MaxDelay", 2, 0, 20);
     public final IntValue openDelay = new IntValue("OpenDelay", 1, 0, 20);
@@ -35,6 +54,10 @@ public class ChestStealer extends Module {
     public final BooleanValue autoClose = new BooleanValue("AutoClose", false);
     public final BooleanValue nameCheck = new BooleanValue("NameCheck", true);
     public final BooleanValue skipTrash = new BooleanValue("SkipTrash", true);
+    public final BooleanValue aura = new BooleanValue("Aura", false);
+    public final FloatValue auraRange = new FloatValue("AuraRange", 5.0f, 1.0f, 6.0f);
+    public final IntValue auraDelay = new IntValue("AuraDelay", 500, 0, 1000);
+    public final ModeValue moveFix = new ModeValue("MoveFix", 0, new String[]{"None", "Silent", "Strict"});
 
     private boolean isValidGameMode() {
         GameType gameType = mc.playerController.getCurrentGameType();
@@ -52,6 +75,10 @@ public class ChestStealer extends Module {
     @EventTarget
     public void onUpdate(UpdateEvent event) {
         if (event.getType() == EventType.PRE) {
+            if (this.isEnabled() && aura.getValue() && !inChest && mc.currentScreen == null) {
+                handleAura(event);
+            }
+            
             ChestData.getInstance().updateChestData();
             ChestData.getInstance().updateAnimations();
             if (this.clickDelay > 0) {
@@ -62,6 +89,9 @@ public class ChestStealer extends Module {
             }
             if (!(mc.currentScreen instanceof GuiChest)) {
                 this.inChest = false;
+                this.currentTarget = null;
+                this.targetRotation = null;
+                this.isRotating = false;
             } else {
                 Container container = ((GuiChest) mc.currentScreen).inventorySlots;
                 if (!(container instanceof ContainerChest)) {
@@ -328,7 +358,105 @@ public class ChestStealer extends Module {
         }
     }
 
+
+    @Override
+    public void onEnabled() {
+        markedChests.clear();
+    }
+
+    @Override
+    public void onDisabled() {
+        markedChests.clear();
+        currentTarget = null;
+        targetRotation = null;
+        isRotating = false;
+        lastAuraTime = 0;
+    }
+    
+    private void handleAura(UpdateEvent event) {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastAuraTime < auraDelay.getValue()) {
+            return;
+        }
+
+        BlockPos nearestChest = findNearestUnmarkedChest();
+        if (nearestChest != null) {
+            currentTarget = nearestChest;
+
+            double deltaX = nearestChest.getX() + 0.5 - mc.thePlayer.posX;
+            double deltaY = nearestChest.getY() + 0.5 - (mc.thePlayer.posY + mc.thePlayer.getEyeHeight());
+            double deltaZ = nearestChest.getZ() + 0.5 - mc.thePlayer.posZ;
+            double distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+            
+            if (distance <= auraRange.getValue()) {
+                targetRotation = RotationUtil.getRotationsTo(deltaX, deltaY, deltaZ, event.getYaw(), event.getPitch());
+
+                event.setRotation(targetRotation[0], targetRotation[1], 0);
+                if (moveFix.getValue() == 2) {
+                    event.setPervRotation(targetRotation[0], 0);
+                }
+                
+                isRotating = true;
+
+                MovingObjectPosition mop = RotationUtil.rayTrace(targetRotation[0], targetRotation[1], auraRange.getValue(), 1.0f);
+                if (mop != null && mop.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK && mop.getBlockPos().equals(nearestChest)) {
+                    Vec3 hitVec = mop.hitVec;
+                    EnumFacing facing = mop.sideHit;
+                    
+                    if (mc.playerController.onPlayerRightClick(mc.thePlayer, mc.theWorld, mc.thePlayer.getHeldItem(), nearestChest, facing, hitVec)) {
+                        mc.thePlayer.swingItem();
+                        lastAuraTime = currentTime;
+                        markedChests.add(nearestChest);
+                        currentTarget = null;
+                        targetRotation = null;
+                        isRotating = false;
+                    }
+                }
+            }
+        }
+    }
+    
+    private BlockPos findNearestUnmarkedChest() {
+        BlockPos nearestChest = null;
+        double minDistance = Double.MAX_VALUE;
+
+        int range = (int) Math.ceil(auraRange.getValue());
+        BlockPos playerPos = new BlockPos(mc.thePlayer.posX, mc.thePlayer.posY, mc.thePlayer.posZ);
+        
+        for (int x = -range; x <= range; x++) {
+            for (int y = -range; y <= range; y++) {
+                for (int z = -range; z <= range; z++) {
+                    BlockPos pos = playerPos.add(x, y, z);
+                    Block block = mc.theWorld.getBlockState(pos).getBlock();
+
+                    if (block instanceof BlockChest || block instanceof BlockEnderChest) {
+                        if (!isMarkedChest(pos)) {
+                            double distance = mc.thePlayer.getDistanceSq(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
+                            if (distance < minDistance && distance <= auraRange.getValue() * auraRange.getValue()) {
+                                minDistance = distance;
+                                nearestChest = pos;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return nearestChest;
+    }
+    
+    private boolean isMarkedChest(BlockPos pos) {
+        return markedChests.contains(pos);
+    }
+    
     @EventTarget
+    public void onMoveInput(MoveInputEvent event) {
+        if (this.isEnabled() && moveFix.getValue() == 1 && isRotating && RotationState.isActived() && RotationState.getPriority() == 0.0F && MoveUtil.isForwardPressed()) {
+            MoveUtil.fixStrafe(RotationState.getSmoothedYaw());
+        }
+    }
+    
+  @EventTarget
     public void onWindowClick(WindowClickEvent event) {
         this.clickDelay = RandomUtils.nextInt(this.minDelay.getValue() + 1, this.maxDelay.getValue() + 2);
         if (event.getSlotId() < 54) {
