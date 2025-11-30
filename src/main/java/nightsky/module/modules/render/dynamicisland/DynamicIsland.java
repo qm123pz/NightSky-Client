@@ -41,23 +41,23 @@ public class DynamicIsland extends Module {
     private final BooleanValue showNotifications = new BooleanValue("ShowNotifications", true);
     
     private final ModeValue animationMode = new ModeValue("AnimationMode", 0, new String[]{"Normal", "Custom"});
-    private final FloatValue customMass = new FloatValue("CustomMass", 1.0f, 0.1f, 5.0f);
-    private final FloatValue customStiffness = new FloatValue("CustomStiffness", 0.1f, 0.01f, 1.0f);
-    private final BooleanValue enableBounce = new BooleanValue("EnableBounce", true);
-    private final FloatValue bounceIntensity = new FloatValue("BounceIntensity", 0.09f, 0.0f, 0.3f);
-    private final IntValue bounceCount = new IntValue("BounceCount", 2, 0, 5);
-    private final FloatValue bounceDuration = new FloatValue("BounceDuration", 450.0f, 100.0f, 1000.0f);
-    private final BooleanValue enableBreathing = new BooleanValue("EnableBreathing", true);
-    private final FloatValue breathingIntensity = new FloatValue("BreathingIntensity", 0.03f, 0.0f, 0.1f);
-    private final FloatValue breathingSpeed = new FloatValue("BreathingSpeed", 3000.0f, 1000.0f, 10000.0f);
-    private final ModeValue easingType = new ModeValue("EasingType", 10, new String[]{"Linear", "EaseInSine", "EaseOutSine", "EaseInOutSine", "EaseInQuad", "EaseOutQuad", "EaseInOutQuad", "EaseInCubic", "EaseOutCubic", "EaseInOutCubic", "EaseInQuart", "EaseOutQuart", "EaseInOutQuart", "EaseInQuint", "EaseOutQuint", "EaseInOutQuint", "EaseInExpo", "EaseOutExpo", "EaseInOutExpo", "EaseInCirc", "EaseOutCirc", "EaseInOutCirc", "EaseInBack", "EaseOutBack", "EaseInOutBack", "EaseInElastic", "EaseOutElastic", "EaseInOutElastic", "EaseInBounce", "EaseOutBounce", "EaseInOutBounce", "CustomSpring"});
-    private final FloatValue customSpringTension = new FloatValue("CustomSpringTension", 0.8f, 0.1f, 2.0f);
-    private final FloatValue customSpringFriction = new FloatValue("CustomSpringFriction", 0.3f, 0.1f, 1.0f);
-    private final BooleanValue enableOvershoot = new BooleanValue("EnableOvershoot", true);
-    private final FloatValue overshootAmount = new FloatValue("OvershootAmount", 0.1f, 0.0f, 0.5f);
-    private final BooleanValue enableAnticipation = new BooleanValue("EnableAnticipation", false);
-    private final FloatValue anticipationAmount = new FloatValue("AnticipationAmount", 0.05f, 0.0f, 0.2f);
-    private final FloatValue anticipationDuration = new FloatValue("AnticipationDuration", 100.0f, 50.0f, 300.0f);
+    private final FloatValue customMass = new FloatValue("CustomMass", 1.0f, 0.1f, 5.0f, () -> animationMode.getModeString().equals("Custom"));
+    private final FloatValue customStiffness = new FloatValue("CustomStiffness", 0.1f, 0.01f, 1.0f, () -> animationMode.getModeString().equals("Custom"));
+    private final BooleanValue enableBounce = new BooleanValue("EnableBounce", true, () -> animationMode.getModeString().equals("Custom"));
+    private final FloatValue bounceIntensity = new FloatValue("BounceIntensity", 0.09f, 0.0f, 0.3f, () -> animationMode.getModeString().equals("Custom"));
+    private final IntValue bounceCount = new IntValue("BounceCount", 2, 0, 5, () -> animationMode.getModeString().equals("Custom"));
+    private final FloatValue bounceDuration = new FloatValue("BounceDuration", 450.0f, 100.0f, 1000.0f, () -> animationMode.getModeString().equals("Custom"));
+    private final BooleanValue enableBreathing = new BooleanValue("EnableBreathing", true, () -> animationMode.getModeString().equals("Custom"));
+    private final FloatValue breathingIntensity = new FloatValue("BreathingIntensity", 0.03f, 0.0f, 0.1f, () -> animationMode.getModeString().equals("Custom"));
+    private final FloatValue breathingSpeed = new FloatValue("BreathingSpeed", 3000.0f, 1000.0f, 10000.0f, () -> animationMode.getModeString().equals("Custom"));
+    private final ModeValue easingType = new ModeValue("EasingType", 10, new String[]{"Linear", "EaseInSine", "EaseOutSine", "EaseInOutSine", "EaseInQuad", "EaseOutQuad", "EaseInOutQuad", "EaseInCubic", "EaseOutCubic", "EaseInOutCubic", "EaseInQuart", "EaseOutQuart", "EaseInOutQuart", "EaseInQuint", "EaseOutQuint", "EaseInOutQuint", "EaseInExpo", "EaseOutExpo", "EaseInOutExpo", "EaseInCirc", "EaseOutCirc", "EaseInOutCirc", "EaseInBack", "EaseOutBack", "EaseInOutBack", "EaseInElastic", "EaseOutElastic", "EaseInOutElastic", "EaseInBounce", "EaseOutBounce", "EaseInOutBounce", "CustomSpring"}, () -> animationMode.getModeString().equals("Custom"));
+    private final FloatValue customSpringTension = new FloatValue("CustomSpringTension", 0.8f, 0.1f, 2.0f, () -> animationMode.getModeString().equals("Custom"));
+    private final FloatValue customSpringFriction = new FloatValue("CustomSpringFriction", 0.3f, 0.1f, 1.0f, () -> animationMode.getModeString().equals("Custom"));
+    private final BooleanValue enableOvershoot = new BooleanValue("EnableOvershoot", true, () -> animationMode.getModeString().equals("Custom"));
+    private final FloatValue overshootAmount = new FloatValue("OvershootAmount", 0.1f, 0.0f, 0.5f, () -> animationMode.getModeString().equals("Custom"));
+    private final BooleanValue enableAnticipation = new BooleanValue("EnableAnticipation", false, () -> animationMode.getModeString().equals("Custom"));
+    private final FloatValue anticipationAmount = new FloatValue("AnticipationAmount", 0.05f, 0.0f, 0.2f, () -> animationMode.getModeString().equals("Custom"));
+    private final FloatValue anticipationDuration = new FloatValue("AnticipationDuration", 100.0f, 50.0f, 300.0f, () -> animationMode.getModeString().equals("Custom"));
 
     private final Minecraft mc = Minecraft.getMinecraft();
 
