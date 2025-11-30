@@ -425,6 +425,9 @@ public class ChangeLog extends PowerShell {
                     "                        <div class=\"release-item\">Improved Blur Better</div>\n" +
                     "                        <div class=\"milestone\">Android and Render Update</div>\n" +
                     "                    </div>\n" +
+                    "                </div>\n" +
+                    "            </div>\n" +
+                    "            \n" +
                     "                    <div class=\"release-content\">\n" +
                     "                        <div class=\"milestone\">爱来自现代履带拖拉机（2919469954）。</div>\n" +
                     "                        <div class=\"release-item\">Added HypixelFull AutoBlock On KillAura</div>\n" +
