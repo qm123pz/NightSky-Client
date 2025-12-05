@@ -6,8 +6,8 @@ import nightsky.event.types.EventType;
 public class TickEvent implements Event {
     private final EventType type;
 
-    public TickEvent(EventType u) {
-        this.type = u;
+    public TickEvent(EventType type) {
+        this.type = type;
     }
 
     public EventType getType() {

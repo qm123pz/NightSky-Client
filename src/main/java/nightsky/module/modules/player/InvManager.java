@@ -14,6 +14,7 @@ import nightsky.value.values.IntValue;
 import nightsky.value.values.ModeValue;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiInventory;
+import net.minecraft.client.gui.inventory.GuiChest;
 import net.minecraft.inventory.ContainerPlayer;
 import net.minecraft.item.ItemEgg;
 import net.minecraft.item.ItemSnowball;
@@ -156,6 +157,9 @@ public class InvManager extends Module {
     public void onUpdate(UpdateEvent event) {
         if (event.getType() == EventType.PRE) {
             if (this.silent.getValue()) {
+                if (mc.currentScreen instanceof GuiChest) {
+                    return;
+                }
                 if (!this.serverOpen) {
                     if (this.needsInventoryClose) {
                         this.needsInventoryClose = false;

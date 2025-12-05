@@ -51,6 +51,7 @@ public class DelayManager {
 
     public boolean setDelayState(boolean state, DelayModules delayModule) {
         if (state) {
+            this.delay = 0;
             this.delayModule = delayModule;
         } else {
             this.delayModule = DelayModules.NONE;
@@ -73,15 +74,15 @@ public class DelayManager {
         return this.delayModule;
     }
 
-    public void delay(DelayModules modules) {
-        this.delayModule = modules;
-    }
-
     public void stopDelay(boolean state, DelayModules module) {
         this.setDelayState(state, module);
     }
 
-    public long isDelay() {
+    public void delay(DelayModules modules) {
+        this.delayModule = modules;
+    }
+
+    public long getDelay() {
         return this.delay;
     }
 

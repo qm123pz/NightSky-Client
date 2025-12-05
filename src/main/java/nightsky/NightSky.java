@@ -68,9 +68,9 @@ public class NightSky {
         moduleManager.modules.put(AntiObfuscate.class, new AntiObfuscate());
         moduleManager.modules.put(AntiVoid.class, new AntiVoid());
         moduleManager.modules.put(ArrayList.class, new ArrayList());
+        moduleManager.modules.put(AutoThrow.class, new AutoThrow());
         moduleManager.modules.put(AutoClicker.class, new AutoClicker());
         moduleManager.modules.put(AutoHeal.class, new AutoHeal());
-        moduleManager.modules.put(AutoProjectile.class, new AutoProjectile());
         moduleManager.modules.put(AutoTool.class, new AutoTool());
         moduleManager.modules.put(BedNuker.class, new BedNuker());
         moduleManager.modules.put(BedESP.class, new BedESP());

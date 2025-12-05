@@ -2,21 +2,16 @@ package nightsky.module.modules.combat;
 
 import com.google.common.base.CaseFormat;
 import nightsky.NightSky;
-import nightsky.enums.ChatColors;
 import nightsky.enums.DelayModules;
 import nightsky.event.EventTarget;
 import nightsky.event.types.EventType;
 import nightsky.events.*;
-import nightsky.management.RotationState;
 import nightsky.mixin.IAccessorEntity;
 import nightsky.module.Module;
 import nightsky.module.modules.movement.LongJump;
 import nightsky.util.ChatUtil;
 import nightsky.util.MoveUtil;
-import nightsky.util.RotationUtil;
 import nightsky.value.values.*;
-import nightsky.value.values.BooleanValue;
-import nightsky.value.values.ModeValue;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.play.server.S12PacketEntityVelocity;
@@ -24,38 +19,30 @@ import net.minecraft.network.play.server.S19PacketEntityStatus;
 import net.minecraft.network.play.server.S27PacketExplosion;
 import net.minecraft.potion.Potion;
 
-import java.util.Random;
-
 public class Velocity extends Module {
     private static final Minecraft mc = Minecraft.getMinecraft();
+
     private int chanceCounter = 0;
     private int delayChanceCounter = 0;
     private boolean pendingExplosion = false;
     private boolean allowNext = true;
-    private boolean reverseFlag = false;
-    private boolean pendingJumpReset = false;
     private boolean jumpFlag = false;
+    private boolean reverseFlag = false;
     private boolean delayActive = false;
-    private int rotatoTickCounter = 0;
-    private float[] targetRotation = null;
-    private double knockbackX = 0;
-    private double knockbackZ = 0;
-    public final ModeValue mode = new ModeValue("mode", 0, new String[]{"Vanilla", "Jump", "Delay", "Reverse", "Reduce"});
+
+    private boolean shouldJump = false;
+    private int jumpCooldown = 0;
+
+    public final ModeValue mode = new ModeValue("mode", 4, new String[]{"VANILLA", "JUMP", "DELAY", "REVERSE", "LEGITTest"});
     public final IntValue delayTicks = new IntValue("delay-ticks", 3, 1, 20, () -> this.mode.getValue() == 2);
     public final PercentValue delayChance = new PercentValue("delay-chance", 100, () -> this.mode.getValue() == 2);
     public final PercentValue chance = new PercentValue("chance", 100);
-    public final PercentValue horizontal = new PercentValue("horizontal", 0);
+    public final PercentValue horizontal = new PercentValue("horizontal", 100);
     public final PercentValue vertical = new PercentValue("vertical", 100);
     public final PercentValue explosionHorizontal = new PercentValue("explosions-horizontal", 100);
     public final PercentValue explosionVertical = new PercentValue("explosions-vertical", 100);
     public final BooleanValue fakeCheck = new BooleanValue("fake-check", true);
-    public final BooleanValue rotate = new BooleanValue("Rotate", false, () -> this.mode.getValue() == 1);
-    public final IntValue rotateTick = new IntValue("RotateTick", 2, 1, 12, () -> this.mode.getValue() == 1 && this.rotate.getValue());
-    public final BooleanValue autoMove = new BooleanValue("AutoMove", false, () -> this.mode.getValue() == 1 && this.rotate.getValue());
     public final BooleanValue debugLog = new BooleanValue("debug-log", false);
-    public final PercentValue reduceChance = new PercentValue("reduce-chance", 100, () -> this.mode.getValue() == 4);
-    public final BooleanValue requireMoving = new BooleanValue("require-moving", true, () -> this.mode.getValue() == 4);
-    public final BooleanValue jumpReset = new BooleanValue("jump-reset", false, () -> this.mode.getValue() == 4);
 
     private boolean isInLiquidOrWeb() {
         return mc.thePlayer.isInWater() || mc.thePlayer.isInLava() || ((IAccessorEntity) mc.thePlayer).getIsInWeb();
@@ -72,25 +59,6 @@ public class Velocity extends Module {
 
     @EventTarget
     public void onKnockback(KnockbackEvent event) {
-        if (this.mode.getValue() == 4) {
-            if (this.requireMoving.getValue() && Velocity.mc.thePlayer.moveForward == 0.0f && Velocity.mc.thePlayer.moveStrafing == 0.0f) {
-                return;
-            }
-            if (new Random().nextInt(100) >= this.reduceChance.getValue()) {
-                return;
-            }
-            if (this.jumpReset.getValue() && Velocity.mc.thePlayer.onGround) {
-                this.pendingJumpReset = true;
-                if (this.debugLog.getValue()) {
-                    ChatUtil.sendFormatted(String.format("%s[REDUCE] Jump reset triggered&r", NightSky.clientName));
-                }
-            }
-            this.applyHorizontalVertical(event);
-            if (this.debugLog.getValue()) {
-                ChatUtil.sendFormatted(String.format("%s[REDUCE] Applied with chance %d%% %s&r", NightSky.clientName, this.reduceChance.getValue(), (Boolean)this.jumpReset.getValue() != false ? "+ JUMP" : ""));
-            }
-            return;
-        }
         if (!this.isEnabled() || event.isCancelled()) {
             this.pendingExplosion = false;
             this.allowNext = true;
@@ -115,13 +83,6 @@ public class Velocity extends Module {
                 if (this.chanceCounter >= 100) {
                     this.jumpFlag = (this.mode.getValue() == 1 || this.mode.getValue() == 2) && event.getY() > 0.0;
                     this.delayActive = this.mode.getValue() == 3;
-                    if (this.mode.getValue() == 1 && this.rotate.getValue() && event.getY() > 0.0) {
-                        this.knockbackX = event.getX();
-                        this.knockbackZ = event.getZ();
-                        if (Math.abs(this.knockbackX) > 0.01 || Math.abs(this.knockbackZ) > 0.01) {
-                            this.rotatoTickCounter = 1;
-                        }
-                    }
                     if (this.horizontal.getValue() > 0) {
                         event.setX(event.getX() * (double) this.horizontal.getValue() / 100.0);
                         event.setZ(event.getZ() * (double) this.horizontal.getValue() / 100.0);
@@ -139,6 +100,47 @@ public class Velocity extends Module {
         }
     }
 
+    @EventTarget
+    public void onUpdate(UpdateEvent event) {
+        if (event.getType() == EventType.POST) {
+            if (this.reverseFlag
+                    && (
+                    this.canDelay()
+                            || this.isInLiquidOrWeb()
+                            || NightSky.delayManager.getDelay() >= (long) this.delayTicks.getValue()
+            )) {
+                NightSky.delayManager.setDelayState(false, DelayModules.VELOCITY);
+                this.reverseFlag = false;
+            }
+            if (this.delayActive) {
+                MoveUtil.setSpeed(MoveUtil.getSpeed(), MoveUtil.getMoveYaw());
+                this.delayActive = false;
+            }
+
+            if (this.mode.getValue() == 4) {
+                int hurtTime = mc.thePlayer.hurtTime;
+
+                if (hurtTime >= 8) {
+                    if (jumpCooldown <= 0) {
+                        shouldJump = true;
+                        jumpCooldown = 2;
+                    }
+                } else if (hurtTime <= 1) {
+                    shouldJump = false;
+                    jumpCooldown = 0;
+                }
+
+                if (shouldJump && mc.thePlayer.onGround && jumpCooldown <= 0) {
+                    mc.thePlayer.jump();
+                    shouldJump = false;
+                }
+
+                if (jumpCooldown > 0) {
+                    jumpCooldown--;
+                }
+            }
+        }
+    }
 
     @EventTarget
     public void onLivingUpdate(LivingUpdateEvent event) {
@@ -219,119 +221,20 @@ public class Velocity extends Module {
     }
 
     @EventTarget
-    public void onUpdate(UpdateEvent event) {
-        if (event.getType() == EventType.PRE) {
-            int maxTick = this.rotateTick.getValue();
-            if (this.rotatoTickCounter > 0 && this.rotatoTickCounter <= maxTick) {
-                if (this.rotatoTickCounter == 1) {
-                    double deltaX = -this.knockbackX;
-                    double deltaZ = -this.knockbackZ;
-                    this.targetRotation = RotationUtil.getRotationsTo(deltaX, 0, deltaZ, event.getYaw(), event.getPitch());
-                }
-                if (this.targetRotation != null) {
-                    event.setRotation(this.targetRotation[0], this.targetRotation[1], 2);
-                    event.setPervRotation(this.targetRotation[0], 2);
-                }
-            }
-        }
-        if (event.getType() == EventType.POST) {
-
-            if (this.pendingJumpReset && Velocity.mc.thePlayer != null) {
-                Velocity.mc.thePlayer.jump();
-                this.pendingJumpReset = false;
-                if (this.debugLog.getValue()) {
-                    ChatUtil.sendFormatted(String.format("%s[REDUCE] Jump executed&r", NightSky.clientName));
-                }
-            }
-
-            if (this.reverseFlag
-                    && (
-                    this.canDelay()
-                            || this.isInLiquidOrWeb()
-                            || NightSky.delayManager.isDelay() >= (long) this.delayTicks.getValue()
-            )) {
-                NightSky.delayManager.setDelayState(false, DelayModules.VELOCITY);
-                this.reverseFlag = false;
-            }
-            if (this.delayActive) {
-                MoveUtil.setSpeed(MoveUtil.getSpeed(), MoveUtil.getMoveYaw());
-                this.delayActive = false;
-            }
-            int maxTick = this.rotateTick.getValue();
-            if (this.rotatoTickCounter > 0 && this.rotatoTickCounter <= maxTick) {
-                this.rotatoTickCounter++;
-                if (this.rotatoTickCounter > maxTick) {
-                    this.rotatoTickCounter = 0;
-                    this.targetRotation = null;
-                    this.knockbackX = 0;
-                    this.knockbackZ = 0;
-                }
-            }
-        }
-
-    }
-
-    private void applyHorizontalVertical(KnockbackEvent event) {
-        if (this.horizontal.getValue() > 0) {
-            event.setX(event.getX() * (double)(this.horizontal.getValue()) / 100.0);
-            event.setZ(event.getZ() * (double)(this.horizontal.getValue()) / 100.0);
-        } else {
-            event.setX(0.0);
-            event.setZ(0.0);
-        }
-        if (this.vertical.getValue() > 0) {
-            event.setY(event.getY() * (double)(this.vertical.getValue()) / 100.0);
-        } else {
-            event.setY(0.0);
-        }
-    }
-
-    @EventTarget
-    public void onMove(MoveInputEvent event) {
-        if (this.isEnabled() && this.rotatoTickCounter > 0 && this.rotatoTickCounter <= this.rotateTick.getValue()) {
-            if (this.autoMove.getValue()) {
-                mc.thePlayer.movementInput.moveForward = 1.0F;
-            }
-            if (this.targetRotation != null && RotationState.isActived() && RotationState.getPriority() == 2.0F && MoveUtil.isForwardPressed()) {
-                MoveUtil.fixStrafe(RotationState.getSmoothedYaw());
-            }
-        }
-    }
-
-    @EventTarget
     public void onLoadWorld(LoadWorldEvent event) {
         this.onDisabled();
-    }
-
-    @Override
-    public void onEnabled() {
-        this.pendingExplosion = false;
-        this.allowNext = true;
-        this.reverseFlag = false;
-        this.pendingJumpReset = false;
-        this.chanceCounter = 0;
     }
 
     @Override
     public void onDisabled() {
         this.pendingExplosion = false;
         this.allowNext = true;
-        this.rotatoTickCounter = 0;
-        this.targetRotation = null;
-        this.knockbackX = 0;
-        this.knockbackZ = 0;
-        this.pendingJumpReset = false;
-        NightSky.delayManager.delayedPacket.clear();
+        this.shouldJump = false;
+        this.jumpCooldown = 0;
     }
 
     @Override
     public String[] getSuffix() {
-        boolean predictionMode = this.mode.getValue() == 1 || this.mode.getValue() == 2;
-        return predictionMode && this.horizontal.getValue() == 100 && this.vertical.getValue() == 100
-                ? new String[]{CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, this.mode.getModeString())}
-                : new String[]{
-                ChatColors.formatColor(String.format(this.mode.getValue() == 3 ? "&m%d%%&r" : "%d%%", this.horizontal.getValue())),
-                String.format("%d%%", this.vertical.getValue())
-        };
+        return new String[]{CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, this.mode.getModeString())};
     }
 }

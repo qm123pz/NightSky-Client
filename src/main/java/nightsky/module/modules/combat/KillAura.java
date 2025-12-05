@@ -10,6 +10,7 @@ import nightsky.events.*;
 import nightsky.management.RotationState;
 import nightsky.mixin.IAccessorPlayerControllerMP;
 import nightsky.module.Module;
+import nightsky.module.modules.movement.NoSlow;
 import nightsky.module.modules.player.Scaffold;
 import nightsky.module.modules.player.BedNuker;
 import nightsky.value.values.BooleanValue;
@@ -50,6 +51,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Random;
 
 public class KillAura extends Module {
     private static final Minecraft mc = Minecraft.getMinecraft();
@@ -325,7 +327,7 @@ public class KillAura extends Module {
         this.mode = new ModeValue("Mode", 0, new String[]{"Single", "Switch"});
         this.sort = new ModeValue("Sort", 0, new String[]{"Distance", "Health", "HurtTime", "FOV"});
         this.autoBlock = new ModeValue(
-                "AutoBlock", 9, new String[]{"NONE", "Vanilla", "Spoof", "HypixelBlink", "Blink", "Interact", "Swap", "Legit", "Fake", "HypixelFull"}
+                "AutoBlock", 3, new String[]{"NONE", "Vanilla", "Spoof", "HypixelBlink", "Blink", "Interact", "Swap", "Legit", "Fake", "HypixelFull"}
         );
         this.autoBlockCPS = new FloatValue("AutoBlockCPS", 10.0F, 1.0F, 10.0F);
         this.autoBlockRequirePress = new BooleanValue("AutoBlockRequirePress", false);
@@ -696,6 +698,7 @@ public class KillAura extends Module {
                                 this.fakeBlockState = true;
                                 break;
                         }
+
                             if (this.blockTick == 1 && this.isPlayerBlocking()) {
                                 this.stopBlock();
                                 this.setNextSlot();
