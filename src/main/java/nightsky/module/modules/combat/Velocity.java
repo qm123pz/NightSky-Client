@@ -30,19 +30,16 @@ public class Velocity extends Module {
     private boolean reverseFlag = false;
     private boolean delayActive = false;
 
-    private boolean shouldJump = false;
-    private int jumpCooldown = 0;
-
-    public final ModeValue mode = new ModeValue("mode", 4, new String[]{"VANILLA", "JUMP", "DELAY", "REVERSE", "LEGITTest"});
-    public final IntValue delayTicks = new IntValue("delay-ticks", 3, 1, 20, () -> this.mode.getValue() == 2);
-    public final PercentValue delayChance = new PercentValue("delay-chance", 100, () -> this.mode.getValue() == 2);
-    public final PercentValue chance = new PercentValue("chance", 100);
-    public final PercentValue horizontal = new PercentValue("horizontal", 100);
-    public final PercentValue vertical = new PercentValue("vertical", 100);
-    public final PercentValue explosionHorizontal = new PercentValue("explosions-horizontal", 100);
-    public final PercentValue explosionVertical = new PercentValue("explosions-vertical", 100);
-    public final BooleanValue fakeCheck = new BooleanValue("fake-check", true);
-    public final BooleanValue debugLog = new BooleanValue("debug-log", false);
+    public final ModeValue mode = new ModeValue("mode", 4, new String[]{"Vanilla", "Jump", "Delay", "Reverse"});
+    public final IntValue delayTicks = new IntValue("DelayTicks", 3, 1, 20, () -> this.mode.getValue() == 2);
+    public final PercentValue delayChance = new PercentValue("DelayChange", 100, () -> this.mode.getValue() == 2);
+    public final PercentValue chance = new PercentValue("Change", 100);
+    public final PercentValue horizontal = new PercentValue("Horizontal", 100);
+    public final PercentValue vertical = new PercentValue("Vertical", 100);
+    public final PercentValue explosionHorizontal = new PercentValue("ExplosionsHorizontal", 100);
+    public final PercentValue explosionVertical = new PercentValue("ExplosionsVertical", 100);
+    public final BooleanValue fakeCheck = new BooleanValue("FakeCheck", true);
+    public final BooleanValue debugLog = new BooleanValue("DebugLog", false);
 
     private boolean isInLiquidOrWeb() {
         return mc.thePlayer.isInWater() || mc.thePlayer.isInLava() || ((IAccessorEntity) mc.thePlayer).getIsInWeb();
@@ -116,29 +113,6 @@ public class Velocity extends Module {
                 MoveUtil.setSpeed(MoveUtil.getSpeed(), MoveUtil.getMoveYaw());
                 this.delayActive = false;
             }
-
-            if (this.mode.getValue() == 4) {
-                int hurtTime = mc.thePlayer.hurtTime;
-
-                if (hurtTime >= 8) {
-                    if (jumpCooldown <= 0) {
-                        shouldJump = true;
-                        jumpCooldown = 2;
-                    }
-                } else if (hurtTime <= 1) {
-                    shouldJump = false;
-                    jumpCooldown = 0;
-                }
-
-                if (shouldJump && mc.thePlayer.onGround && jumpCooldown <= 0) {
-                    mc.thePlayer.jump();
-                    shouldJump = false;
-                }
-
-                if (jumpCooldown > 0) {
-                    jumpCooldown--;
-                }
-            }
         }
     }
 
@@ -166,7 +140,8 @@ public class Velocity extends Module {
                             && !this.pendingExplosion
                             && (!this.allowNext || !(Boolean) this.fakeCheck.getValue())
                             && (!longJump.isEnabled() || !longJump.canStartJump())) {
-                        this.delayChanceCounter = this.delayChanceCounter % 100 + this.delayChance.getValue();
+                        this.delayChanceCounter = this.delayChanceCounter % 100 +
+                                this.delayChance.getValue();
                         if (this.delayChanceCounter >= 100) {
                             NightSky.delayManager.setDelayState(true, DelayModules.VELOCITY);
                             NightSky.delayManager.delayedPacket.offer(packet);
@@ -229,8 +204,6 @@ public class Velocity extends Module {
     public void onDisabled() {
         this.pendingExplosion = false;
         this.allowNext = true;
-        this.shouldJump = false;
-        this.jumpCooldown = 0;
     }
 
     @Override

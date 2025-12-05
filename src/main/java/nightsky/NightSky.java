@@ -68,7 +68,6 @@ public class NightSky {
         moduleManager.modules.put(AntiObfuscate.class, new AntiObfuscate());
         moduleManager.modules.put(AntiVoid.class, new AntiVoid());
         moduleManager.modules.put(ArrayList.class, new ArrayList());
-        moduleManager.modules.put(AutoThrow.class, new AutoThrow());
         moduleManager.modules.put(AutoClicker.class, new AutoClicker());
         moduleManager.modules.put(AutoHeal.class, new AutoHeal());
         moduleManager.modules.put(AutoTool.class, new AutoTool());
@@ -100,6 +99,7 @@ public class NightSky {
         moduleManager.modules.put(Jesus.class, new Jesus());
         moduleManager.modules.put(KeepSprint.class, new KeepSprint());
         moduleManager.modules.put(KillAura.class, new KillAura());
+        moduleManager.modules.put(KillAuraB.class, new KillAuraB());
         moduleManager.modules.put(LagRange.class, new LagRange());
         moduleManager.modules.put(LightningTracker.class, new LightningTracker());
         moduleManager.modules.put(LongJump.class, new LongJump());

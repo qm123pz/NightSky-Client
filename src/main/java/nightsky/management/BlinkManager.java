@@ -50,20 +50,14 @@ public class BlinkManager {
                 return false;
             }
             this.blinking = false;
-            if (Minecraft.getMinecraft().getNetHandler() != null) {
-                if(this.blinkModule == BlinkModules.AUTO_BLOCK)
-                {
-                    for (Packet<?> blinkedPacket : blinkedPackets) {
-                        PacketUtil.sendPacket(blinkedPacket);
-                    }
-                } else {
-                    for (Packet<?> blinkedPacket : blinkedPackets) {
-                        PacketUtil.sendPacketNoEvent(blinkedPacket);
-                    }
-                }
-                this.blinkedPackets.clear();
-                this.blinkModule = BlinkModules.NONE;
+            if (Minecraft.getMinecraft().getNetHandler() != null && this.blinkedPackets.isEmpty()) {
+                return true;
             }
+            for (Packet<?> blinkedPacket : blinkedPackets) {
+                PacketUtil.sendPacketNoEvent(blinkedPacket);
+            }
+            this.blinkedPackets.clear();
+            this.blinkModule = BlinkModules.NONE;
         }
         return true;
     }

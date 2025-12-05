@@ -36,12 +36,12 @@ public class InvManager extends Module {
     private boolean inventoryOpen = false;
     private boolean serverOpen = false;
     private boolean needsInventoryClose = false;
-    public final IntValue minDelay = new IntValue("MinDelay", 1, 0, 20);
-    public final IntValue maxDelay = new IntValue("MaxDelay", 2, 0, 20);
-    public final IntValue openDelay = new IntValue("OpenDelay", 1, 0, 20);
-    public final ModeValue mode = new ModeValue("Mode", 0, new String[]{"Normal", "Instant"});
+    public final IntValue minDelay = new IntValue("MinDelay", 0, 0, 20);
+    public final IntValue maxDelay = new IntValue("MaxDelay", 0, 0, 20);
+    public final IntValue openDelay = new IntValue("OpenDelay", 0, 0, 20);
+    public final ModeValue mode = new ModeValue("Mode", 1, new String[]{"Normal", "Instant"});
     public final BooleanValue autoArmor = new BooleanValue("AutoArmor", true);
-    public final BooleanValue dropTrash = new BooleanValue("DropTrash", false);
+    public final BooleanValue dropTrash = new BooleanValue("DropTrash", true);
     public final IntValue swordSlot = new IntValue("SwordSlot", 1, 0, 9);
     public final IntValue pickaxeSlot = new IntValue("PickaxeSlot", 8, 0, 9);
     public final IntValue shovelSlot = new IntValue("ShovelSlot", 7, 0, 9);
@@ -51,8 +51,9 @@ public class InvManager extends Module {
     public final IntValue throwsSlot = new IntValue("ThrowsSlot", 4, 0, 9);
     public final IntValue throwsAmount = new IntValue("ThrowsAmount", 64, 16, 320);
     public final IntValue gappleSlot = new IntValue("GappleSlot", 3, 0, 9);
-    public final BooleanValue silent = new BooleanValue("Silent", false);
-    public final BooleanValue noKillAura = new BooleanValue("NoKillAura", false);
+    public final BooleanValue silent = new BooleanValue("Silent", true);
+    public final BooleanValue noKillAura = new BooleanValue("NoKillAura", true);
+    public final BooleanValue noScaffold = new BooleanValue("NoScaffold", true);
 
     private boolean isValidGameMode() {
         GameType gameType = mc.playerController.getCurrentGameType();
@@ -193,11 +194,11 @@ public class InvManager extends Module {
                 }
                 if (this.oDelay <= 0 && (this.mode.getValue() == 1 || this.actionDelay <= 0)) {
                     if (this.isEnabled() && this.isValidGameMode()) {
-                        if (this.noKillAura.getValue()) {
+                        if (this.noKillAura.getValue() || this.noScaffold.getValue()) {
                             KillAura killAura = (KillAura) NightSky.moduleManager.modules.get(KillAura.class);
-                            if (killAura != null && killAura.isEnabled() && killAura.target != null) {
-                                return;
-                            }
+                            if (killAura != null && killAura.isEnabled() && killAura.target != null) return;
+                            Scaffold scaffold = (Scaffold) NightSky.moduleManager.modules.get(Scaffold.class);
+                            if (scaffold != null && scaffold.isEnabled()) return;
                         }
                         ArrayList<Integer> equippedArmorSlots = new ArrayList<>(Arrays.asList(-1, -1, -1, -1));
                         ArrayList<Integer> inventoryArmorSlots = new ArrayList<>(Arrays.asList(-1, -1, -1, -1));
