@@ -37,17 +37,37 @@ import nightsky.mixin.IAccessorMinecraft;
 import nightsky.NightSky;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
+import net.minecraft.client.renderer.texture.DynamicTexture;
 
 public class TargetESP extends Module {
     private static final Minecraft mc = Minecraft.getMinecraft();
 
     private final ModeValue mode = new ModeValue("MarkMode", 0, new String[]{"Points", "Ghost", "Image", "Exhi", "Circle"});
-    private final ModeValue imageMode = new ModeValue("ImageMode", 0, new String[]{"Rectangle", "QuadStapple", "TriangleStapple", "TriangleStipple", "ShenMi"}, () -> mode.getValue() == 2);
+    private final ModeValue imageMode = new ModeValue("ImageMode", 0, new String[]{"Rectangle", "QuadStapple", "TriangleStapple", "TriangleStipple", "Aim","Custom"}, () -> mode.getValue() == 2);
+    private final BooleanValue animation = new BooleanValue("Animation", true, () -> mode.getValue() == 2 && imageMode.getValue() == 5);
+    private final BooleanValue selectImage = new BooleanValue("SelectImage", false, () -> mode.getValue() == 2 && imageMode.getValue() == 5) {
+        @Override
+        public boolean setValue(Object value) {
+            boolean result = super.setValue(value);
+            if (result && (Boolean)value) {
+                selectCustomImage();
+                super.setValue(false);
+            }
+            return result;
+        }
+    };
     private final FloatValue circleSpeed = new FloatValue("CircleSpeed", 2.0F, 1.0F, 5.0F, () -> mode.getValue() == 4);
     private final BooleanValue onlyPlayer = new BooleanValue("OnlyPlayer", false);
+    private final BooleanValue showHurt = new BooleanValue("ShowHurt", false, () -> mode.getValue() == 2);
+    private ResourceLocation customImage = null;
+    private long lastHurtTime = 0;
+    private static final long HURT_DURATION = 500;
     
     private EntityLivingBase target;
-    private final TimerUtil timerUtil = new TimerUtil();
     private final TimerUtil displayTimer = new TimerUtil();
     private final TimerUtil animTimer = new TimerUtil();
     private long lastTime = System.currentTimeMillis();
@@ -58,12 +78,39 @@ public class TargetESP extends Module {
     private final ResourceLocation quadstapple = new ResourceLocation("minecraft", "nightsky/texture/targetesp/quadstapple.png");
     private final ResourceLocation trianglestapple = new ResourceLocation("minecraft", "nightsky/texture/targetesp/trianglestapple.png");
     private final ResourceLocation trianglestipple = new ResourceLocation("minecraft", "nightsky/texture/targetesp/trianglestipple.png");
-    private final ResourceLocation shenmi = new ResourceLocation("minecraft", "nightsky/texture/targetesp/shenmi.png");
+    private final ResourceLocation aim = new ResourceLocation("minecraft", "nightsky/texture/targetesp/shenmi.png");
     public double prevCircleStep;
     public double circleStep;
     
     public TargetESP() {
         super("TargetESP", false);
+    }
+    
+    private void selectCustomImage() {
+        new Thread(() -> {
+            FileDialog fileDialog = new FileDialog((Frame)null, "Select Custom Image", FileDialog.LOAD);
+            fileDialog.setFile("*.png");
+            fileDialog.setFilenameFilter((dir, name) -> name.toLowerCase().endsWith(".png"));
+            fileDialog.setVisible(true);
+            
+            String file = fileDialog.getFile();
+            if (file != null) {
+                String directory = fileDialog.getDirectory();
+                File imageFile = new File(directory, file);
+                try {
+                    BufferedImage image = ImageIO.read(imageFile);
+                    if (image != null) {
+                        ResourceLocation newImage = new ResourceLocation("nightsky", "custom_target_" + System.currentTimeMillis());
+                        mc.addScheduledTask(() -> {
+                            mc.getTextureManager().loadTexture(newImage, new DynamicTexture(image));
+                            customImage = newImage;
+                        });
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, "Image Selector Thread").start();
     }
     
     private Color getInterfaceColor() {
@@ -93,6 +140,12 @@ public class TargetESP extends Module {
     public void onPacket(PacketEvent event) {
         if (event.getType() == EventType.SEND && event.getPacket() instanceof C02PacketUseEntity) {
             C02PacketUseEntity packet = (C02PacketUseEntity) event.getPacket();
+            if (packet.getAction() == C02PacketUseEntity.Action.ATTACK) {
+                Entity entity = packet.getEntityFromWorld(mc.theWorld);
+                if (entity == target) {
+                    lastHurtTime = System.currentTimeMillis();
+                }
+            }
             if (packet.getAction() != C02PacketUseEntity.Action.ATTACK) {
                 return;
             }
@@ -121,6 +174,20 @@ public class TargetESP extends Module {
         }
     }
 
+    private float getHurtAlpha() {
+        if (!showHurt.getValue()) return 0.0f;
+        
+        long timeSinceHurt = System.currentTimeMillis() - lastHurtTime;
+        if (timeSinceHurt > HURT_DURATION) return 0.0f;
+        
+        float progress = (float) timeSinceHurt / HURT_DURATION;
+        if (progress < 0.5f) {
+            return progress * 2.0f;
+        } else {
+            return 2.0f - (progress * 2.0f);
+        }
+    }
+    
     private float getAlpha() {
         if (target == null) return 0.0f;
 
@@ -382,15 +449,28 @@ public class TargetESP extends Module {
 
     private void drawTargetESP2D(float x, float y, float scale, int index) {
         long millis = (System.currentTimeMillis() - lastTime) + index * 400L;
-        double angle = MathHelper.clamp_double((Math.sin(millis / 150.0) + 1.0) / 2.0 * 30.0, 0.0, 30.0);
-        double scaled = MathHelper.clamp_double((Math.sin(millis / 500.0) + 1.0) / 2.0, 0.8, 1.0);
-        double rotate = MathHelper.clamp_double((Math.sin(millis / 1000.0) + 1.0) / 2.0 * 360.0, 0.0, 360.0);
+        boolean useAnimation = imageMode.getValue() == 5 ? animation.getValue() : true;
+        double angle = useAnimation ? MathHelper.clamp_double((Math.sin(millis / 150.0) + 1.0) / 2.0 * 30.0, 0.0, 30.0) : 15.0;
+        double scaled = useAnimation ? MathHelper.clamp_double((Math.sin(millis / 500.0) + 1.0) / 2.0, 0.8, 1.0) : 0.9;
+        double rotate = useAnimation ? MathHelper.clamp_double((Math.sin(millis / 1000.0) + 1.0) / 2.0 * 360.0, 0.0, 360.0) : 0.0;
         rotate = (imageMode.getValue() == 1 ? 45 : 0) - (angle - 15.0) + rotate;
         
-        int color = ColorUtil.applyOpacity(getInterfaceColor(), 1.0f).getRGB();
-        int color2 = ColorUtil.applyOpacity(getInterfaceColor(), 1.0f).getRGB();
-        int color3 = ColorUtil.applyOpacity(getInterfaceColor(), 1.0f).getRGB();
-        int color4 = ColorUtil.applyOpacity(getInterfaceColor(), 1.0f).getRGB();
+        Color baseColor = getInterfaceColor();
+        float hurtAlpha = getHurtAlpha();
+        
+        Color hurtColor = new Color(255, 0, 0, 185);
+        Color baseWithAlpha = ColorUtil.applyOpacity(baseColor, 1.0f);
+        Color hurtWithAlpha = ColorUtil.applyOpacity(hurtColor, hurtAlpha);
+        
+        int r = (int)(baseWithAlpha.getRed() * (1 - hurtAlpha) + hurtWithAlpha.getRed() * hurtAlpha);
+        int g = (int)(baseWithAlpha.getGreen() * (1 - hurtAlpha) + hurtWithAlpha.getGreen() * hurtAlpha);
+        int b = (int)(baseWithAlpha.getBlue() * (1 - hurtAlpha) + hurtWithAlpha.getBlue() * hurtAlpha);
+        int a = (int)(baseWithAlpha.getAlpha() * (1 - hurtAlpha) + hurtWithAlpha.getAlpha() * hurtAlpha);
+        
+        int color = new Color(r, g, b, a).getRGB();
+        int color2 = color;
+        int color3 = color;
+        int color4 = color;
 
         rotate = 45 - (angle - 15.0) + rotate;
         float size = 128.0f * scale * (float) scaled;
@@ -426,7 +506,14 @@ public class TargetESP extends Module {
                 RenderUtil.drawImage(trianglestipple, renderX, renderY, x2, y2, color, color2, color3, color4);
                 break;
             case 4:
-                RenderUtil.drawImage(shenmi, renderX, renderY, x2, y2, color, color2, color3, color4);
+                RenderUtil.drawImage(aim, renderX, renderY, x2, y2, color, color2, color3, color4);
+                break;
+            case 5:
+                if (customImage != null) {
+                    RenderUtil.drawImage(customImage, renderX, renderY, x2, y2, color, color2, color3, color4);
+                } else {
+                    RenderUtil.drawImage(rectangle, renderX, renderY, x2, y2, color, color2, color3, color4);
+                }
                 break;
         }
 
