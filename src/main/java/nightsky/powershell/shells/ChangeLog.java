@@ -414,6 +414,25 @@ public class ChangeLog extends PowerShell {
                     "                <div class=\"timeline-node\"></div>\n" +
                     "                <div class=\"release-card\">\n" +
                     "                    <div class=\"release-header\">\n" +
+                    "                        <div class=\"release-title\">Release B2.1</div>\n" +
+                    "                        <div class=\"version\">v2.1</div>\n" +
+                    "                    </div>\n" +
+                    "                    <div class=\"release-content\">\n" +
+                    "                        <div class=\"release-item\">Added Custom TargetESP</div>\n" +
+                    "                        <div class=\"release-item\">Added OpenMyauKillAura(KillAuraB)</div>\n" +
+                    "                        <div class=\"release-item\">Fixed NoSlow Lag</div>\n" +
+                    "                        <div class=\"release-item\">Fixed InvManager SilentMode</div>\n" +
+                    "                        <div class=\"release-item\">Removed ChestStealer AuraMode</div>\n" +
+                    "                        <div class=\"release-item\">Rollback all changes to Velocity</div>\n" +
+                    "                    </div>\n" +
+                    "                </div>\n" +
+                    "            </div>\n" +
+                    "            \n" +
+                    "        <div class=\"timeline\">\n" +
+                    "            <div class=\"release\">\n" +
+                    "                <div class=\"timeline-node\"></div>\n" +
+                    "                <div class=\"release-card\">\n" +
+                    "                    <div class=\"release-header\">\n" +
                     "                        <div class=\"release-title\">Release B2</div>\n" +
                     "                        <div class=\"version\">v2</div>\n" +
                     "                    </div>\n" +
@@ -421,7 +440,7 @@ public class ChangeLog extends PowerShell {
                     "                        <div class=\"release-item\">Added DynamicIsland ChestDisplay</div>\n" +
                     "                        <div class=\"release-item\">Added DynamicIsland DynamicButton</div>\n" +
                     "                        <div class=\"release-item\">Added DynamicIsland CustomAnimationCurve</div>\n" +
-                    "                        <div class=\"release-item\">Added ShenMi🤔 TargetESP Mode</div>\n" +
+                    "                        <div class=\"release-item\">Added Aim🤔 TargetESP Mode</div>\n" +
                     "                        <div class=\"release-item\">Improved Blur Better</div>\n" +
                     "                        <div class=\"milestone\">Android and Render Update</div>\n" +
                     "                    </div>\n" +
