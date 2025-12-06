@@ -15,19 +15,20 @@ public class FontTransformer {
     private final Map<String, Font> fontCache = new HashMap<>();
     private String selectedFontName = "Arial";
     private float selectedFontSize = 18.0f;
-    
+
     private FontTransformer() {
         loadFonts();
     }
-    
+
     public static FontTransformer getInstance() {
         if (instance == null) {
             instance = new FontTransformer();
         }
         return instance;
     }
-    
+
     private void loadFonts() {
+        loadFont("icon", "/assets/minecraft/nightsky/font/icon.ttf");
         loadFont("Arial", "/assets/minecraft/nightsky/font/Arial.ttf");
         loadFont("ArialBold", "/assets/minecraft/nightsky/font/ArialBold.ttf");
         loadFont("RobotoMedium", "/assets/minecraft/nightsky/font/Roboto-Medium.ttf");
@@ -60,7 +61,7 @@ public class FontTransformer {
         loadFont("HarmonyOSBold","/assets/minecraft/nightsky/font/HarmonyOS-Bold.ttf");
         loadFont("HarmonyOSBlack","/assets/minecraft/nightsky/font/HarmonyOS-Black.ttf");
     }
-    
+
     private void loadFont(String name, String path) {
         try {
             InputStream fontStream = FontTransformer.class.getResourceAsStream(path);
@@ -72,38 +73,38 @@ public class FontTransformer {
         } catch (Exception e) {
         }
     }
-    
+
     public void setFont(String fontName, float size) {
         this.selectedFontName = fontName;
         this.selectedFontSize = size;
     }
-    
+
     public String getSelectedFontName() {
         return selectedFontName;
     }
-    
+
     public float getSelectedFontSize() {
         return selectedFontSize;
     }
-    
+
     public Font getFont(String fontName, float size) {
         if (fontName.equals("minecraft")) {
             return null;
         }
-        
+
         Font baseFont = fontCache.get(fontName);
         if (baseFont == null) {
             return null;
         }
-        
+
         float scaledSize = size * 0.5f;
         return baseFont.deriveFont(scaledSize);
     }
-    
+
     public boolean isMinecraftFont() {
         return selectedFontName.equals("minecraft");
     }
-    
+
     public String[] getAvailableFonts() {
         String[] fonts = new String[fontCache.size() + 1];
         fonts[0] = "minecraft";
@@ -113,40 +114,40 @@ public class FontTransformer {
         }
         return fonts;
     }
-    
-    
+
+
     public int getStringWidth(String text, String fontName, float size) {
         if (fontName.equals("minecraft")) {
             return Minecraft.getMinecraft().fontRendererObj.getStringWidth(text);
         }
-        
+
         Font font = fontCache.get(fontName);
         if (font == null) {
             return Minecraft.getMinecraft().fontRendererObj.getStringWidth(text);
         }
-        
+
         float scaledSize = size * 0.5f;
         font = font.deriveFont(scaledSize);
         FontRenderContext frc = new FontRenderContext(new AffineTransform(), false, false);
         Rectangle2D bounds = font.getStringBounds(text, frc);
         return (int)Math.round(bounds.getWidth());
     }
-    
+
     public int getFontHeight(String fontName, float size) {
         if (fontName.equals("minecraft")) {
             return Minecraft.getMinecraft().fontRendererObj.FONT_HEIGHT;
         }
-        
+
         Font font = fontCache.get(fontName);
         if (font == null) {
             return Minecraft.getMinecraft().fontRendererObj.FONT_HEIGHT;
         }
-        
+
         float scaledSize = size * 0.5f;
         font = font.deriveFont(scaledSize);
         FontRenderContext frc = new FontRenderContext(new AffineTransform(), false, false);
         Rectangle2D bounds = font.getStringBounds("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", frc);
         return (int) Math.round(bounds.getHeight());
     }
-    
+
 }
