@@ -84,6 +84,7 @@ public class Scaffold extends Module {
     public final BooleanValue swing = new BooleanValue("Swing", true);
     public final BooleanValue itemSpoof = new BooleanValue("ItemSpoof", false);
     public final BooleanValue blockCounter = new BooleanValue("BlockCounter", true);
+    public final BooleanValue textShadow = new BooleanValue("TextShadow", true);
 
     private boolean shouldStopSprint() {
         if (this.isTowering()) {
@@ -272,7 +273,7 @@ public class Scaffold extends Module {
                 }
                 if (this.stage == 0
                         && this.keepY.getValue() != 0
-                        && (!(java.lang.Boolean) this.keepYonPress.getValue() || PlayerUtil.isUsingItem())
+                        && (!(Boolean) this.keepYonPress.getValue() || PlayerUtil.isUsingItem())
                         && !mc.gameSettings.keyBindJump.isKeyDown()) {
                     this.stage = 1;
                 }
@@ -678,6 +679,8 @@ public class Scaffold extends Module {
                     }
                 }
                 float scale = 1;
+                boolean textshadow = false;
+                if (textShadow.getValue()) textshadow = true;
                 GlStateManager.pushMatrix();
                 GlStateManager.scale(scale, scale, 0.0F);
                 GlStateManager.disableDepth();
@@ -688,7 +691,8 @@ public class Scaffold extends Module {
                                 String.format("%d block%s left", count, count != 1 ? "s" : ""),
                                 (int) (((float) new ScaledResolution(mc).getScaledWidth() / 2.0F + (float) mc.fontRendererObj.FONT_HEIGHT * 1.5F) / scale),
                                 (int) ((float) new ScaledResolution(mc).getScaledHeight() / 2.0F / scale - (float) mc.fontRendererObj.FONT_HEIGHT / 2.0F + 1.0F),
-                                (count > 0 ? Color.WHITE.getRGB() : new Color(255, 85, 85).getRGB()) | -1090519040
+                                (count > 0 ? Color.WHITE.getRGB() : new Color(255, 85, 85).getRGB()) | -1090519040,
+                                textshadow
                         );
                 GlStateManager.disableBlend();
                 GlStateManager.enableDepth();
@@ -772,8 +776,7 @@ public class Scaffold extends Module {
         if (mc.thePlayer == null) return;
         
         long currentTime = System.currentTimeMillis();
-        
-        // 每毫秒都更新位置和距离
+
         double currentX = mc.thePlayer.posX;
         double currentZ = mc.thePlayer.posZ;
         double deltaX = currentX - this.lastX;
@@ -783,15 +786,12 @@ public class Scaffold extends Module {
         this.distanceThisSecond += distance;
         this.lastX = currentX;
         this.lastZ = currentZ;
-        
-        // 实时计算BPS (每毫秒更新)
+
         long timeDiff = currentTime - this.bpsResetTime;
         if (timeDiff > 0) {
-            // 计算当前的实时BPS
             this.currentBPS = (float) (this.distanceThisSecond * (1000.0 / timeDiff));
         }
-        
-        // 每秒重置一次计算
+
         if (timeDiff >= 1000) {
             this.distanceThisSecond = 0;
             this.bpsResetTime = currentTime;
@@ -819,10 +819,8 @@ public class Scaffold extends Module {
     
     public ItemStack getCurrentScaffoldBlock() {
         if (mc.thePlayer == null) return null;
-        
-        // 如果ItemSpoof开启，需要查找实际要使用的方块
+
         if (this.itemSpoof.getValue()) {
-            // 遍历背包寻找可用的方块
             for (int i = 0; i < 9; i++) {
                 ItemStack stack = mc.thePlayer.inventory.getStackInSlot(i);
                 if (stack != null && stack.getItem() instanceof ItemBlock) {
@@ -833,7 +831,6 @@ public class Scaffold extends Module {
                 }
             }
         } else {
-            // 正常情况下返回手持物品
             ItemStack heldItem = mc.thePlayer.getHeldItem();
             if (heldItem != null && heldItem.getItem() instanceof ItemBlock) {
                 return heldItem;
