@@ -158,7 +158,9 @@ public class InvManager extends Module {
     public void onUpdate(UpdateEvent event) {
         if (event.getType() == EventType.PRE) {
             if (this.silent.getValue()) {
-                if (mc.currentScreen instanceof GuiChest) {
+                Module chestStealerModule = NightSky.moduleManager.modules.get(ChestStealer.class);
+                if (chestStealerModule != null && chestStealerModule.isEnabled() &&
+                        ((ChestStealer)chestStealerModule).isWorking()) {
                     return;
                 }
                 if (!this.serverOpen) {

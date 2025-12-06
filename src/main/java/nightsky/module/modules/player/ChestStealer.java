@@ -51,6 +51,10 @@ public class ChestStealer extends Module {
         super("ChestStealer", false);
     }
 
+    public boolean isWorking() {
+        return this.inChest && this.isEnabled();
+    }
+
     @EventTarget
     public void onUpdate(UpdateEvent event) {
         if (event.getType() == EventType.PRE) {

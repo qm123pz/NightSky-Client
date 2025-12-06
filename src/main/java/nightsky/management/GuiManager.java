@@ -1,6 +1,6 @@
 package nightsky.management;
 
-import nightsky.ui.clickgui.ClickGui;
+import nightsky.ui.clickgui.idea.ClickGui;
 import nightsky.ui.clickgui.augustus.AugustusClickGui;
 import net.minecraft.client.Minecraft;
 import nightsky.ui.clickgui.best.BestClickGui;

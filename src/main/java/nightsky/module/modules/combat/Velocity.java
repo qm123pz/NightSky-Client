@@ -1,11 +1,14 @@
 package nightsky.module.modules.combat;
 
 import com.google.common.base.CaseFormat;
+import net.minecraft.network.play.client.C02PacketUseEntity;
 import nightsky.NightSky;
+import nightsky.enums.BlinkModules;
 import nightsky.enums.DelayModules;
 import nightsky.event.EventTarget;
 import nightsky.event.types.EventType;
 import nightsky.events.*;
+import nightsky.management.BlinkManager;
 import nightsky.mixin.IAccessorEntity;
 import nightsky.module.Module;
 import nightsky.module.modules.movement.LongJump;
@@ -29,10 +32,18 @@ public class Velocity extends Module {
     private boolean jumpFlag = false;
     private boolean reverseFlag = false;
     private boolean delayActive = false;
+    long lastAttackTime;
+    long blinkStartTime = System.currentTimeMillis();
+    long blinkDuration = 95;
 
-    public final ModeValue mode = new ModeValue("mode", 4, new String[]{"Vanilla", "Jump", "Delay", "Reverse"});
+    public final ModeValue mode = new ModeValue("mode", 2, new String[]{"Vanilla", "Jump", "Prediction", "Reverse"});
     public final IntValue delayTicks = new IntValue("DelayTicks", 3, 1, 20, () -> this.mode.getValue() == 2);
     public final PercentValue delayChance = new PercentValue("DelayChange", 100, () -> this.mode.getValue() == 2);
+    public final BooleanValue jumpReset = new BooleanValue("JumpReset", true, () -> this.mode.getValue() == 2);
+    public final BooleanValue reduce = new BooleanValue("Reduce", false);
+    public final IntValue reduceHurttime = new IntValue("ReduceHurttime", 9, 1, 10, () -> this.mode.getValue() == 2);
+    public final FloatValue reduceFactor = new FloatValue("ReduceFactor", 0.6f, 0.1f, 1f, () -> this.mode.getValue() == 2);
+    public final BooleanValue test = new BooleanValue("Test", true, () -> this.mode.getValue() == 2);
     public final PercentValue chance = new PercentValue("Change", 100);
     public final PercentValue horizontal = new PercentValue("Horizontal", 100);
     public final PercentValue vertical = new PercentValue("Vertical", 100);
@@ -147,6 +158,39 @@ public class Velocity extends Module {
                             NightSky.delayManager.delayedPacket.offer(packet);
                             event.setCancelled(true);
                             this.reverseFlag = true;
+                            if (jumpReset.getValue()) {
+                                int start = 0;
+                                if (mc.thePlayer.hurtTime >= 8) {
+                                    mc.gameSettings.keyBindJump.isPressed();
+                                }
+                                if (mc.thePlayer.hurtTime >= 7 && !mc.gameSettings.keyBindForward.isPressed()) {
+                                    mc.gameSettings.keyBindForward.isPressed();
+                                    start = 1;
+                                }
+                                if (mc.thePlayer.hurtTime < 7 && mc.thePlayer.hurtTime > 0) {
+                                    mc.gameSettings.keyBindJump.isPressed();
+                                    if (start == 1) {
+                                        mc.gameSettings.keyBindForward.isPressed();
+                                    }
+                                }
+                            }
+                            if (event.getType() == EventType.SEND && event.getPacket() instanceof C02PacketUseEntity){
+                            C02PacketUseEntity packet2 = (C02PacketUseEntity) event.getPacket();
+                            if(packet2.getAction() == C02PacketUseEntity.Action.ATTACK && reduce.getValue() && mode.getValue() == 2) {
+                                if (mc.thePlayer.hurtTime == reduceHurttime.getValue() && System.currentTimeMillis() - lastAttackTime <= 8000) {
+                                    mc.thePlayer.motionX *= reduceFactor.getValue();
+                                    mc.thePlayer.motionZ *= reduceFactor.getValue();
+                                }
+                                lastAttackTime = System.currentTimeMillis();
+                                }
+                            }
+                            if(test.getValue()){
+                                if(System.currentTimeMillis() - blinkStartTime < blinkDuration){
+                                    NightSky.blinkManager.setBlinkState(true, BlinkModules.BLINK);
+                                } else {
+                                    NightSky.blinkManager.setBlinkState(false, BlinkModules.BLINK);
+                                }
+                            }
                             return;
                         }
                     }

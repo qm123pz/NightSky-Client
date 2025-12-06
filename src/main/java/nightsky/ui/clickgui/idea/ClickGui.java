@@ -1,6 +1,6 @@
-package nightsky.ui.clickgui;
+package nightsky.ui.clickgui.idea;
 
-import nightsky.ui.clickgui.panel.MainPanel;
+import nightsky.ui.clickgui.idea.panel.MainPanel;
 import net.minecraft.client.gui.GuiScreen;
 
 public class ClickGui extends GuiScreen {

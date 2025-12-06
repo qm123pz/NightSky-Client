@@ -1,4 +1,4 @@
-package nightsky.ui.clickgui.panel;
+package nightsky.ui.clickgui.idea.panel;
 
 import nightsky.ui.Screen;
 import nightsky.module.Module;
