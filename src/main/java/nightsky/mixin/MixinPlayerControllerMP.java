@@ -1,9 +1,11 @@
 package nightsky.mixin;
 
 import nightsky.event.EventManager;
+import nightsky.events.AttackEvent;
 import nightsky.events.CancelUseEvent;
 import nightsky.events.WindowClickEvent;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.relauncher.Side;
@@ -17,6 +19,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @SideOnly(Side.CLIENT)
 @Mixin({PlayerControllerMP.class})
 public abstract class MixinPlayerControllerMP {
+
+    @Inject(
+            method = "attackEntity",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/PlayerControllerMP;syncCurrentPlayItem()V"))
+    private void attackEntity(
+            EntityPlayer entityPlayer, Entity targetEntity, CallbackInfo callbackInfo
+    ) {
+        AttackEvent event = new AttackEvent(targetEntity);
+        EventManager.call(event);
+    }
     @Inject(
             method = {"windowClick"},
             at = {@At("HEAD")},

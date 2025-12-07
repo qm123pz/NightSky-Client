@@ -4,13 +4,23 @@ import net.minecraft.entity.Entity;
 import nightsky.event.events.Event;
 
 public class AttackEvent implements Event {
-    private final Entity targetEntity;
-    
-    public AttackEvent(Entity targetEntity) {
-        this.targetEntity = targetEntity;
+    private final Entity target;
+    private boolean cancelled;
+
+    public AttackEvent(Entity target) {
+        this.target = target;
+        this.cancelled = false;
     }
 
-    public Entity getTargetEntity() {
-        return targetEntity;
+    public Entity getTarget() {
+        return this.target;
+    }
+
+    public boolean isCancelled() {
+        return this.cancelled;
+    }
+
+    public void setCancelled(boolean cancelled) {
+        this.cancelled = cancelled;
     }
 }

@@ -36,7 +36,7 @@ public class Velocity extends Module {
     long blinkStartTime = System.currentTimeMillis();
     long blinkDuration = 95;
 
-    public final ModeValue mode = new ModeValue("mode", 2, new String[]{"Vanilla", "Jump", "Prediction", "Reverse"});
+    public final ModeValue mode = new ModeValue("Mode", 2, new String[]{"Vanilla", "Jump", "Prediction", "Reverse"});
     public final IntValue delayTicks = new IntValue("DelayTicks", 3, 1, 20, () -> this.mode.getValue() == 2);
     public final PercentValue delayChance = new PercentValue("DelayChange", 100, () -> this.mode.getValue() == 2);
     public final BooleanValue jumpReset = new BooleanValue("JumpReset", true, () -> this.mode.getValue() == 2);
@@ -180,6 +180,9 @@ public class Velocity extends Module {
                                 if (mc.thePlayer.hurtTime == reduceHurttime.getValue() && System.currentTimeMillis() - lastAttackTime <= 8000) {
                                     mc.thePlayer.motionX *= reduceFactor.getValue();
                                     mc.thePlayer.motionZ *= reduceFactor.getValue();
+                                    if (debugLog.getValue()) {
+                                        ChatUtil.sendFormatted("Reduce!");
+                                    }
                                 }
                                 lastAttackTime = System.currentTimeMillis();
                                 }

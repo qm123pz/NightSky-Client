@@ -34,11 +34,11 @@ public class NoSlow
     private static final long SPRINT_COOLDOWN_MS = 300L;
     private boolean isBlinking = false;
     private int blinkTimer = 0;
-    public final ModeValue swordMode = new ModeValue("sword-mode", 1, new String[]{"NONE", "VANILLA", "BLINK"});
+    public final ModeValue swordMode = new ModeValue("sword-mode", 2, new String[]{"NONE", "VANILLA", "BLINK"});
     public final PercentValue swordMotion = new PercentValue("sword-motion", 100, () -> (Integer)this.swordMode.getValue() != 0);
     public final BooleanValue swordSprint = new BooleanValue("sword-sprint", true, () -> (Integer)this.swordMode.getValue() != 0);
-    public final IntValue swordBlinkDelay = new IntValue("sword-blink-delay", 2, 1, 10, () -> (Integer)this.swordMode.getValue() == 2);
-    public final IntValue swordBlinkDuration = new IntValue("sword-blink-duration", 1, 1, 5, () -> (Integer)this.swordMode.getValue() == 2);
+    public final IntValue swordBlinkDelay = new IntValue("sword-blink-delay", 1, 1, 10, () -> (Integer)this.swordMode.getValue() == 2);
+    public final IntValue swordBlinkDuration = new IntValue("sword-blink-duration", 2, 1, 5, () -> (Integer)this.swordMode.getValue() == 2);
     public final ModeValue foodMode = new ModeValue("food-mode", 0, new String[]{"NONE", "VANILLA", "FLOAT", "BLINK"});
     public final PercentValue foodMotion = new PercentValue("food-motion", 100, () -> (Integer)this.foodMode.getValue() != 0);
     public final BooleanValue foodSprint = new BooleanValue("food-sprint", true, () -> (Integer)this.foodMode.getValue() != 0);

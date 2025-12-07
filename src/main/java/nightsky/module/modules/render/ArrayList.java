@@ -36,7 +36,7 @@ public class ArrayList extends Module {
     public final IntValue blurStrength = new IntValue("Blur Strength", 10, 1, 70);
     public final BooleanValue bloom = new BooleanValue("Bloom", false);
     public final BooleanValue bloomColorFromInterface = new BooleanValue("Bloom Color From Interface", false);
-    public final ColorValue bloomColor = new ColorValue("Bloom Color", new Color(255, 255, 255).getRGB());
+    public final ColorValue bloomColor = new ColorValue("Bloom Color", new Color(0, 0, 0).getRGB());
     public final IntValue bloomIterations = new IntValue("Bloom Iterations", 5, 1, 10);
     public final IntValue bloomOffset = new IntValue("Bloom Offset", 3, 1, 10);
     public final IntValue positionOffset = new IntValue("Position", 0, -1, 100);
