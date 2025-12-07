@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.ScorePlayerTeam;
@@ -13,6 +14,9 @@ import nightsky.event.EventTarget;
 import nightsky.module.Module;
 import nightsky.value.values.BooleanValue;
 import nightsky.value.values.IntValue;
+import nightsky.value.values.ColorValue;
+import nightsky.util.render.RenderUtil;
+import nightsky.util.shader.BloomShader;
 
 import java.util.Collection;
 import java.util.List;
@@ -23,6 +27,10 @@ public class Scoreboard extends Module {
     public final BooleanValue hide = new BooleanValue("Hide", false);
     public final IntValue offsetX = new IntValue("OffsetX", 0, -1000, 200);
     public final IntValue offsetY = new IntValue("OffsetY", 0, -600, 200);
+    public final BooleanValue bloom = new BooleanValue("Bloom", false);
+    public final ColorValue bloomColor = new ColorValue("BloomColor", new java.awt.Color(255, 255, 255).getRGB());
+    public final IntValue bloomIterations = new IntValue("BloomIterations", 5, 1, 10);
+    public final IntValue bloomOffset = new IntValue("BloomOffset", 3, 1, 10);
     
     public static Scoreboard instance;
     private boolean isRenderingCustom = false;
@@ -91,9 +99,25 @@ public class Scoreboard extends Module {
             int backgroundColor = 0x90505050;
             int headerColor = 0x90FF0000;
             
+            Framebuffer bloomBuffer = null;
+            float glowWidth = (posX + maxWidth) - (posX - 2);
+            float glowHeight = (posY + height) - (posY - mc.fontRendererObj.FONT_HEIGHT - 1);
+            if (bloom.getValue()) {
+                bloomBuffer = BloomShader.beginFramebuffer();
+                java.awt.Color baseColor = new java.awt.Color(bloomColor.getValue());
+                int glowColor = new java.awt.Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), 255).getRGB();
+                RenderUtil.drawRect(posX - 2, posY - mc.fontRendererObj.FONT_HEIGHT - 1, glowWidth, glowHeight, glowColor);
+                RenderUtil.drawRect(posX - 2, posY - 1, glowWidth, 1, glowColor);
+                mc.getFramebuffer().bindFramebuffer(false);
+            }
+            
             GlStateManager.enableBlend();
             Gui.drawRect(posX - 2, posY - mc.fontRendererObj.FONT_HEIGHT - 1, posX + maxWidth, posY + height, backgroundColor);
             Gui.drawRect(posX - 2, posY - 1, posX + maxWidth, posY, headerColor);
+            
+            if (bloomBuffer != null) {
+                BloomShader.renderBloom(bloomBuffer.framebufferTexture, bloomIterations.getValue(), bloomOffset.getValue());
+            }
             
             mc.fontRendererObj.drawString(scoreobjective.getDisplayName(), posX + maxWidth / 2 - mc.fontRendererObj.getStringWidth(scoreobjective.getDisplayName()) / 2, posY - mc.fontRendererObj.FONT_HEIGHT, 0xFFFFFF);
             

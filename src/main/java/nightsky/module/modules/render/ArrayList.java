@@ -3,11 +3,14 @@ package nightsky.module.modules.render;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.shader.Framebuffer;
 import nightsky.NightSky;
 import nightsky.events.Render2DEvent;
 import nightsky.event.EventTarget;
 import nightsky.module.Module;
+import nightsky.util.render.animations.advanced.Direction;
 import nightsky.value.values.BooleanValue;
+import nightsky.value.values.ColorValue;
 import nightsky.value.values.FloatValue;
 import nightsky.value.values.IntValue;
 import nightsky.value.values.ModeValue;
@@ -17,7 +20,7 @@ import nightsky.util.render.BlurUtil;
 import nightsky.font.FontRenderer;
 import nightsky.util.render.animations.Translate;
 import nightsky.util.render.animations.advanced.Animation;
-import nightsky.util.render.animations.advanced.Direction;
+import nightsky.util.shader.BloomShader;
 
 import java.awt.*;
 import java.util.Comparator;
@@ -31,6 +34,11 @@ public class ArrayList extends Module {
     public final IntValue bgAlpha = new IntValue("Back Ground Alpha", 100, 1, 255);
     public final BooleanValue blurBackground = new BooleanValue("Blur", true);
     public final IntValue blurStrength = new IntValue("Blur Strength", 10, 1, 70);
+    public final BooleanValue bloom = new BooleanValue("Bloom", false);
+    public final BooleanValue bloomColorFromInterface = new BooleanValue("Bloom Color From Interface", false);
+    public final ColorValue bloomColor = new ColorValue("Bloom Color", new Color(255, 255, 255).getRGB());
+    public final IntValue bloomIterations = new IntValue("Bloom Iterations", 5, 1, 10);
+    public final IntValue bloomOffset = new IntValue("Bloom Offset", 3, 1, 10);
     public final IntValue positionOffset = new IntValue("Position", 0, -1, 100);
     public final FloatValue textHeight = new FloatValue("Text Height", 4f, 0f, 10f);
 
@@ -108,6 +116,20 @@ public class ArrayList extends Module {
                     RenderUtil.drawRect(rect[0], rect[1], rect[2], rect[3],
                         new Color(21, 21, 21, (int)bgAlpha.getValue().floatValue()).getRGB());
                 }
+            }
+
+            if (backgroundValue.getValue() && bloom.getValue() && !moduleRects.isEmpty()) {
+                Framebuffer bloomBuffer = BloomShader.beginFramebuffer();
+                int index = 0;
+                for (float[] rect : moduleRects) {
+                    int color = bloomColorFromInterface.getValue() && interfaceModule != null
+                        ? interfaceModule.color(index)
+                        : bloomColor.getValue();
+                    RenderUtil.drawRect(rect[0], rect[1], rect[2], rect[3], ColorUtil.swapAlpha(color, 255));
+                    index++;
+                }
+                mc.getFramebuffer().bindFramebuffer(false);
+                BloomShader.renderBloom(bloomBuffer.framebufferTexture, bloomIterations.getValue(), bloomOffset.getValue());
             }
 
             yValue = 1 + positionOffset.getValue();
@@ -209,6 +231,20 @@ public class ArrayList extends Module {
                     RenderUtil.drawRect(rect[0], rect[1], rect[2], rect[3],
                         new Color(21, 21, 21, (int)bgAlpha.getValue().floatValue()).getRGB());
                 }
+            }
+
+            if (backgroundValue.getValue() && bloom.getValue() && !moduleRects.isEmpty()) {
+                Framebuffer bloomBuffer = BloomShader.beginFramebuffer();
+                int index = 0;
+                for (float[] rect : moduleRects) {
+                    int color = bloomColorFromInterface.getValue() && interfaceModule != null
+                        ? interfaceModule.color(index)
+                        : bloomColor.getValue();
+                    RenderUtil.drawRect(rect[0], rect[1], rect[2], rect[3], ColorUtil.swapAlpha(color, 255));
+                    index++;
+                }
+                mc.getFramebuffer().bindFramebuffer(false);
+                BloomShader.renderBloom(bloomBuffer.framebufferTexture, bloomIterations.getValue(), bloomOffset.getValue());
             }
 
             yValue = 1 + positionOffset.getValue();

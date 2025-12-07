@@ -4,16 +4,19 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.shader.Framebuffer;
 import nightsky.event.EventTarget;
 import nightsky.events.Render2DEvent;
 import nightsky.module.Module;
 import nightsky.NightSky;
 import nightsky.value.values.BooleanValue;
 import nightsky.value.values.IntValue;
+import nightsky.value.values.ColorValue;
 import nightsky.font.FontTransformer;
 import nightsky.font.CustomFontRenderer;
 import nightsky.util.render.BlurUtil;
 import nightsky.util.render.RenderUtil;
+import nightsky.util.shader.BloomShader;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
@@ -28,6 +31,10 @@ public class NotificationDisplay extends Module {
     private final IntValue blurStrength = new IntValue("BlurStrength", 12, 1, 70);
     private final BooleanValue shadow = new BooleanValue("Shadow", false);
     private final IntValue bgAlpha = new IntValue("BackgroundAlpha", 45, 1, 255);
+    private final BooleanValue bloom = new BooleanValue("Bloom", false);
+    private final ColorValue bloomColor = new ColorValue("BloomColor", new Color(255, 255, 255).getRGB());
+    private final IntValue bloomIterations = new IntValue("BloomIterations", 5, 1, 10);
+    private final IntValue bloomOffset = new IntValue("BloomOffset", 3, 1, 10);
 
     private final Minecraft mc = Minecraft.getMinecraft();
 
@@ -147,9 +154,13 @@ public class NotificationDisplay extends Module {
                 GlStateManager.translate(-centerX, -centerY, 0);
                 
                 float renderAlpha = Math.max(0f, Math.min(1f, state.alpha));
-                drawNotification(notification, x, y, renderAlpha);
+                Framebuffer bloomBuffer = drawNotification(notification, x, y, renderAlpha);
                 
                 GlStateManager.popMatrix();
+                
+                if (bloomBuffer != null) {
+                    BloomShader.renderBloom(bloomBuffer.framebufferTexture, bloomIterations.getValue(), bloomOffset.getValue());
+                }
                 position++;
             }
         }
@@ -272,7 +283,16 @@ public class NotificationDisplay extends Module {
         return 1 + c3 * (float)Math.pow(t - 1, 3) + c1 * (float)Math.pow(t - 1, 2);
     }
 
-    private void drawNotification(ModuleToggleNotification notification, float x, float y, float alpha) {
+    private Framebuffer drawNotification(ModuleToggleNotification notification, float x, float y, float alpha) {
+        Framebuffer bloomBuffer = null;
+        if (bloom.getValue()) {
+            bloomBuffer = BloomShader.beginFramebuffer();
+            Color baseColor = new Color(bloomColor.getValue());
+            int glowAlpha = Math.min(255, Math.max(0, (int)(255 * alpha)));
+            int glowColor = new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), glowAlpha).getRGB();
+            RenderUtil.drawRoundedRect(x, y, NOTIFICATION_WIDTH, NOTIFICATION_HEIGHT, NOTIFICATION_RADIUS, glowColor);
+            mc.getFramebuffer().bindFramebuffer(false);
+        }
         int bgAlphaValue = (int)(bgAlpha.getValue() * alpha);
         int textAlphaValue = (int)(255 * alpha);
 
@@ -289,6 +309,7 @@ public class NotificationDisplay extends Module {
         RenderUtil.drawRoundedRect(x, y, NOTIFICATION_WIDTH, NOTIFICATION_HEIGHT, NOTIFICATION_RADIUS, bgColor);
 
         drawNotificationContent(notification, x, y, textAlphaValue);
+        return bloomBuffer;
     }
 
     private void drawNotificationContent(ModuleToggleNotification notification, float x, float y, int alpha) {

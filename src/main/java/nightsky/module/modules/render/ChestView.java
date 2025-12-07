@@ -26,6 +26,8 @@ import nightsky.util.render.BlurUtil;
 import nightsky.util.render.RenderUtil;
 import nightsky.value.values.BooleanValue;
 import nightsky.value.values.IntValue;
+import nightsky.value.values.ColorValue;
+import nightsky.util.shader.BloomShader;
 import nightsky.mixin.IAccessorRenderManager;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.Display;
@@ -44,6 +46,10 @@ public class ChestView extends Module {
     private final IntValue blurStrength = new IntValue("BlurStrength", 12, 1, 70);
     private final BooleanValue shadow = new BooleanValue("Shadow", true);
     private final IntValue bgAlpha = new IntValue("BackgroundAlpha", 120, 1, 255);
+    private final BooleanValue bloom = new BooleanValue("Bloom", false);
+    private final ColorValue bloomColor = new ColorValue("BloomColor", new Color(255, 255, 255).getRGB());
+    private final IntValue bloomIterations = new IntValue("BloomIterations", 5, 1, 10);
+    private final IntValue bloomOffset = new IntValue("BloomOffset", 3, 1, 10);
     
     private BlockPos currentContainerPos;
     private float[] cachedProjection;
@@ -134,6 +140,15 @@ public class ChestView extends Module {
             GlStateManager.scale(viewScale, viewScale, 1);
             GlStateManager.translate(-centerX, -centerY, 0);
             
+            net.minecraft.client.shader.Framebuffer bloomBuffer = null;
+            if (bloom.getValue()) {
+                bloomBuffer = BloomShader.beginFramebuffer();
+                Color baseColor = new Color(bloomColor.getValue());
+                int glowColor = new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), 255).getRGB();
+                RenderUtil.drawRoundedRect(roundX, roundY, 164, 60, 3, glowColor);
+                mc.getFramebuffer().bindFramebuffer(false);
+            }
+            
             if (blur.getValue()) {
                 BlurUtil.blurAreaRounded(roundX, roundY, roundX + 164, roundY + 60, 3, blurStrength.getValue().floatValue());
             }
@@ -143,6 +158,10 @@ public class ChestView extends Module {
             }
             
             RenderUtil.drawRoundedRect(roundX, roundY, 164, 60, 3, new Color(0, 0, 0, bgAlpha.getValue()));
+            
+            if (bloomBuffer != null) {
+                BloomShader.renderBloom(bloomBuffer.framebufferTexture, bloomIterations.getValue(), bloomOffset.getValue());
+            }
             
             double startX = roundX + 5;
             double startY = roundY + 5;

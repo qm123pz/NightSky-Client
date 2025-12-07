@@ -288,6 +288,43 @@ public class RenderUtil {
         GL11.glEnd();
     }
 
+    public static void drawQuads() {
+        ScaledResolution sr = new ScaledResolution(mc);
+        GL11.glBegin(GL11.GL_QUADS);
+        GL11.glTexCoord2d(0.0, 1.0);
+        GL11.glVertex2d(0.0, 0.0);
+        GL11.glTexCoord2d(0.0, 0.0);
+        GL11.glVertex2d(0.0, sr.getScaledHeight());
+        GL11.glTexCoord2d(1.0, 0.0);
+        GL11.glVertex2d(sr.getScaledWidth(), sr.getScaledHeight());
+        GL11.glTexCoord2d(1.0, 1.0);
+        GL11.glVertex2d(sr.getScaledWidth(), 0.0);
+        GL11.glEnd();
+    }
+
+    public static void setAlphaLimit(float limit) {
+        GlStateManager.enableAlpha();
+        GlStateManager.alphaFunc(GL11.GL_GREATER, limit * 0.01f);
+    }
+
+    public static Framebuffer createFrameBuffer(Framebuffer framebuffer) {
+        return createFrameBuffer(framebuffer, false);
+    }
+
+    public static Framebuffer createFrameBuffer(Framebuffer framebuffer, boolean depth) {
+        if (framebuffer == null || framebuffer.framebufferWidth != mc.displayWidth || framebuffer.framebufferHeight != mc.displayHeight) {
+            if (framebuffer != null) {
+                framebuffer.deleteFramebuffer();
+            }
+            return new Framebuffer(mc.displayWidth, mc.displayHeight, depth);
+        }
+        return framebuffer;
+    }
+
+    public static void bindTexture(int texture) {
+        GlStateManager.bindTexture(texture);
+    }
+
     public static void drawCircle(double centerX, double centerY, double centerZ, double radius, int segments, int color) {
         RenderUtil.setColor(color);
         GL11.glLineWidth(3.0f);
