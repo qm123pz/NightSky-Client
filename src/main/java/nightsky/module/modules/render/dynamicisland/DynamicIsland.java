@@ -5,6 +5,7 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import nightsky.event.EventTarget;
@@ -15,6 +16,7 @@ import nightsky.module.modules.misc.NickHider;
 import nightsky.module.modules.render.dynamicisland.notification.*;
 import nightsky.util.GetIPUtil;
 import nightsky.value.values.BooleanValue;
+import nightsky.value.values.ColorValue;
 import nightsky.value.values.IntValue;
 import nightsky.value.values.FloatValue;
 import nightsky.value.values.ModeValue;
@@ -25,6 +27,7 @@ import nightsky.ui.command.CommandInterface;
 import nightsky.events.KeyEvent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
+import nightsky.util.shader.BloomShader;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -38,6 +41,10 @@ public class DynamicIsland extends Module {
     private final IntValue blurStrength = new IntValue("BlurStrength", 100, 1, 200);
     private final BooleanValue dropShadow = new BooleanValue("Shadow", true);
     private final IntValue bgAlpha = new IntValue("BackgroundAlpha", 40, 1, 255);
+    private final BooleanValue bloom = new BooleanValue("Bloom", false);
+    private final ColorValue bloomColor = new ColorValue("BloomColor", new Color(255, 255, 255).getRGB());
+    private final IntValue bloomIterations = new IntValue("BloomIterations", 5, 1, 10);
+    private final IntValue bloomOffset = new IntValue("BloomOffset", 3, 1, 10);
     private final BooleanValue showNotifications = new BooleanValue("ShowNotifications", true);
     
     private final ModeValue animationMode = new ModeValue("AnimationMode", 0, new String[]{"Normal", "Custom"});
@@ -915,6 +922,15 @@ public class DynamicIsland extends Module {
             radius = 32.0f;
         }
 
+        Framebuffer bloomBuffer = null;
+        if (bloom.getValue()) {
+            bloomBuffer = BloomShader.beginFramebuffer();
+            Color color = new Color(bloomColor.getValue());
+            int glowColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), 255).getRGB();
+            nightsky.util.render.RenderUtil.drawRoundedRect((float)x, (float)y, (float)width, (float)height, radius, glowColor);
+            mc.getFramebuffer().bindFramebuffer(false);
+        }
+
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
         GL11.glEnable(GL11.GL_LINE_SMOOTH);
@@ -929,6 +945,10 @@ public class DynamicIsland extends Module {
         }
         
         nightsky.util.render.RenderUtil.drawRoundedRect((float)x, (float)y, (float)width, (float)height, radius, new Color(0, 0, 0, bgAlpha.getValue()));
+
+        if (bloomBuffer != null) {
+            BloomShader.renderBloom(bloomBuffer.framebufferTexture, bloomIterations.getValue(), bloomOffset.getValue());
+        }
 
         GL11.glDisable(GL11.GL_LINE_SMOOTH);
 
