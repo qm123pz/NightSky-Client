@@ -7,7 +7,7 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import nightsky.font.FontRenderer;
-import nightsky.util.render.BlurUtil;
+import nightsky.util.render.PostProcessing;
 import nightsky.util.render.RenderUtil;
 import org.lwjgl.input.Keyboard;
 
@@ -69,7 +69,7 @@ public class GuiAuth extends GuiScreen {
         int panelX = centerX - panelWidth / 2;
         int panelY = centerY - panelHeight / 2;
         
-        BlurUtil.blurAreaRounded(panelX, panelY, panelX + panelWidth, panelY + panelHeight, 15, 80f);
+        PostProcessing.drawBlur(panelX, panelY, panelX + panelWidth, panelY + panelHeight, () -> () -> RenderUtil.drawRoundedRect(panelX, panelY, panelWidth, panelHeight, 15, -1));
         
         RenderUtil.drawRoundedRect(panelX, panelY, panelWidth, panelHeight, 15, new Color(15, 15, 25, 200));
         RenderUtil.drawRoundedRect(panelX + 2, panelY + 2, panelWidth - 4, panelHeight - 4, 13, new Color(25, 25, 35, 150));

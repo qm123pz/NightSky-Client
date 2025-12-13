@@ -5,7 +5,7 @@ import net.minecraft.client.gui.GuiMultiplayer;
 import net.minecraft.client.gui.GuiOptions;
 import net.minecraft.client.gui.GuiSelectWorld;
 import nightsky.ui.mainmenu.altmanager.GuiAltManager;
-import nightsky.util.render.BlurUtil;
+import nightsky.util.render.PostProcessing;
 import nightsky.util.render.RenderUtil;
 
 import java.awt.Color;
@@ -39,7 +39,7 @@ public class MainButtonContainer {
         int bgY = this.containerY - bgPaddingHeight;
         int bgWidth = totalWidth + bgPaddingWidth * 2;
         int bgHeight = 40 + bgPaddingHeight * 2;
-        BlurUtil.blurAreaRounded(bgX, bgY, bgX + bgWidth, bgY + bgHeight, 40.0f, 80.0f);
+        PostProcessing.drawBlur(bgX, bgY, bgX + bgWidth, bgY + bgHeight, () -> () -> RenderUtil.drawRoundedRect((float)bgX, (float)bgY, (float)bgWidth, (float)bgHeight, 40.0f, -1));
         RenderUtil.drawRoundedRect((float)bgX, (float)bgY, (float)bgWidth, (float)bgHeight, 40.0f, new Color(0, 0, 0, 80));
         for (GuiMainButton button : this.buttons) {
             button.drawButton(mouseX, mouseY);

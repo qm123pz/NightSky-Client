@@ -414,6 +414,42 @@ public class ChangeLog extends PowerShell {
                     "                <div class=\"timeline-node\"></div>\n" +
                     "                <div class=\"release-card\">\n" +
                     "                    <div class=\"release-header\">\n" +
+                    "                        <div class=\"release-title\">Release B3</div>\n" +
+                    "                        <div class=\"version\">v3</div>\n" +
+                    "                    </div>\n" +
+                    "                    <div class=\"release-content\">\n" +
+                    "                        <div class=\"release-item\">Improved FPS Optimization!</div>\n" +
+                    "                        <div class=\"release-item\">Added PostProcessing System</div>\n" +
+                    "                        <div class=\"release-item\">Added Background Select UI(Better of Android)</div>\n" +
+                    "                        <div class=\"release-item\">Added KillAuraC</div>\n" +
+                    "                        <div class=\"release-item\">Added ScaffoldC</div>\n" +
+                    "                        <div class=\"release-item\">Added AimassistB</div>\n" +
+                    "                        <div class=\"release-item\">Added NoSlowB</div>\n" +
+                    "                        <div class=\"release-item\">Added HypixelTestAutoBlock On KillAura</div>\n" +
+                    "                        <div class=\"release-item\">Added More Disabler</div>\n" +
+                    "                        <div class=\"release-item\">Added ChestAura</div>\n" +
+                    "                        <div class=\"release-item\">Added AI Chat</div>\n" +
+                    "                        <div class=\"release-item\">Added Item2D</div>\n" +
+                    "                        <div class=\"release-item\">Added KawaseBlur</div>\n" +
+                    "                        <div class=\"release-item\">Added More BloomColor Settings</div>\n" +
+                    "                        <div class=\"release-item\">Improved Velocity Prediction Mode</div>\n" +
+                    "                        <div class=\"release-item\">Improved BloomShader</div>\n" +
+                    "                        <div class=\"release-item\">Improved BlurShader</div>\n" +
+                    "                        <div class=\"release-item\">Fixed NoSlow Lag</div>\n" +
+                    "                        <div class=\"release-item\">Fixed Blur LowFPS</div>\n" +
+                    "                        <div class=\"release-item\">Fixed Bloom LowFPS</div>\n" +
+                    "                        <div class=\"release-item\">Fixed Bloom bugs</div>\n" +
+                    "                        <div class=\"release-item\">Removed Shadow</div>\n" +
+                    "                        <div class=\"milestone\">Big Update</div>\n" +
+                    "                    </div>\n" +
+                    "                </div>\n" +
+                    "            </div>\n" +
+                    "            \n" +
+                    "        <div class=\"timeline\">\n" +
+                    "            <div class=\"release\">\n" +
+                    "                <div class=\"timeline-node\"></div>\n" +
+                    "                <div class=\"release-card\">\n" +
+                    "                    <div class=\"release-header\">\n" +
                     "                        <div class=\"release-title\">Release B2.1</div>\n" +
                     "                        <div class=\"version\">v2.1</div>\n" +
                     "                    </div>\n" +

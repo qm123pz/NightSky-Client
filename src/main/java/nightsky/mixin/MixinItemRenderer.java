@@ -4,11 +4,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.ItemRenderer;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.client.gui.ScaledResolution;
 import nightsky.module.modules.render.Animations;
+import nightsky.module.modules.render.Item2D;
 import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -38,13 +41,53 @@ public abstract class MixinItemRenderer {
     private float delay = 0;
     private long lastUpdateTime = System.currentTimeMillis();
 
+    @Inject(method = "renderItemInFirstPerson", at = @At("HEAD"), cancellable = true)
+    private void renderItem2D(float partialTicks, CallbackInfo ci) {
+        Item2D module = Item2D.getInstance();
+        if (module == null || !module.isEnabled()) return;
+        ItemStack stack = this.itemToRender;
+        if (stack == null) return;
+        ci.cancel();
+        ScaledResolution scaledResolution = new ScaledResolution(this.mc);
+        float swingOffset = 0.0F;
+        if (module.swing.getValue() && this.mc.thePlayer != null) {
+            float swingProgress = this.mc.thePlayer.getSwingProgress(partialTicks);
+            swingOffset = MathHelper.sin(MathHelper.sqrt_float(swingProgress) * (float)Math.PI) * 6.0F;
+        }
+        float scale = module.scale.getValue();
+        float centerX = scaledResolution.getScaledWidth() / 2.0F + module.offsetX.getValue();
+        float centerY = scaledResolution.getScaledHeight() / 2.0F + module.offsetY.getValue();
+        GlStateManager.pushMatrix();
+        GlStateManager.disableDepth();
+        GlStateManager.translate(centerX, centerY + swingOffset, 0.0F);
+        GlStateManager.scale(scale, scale, scale);
+        GlStateManager.translate(-8.0F, -8.0F, 0.0F);
+        RenderHelper.enableGUIStandardItemLighting();
+        GlStateManager.enableBlend();
+        GlStateManager.enableAlpha();
+        this.mc.getRenderItem().renderItemAndEffectIntoGUI(stack, 0, 0);
+        this.mc.getRenderItem().renderItemOverlays(this.mc.fontRendererObj, stack, 0, 0);
+        GlStateManager.disableAlpha();
+        GlStateManager.disableBlend();
+        RenderHelper.disableStandardItemLighting();
+        GlStateManager.enableDepth();
+        GlStateManager.popMatrix();
+    }
+
     @Inject(method = "renderItemInFirstPerson", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemRenderer;doBlockTransformations()V"))
     private void onRenderBlockingItem(float partialTicks, CallbackInfo ci) {
         Animations animations = Animations.getInstance();
         if (animations == null || !animations.isEnabled()) return;
 
         EntityPlayerSP player = mc.thePlayer;
-        if (player == null || !player.isBlocking()) return;
+        if (player == null) return;
+
+        float itemScale = animations.scale.getValue() + 1.0F;
+        if (itemScale != 1.0F) {
+            GlStateManager.scale(itemScale, itemScale, itemScale);
+        }
+
+        if (!player.isBlocking()) return;
 
         float swingProgress = player.getSwingProgress(partialTicks);
         String mode = animations.swordMode.getModeString();
@@ -174,10 +217,6 @@ public abstract class MixinItemRenderer {
                 applySigma4Animation(swingProgress);
                 break;
         }
-
-        GlStateManager.scale(animations.scale.getValue() + 1,
-                animations.scale.getValue() + 1,
-                animations.scale.getValue() + 1);
     }
 
     private void applySwingAnimation(float swingProgress) {

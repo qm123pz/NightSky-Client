@@ -9,6 +9,7 @@ import nightsky.module.modules.misc.*;
 import nightsky.module.modules.movement.*;
 import nightsky.module.modules.player.*;
 import nightsky.module.modules.render.*;
+import nightsky.module.modules.render.Item2D;
 import nightsky.module.modules.render.dynamicisland.DynamicIsland;
 import nightsky.module.ModuleManager;
 import nightsky.value.Value;
@@ -17,10 +18,10 @@ import nightsky.value.ValueHandler;
 import java.lang.reflect.Field;
 public class NightSky {
     public static String clientName = "NightSky ";
-    public static String clientVersion = "Release B2.1";
+    public static String clientVersion = "Release B3.0";
 
     //-----警告-您已进入安卓区域-不适合新手游玩-----
-    public static Boolean android = false;
+    public static Boolean android;
     //-----警告-您已进入安卓区域-不适合新手游玩-----
 
     public static RotationManager rotationManager;
@@ -92,6 +93,7 @@ public class NightSky {
         moduleManager.modules.put(GhostHand.class, new GhostHand());
         moduleManager.modules.put(Indicators.class, new Indicators());
         moduleManager.modules.put(Interface.class, new Interface());
+        moduleManager.modules.put(Item2D.class, new Item2D());
         moduleManager.modules.put(JumpCircles.class, new JumpCircles());
         moduleManager.modules.put(InvManager.class, new InvManager());
         moduleManager.modules.put(InvWalk.class, new InvWalk());
@@ -112,7 +114,9 @@ public class NightSky {
         moduleManager.modules.put(NoJumpDelay.class, new NoJumpDelay());
         moduleManager.modules.put(NoRotate.class, new NoRotate());
         moduleManager.modules.put(NoSlow.class, new NoSlow());
+        moduleManager.modules.put(NoSlow2.class, new NoSlow2());
         moduleManager.modules.put(NotificationDisplay.class, new NotificationDisplay());
+        moduleManager.modules.put(PostProcessing.class, new PostProcessing());
         moduleManager.modules.put(PartySpammer.class, new PartySpammer());
         moduleManager.modules.put(Reach.class, new Reach());
         moduleManager.modules.put(SafeWalk.class, new SafeWalk());
@@ -135,6 +139,10 @@ public class NightSky {
         moduleManager.modules.put(Wtap.class, new Wtap());
         moduleManager.modules.put(Xray.class, new Xray());
         moduleManager.modules.put(AntiOBS.class, new AntiOBS());
+        moduleManager.modules.put(ChestAura.class, new ChestAura());
+        moduleManager.modules.put(KillAuraC.class, new KillAuraC());
+        moduleManager.modules.put(AimAssistB.class, new AimAssistB());
+        moduleManager.modules.put(ScaffoldB.class, new ScaffoldB());
         handler.powerShells.add(new Bind());
         handler.powerShells.add(new Config());
         handler.powerShells.add(new Denick());
@@ -149,6 +157,7 @@ public class NightSky {
         handler.powerShells.add(new VerticalClip());
         handler.powerShells.add(new ChangeLog());
         handler.powerShells.add(new Binds());
+        handler.powerShells.add(new AIChat());
 
         for (nightsky.module.Module module : moduleManager.modules.values()) {
             java.util.ArrayList<Value<?>> properties = new java.util.ArrayList<>();

@@ -25,10 +25,18 @@ public class ShaderUtils {
         this(fragmentName, DEFAULT_VERTEX);
     }
 
+    public ShaderUtils(String fragmentSource, boolean inlineSource) {
+        this(fragmentSource, DEFAULT_VERTEX, inlineSource);
+    }
+
     public ShaderUtils(String fragmentName, String vertexSource) {
+        this(fragmentName, vertexSource, false);
+    }
+
+    public ShaderUtils(String fragment, String vertexSource, boolean inlineSource) {
         int program = GL20.glCreateProgram();
         int vertexShader = createShader(vertexSource, GL20.GL_VERTEX_SHADER);
-        int fragmentShader = createShader(loadFragment(fragmentName), GL20.GL_FRAGMENT_SHADER);
+        int fragmentShader = createShader(inlineSource ? fragment : loadFragment(fragment), GL20.GL_FRAGMENT_SHADER);
         GL20.glAttachShader(program, vertexShader);
         GL20.glAttachShader(program, fragmentShader);
         GL20.glLinkProgram(program);

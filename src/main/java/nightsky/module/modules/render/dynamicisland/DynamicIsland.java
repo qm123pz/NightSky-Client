@@ -15,19 +15,17 @@ import nightsky.module.modules.player.ChestStealer;
 import nightsky.module.modules.misc.NickHider;
 import nightsky.module.modules.render.dynamicisland.notification.*;
 import nightsky.util.GetIPUtil;
+import nightsky.util.render.PostProcessing;
 import nightsky.value.values.BooleanValue;
-import nightsky.value.values.ColorValue;
 import nightsky.value.values.IntValue;
 import nightsky.value.values.FloatValue;
 import nightsky.value.values.ModeValue;
 import nightsky.font.FontTransformer;
 import nightsky.font.CustomFontRenderer;
-import nightsky.util.render.BlurUtil;
 import nightsky.ui.command.CommandInterface;
 import nightsky.events.KeyEvent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
-import nightsky.util.shader.BloomShader;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -37,16 +35,9 @@ import java.util.List;
 public class DynamicIsland extends Module {
 
     private final FloatValue animationSpeed = new FloatValue("AnimationSpeed", 12.0f, 1.0f, 20.0f);
-    private final BooleanValue blur = new BooleanValue("Blur", true);
-    private final IntValue blurStrength = new IntValue("BlurStrength", 100, 1, 200);
-    private final BooleanValue dropShadow = new BooleanValue("Shadow", true);
     private final IntValue bgAlpha = new IntValue("BackgroundAlpha", 40, 1, 255);
-    private final BooleanValue bloom = new BooleanValue("Bloom", false);
-    private final ColorValue bloomColor = new ColorValue("BloomColor", new Color(255, 255, 255).getRGB());
-    private final IntValue bloomIterations = new IntValue("BloomIterations", 5, 1, 10);
-    private final IntValue bloomOffset = new IntValue("BloomOffset", 3, 1, 10);
     private final BooleanValue showNotifications = new BooleanValue("ShowNotifications", true);
-    
+
     private final ModeValue animationMode = new ModeValue("AnimationMode", 0, new String[]{"Normal", "Custom"});
     private final FloatValue customMass = new FloatValue("CustomMass", 1.0f, 0.1f, 5.0f, () -> animationMode.getModeString().equals("Custom"));
     private final FloatValue customStiffness = new FloatValue("CustomStiffness", 0.1f, 0.01f, 1.0f, () -> animationMode.getModeString().equals("Custom"));
@@ -84,7 +75,7 @@ public class DynamicIsland extends Module {
     private int currentBounceCount = 0;
     private long bounceStartTime = 0;
     private boolean wasInNoticeState = false;
-    
+
     private double animationVelocityX = 0;
     private double animationVelocityY = 0;
     private double springPositionX = 0;
@@ -100,7 +91,7 @@ public class DynamicIsland extends Module {
     private String commandResultContent = "";
     private long commandResultStartTime = 0;
     private static final long COMMAND_RESULT_DURATION = 3000;
-    
+
     private final long breathingStartTime = System.currentTimeMillis();
 
     private boolean chestExpanded = false;
@@ -109,18 +100,18 @@ public class DynamicIsland extends Module {
     private float lastTargetRadius = 32.0f;
 
     private final CommandInterface commandInterface = new CommandInterface();
-    
+
     private boolean tabPressed = false;
     private boolean showingPlayerList = false;
     private float playerListAlpha = 0.0f;
 
     private long lastUpdateTime = System.currentTimeMillis();
-    
+
     private boolean wasShowingNotifications = false;
     private float mainInterfaceSlideOffset = 0.0f;
     private long mainInterfaceSlideStartTime = 0;
     private static final long MAIN_INTERFACE_SLIDE_DURATION = 400L;
-    
+
     private final List<Integer> availableTextIndices = new ArrayList<>();
     private int currentTextIndex = 0;
     private long lastTextChangeTime = System.currentTimeMillis();
@@ -128,7 +119,7 @@ public class DynamicIsland extends Module {
     private float textAlpha = 1.0f;
     private boolean textFadingOut = false;
     private int nextTextIndex = 0;
-    
+
     private float minLine2Width = 0.0f;
     private float currentDisplayWidth = 0.0f;
 
@@ -165,7 +156,7 @@ public class DynamicIsland extends Module {
         super("DynamicIsland", true);
         initializeTextIndices();
     }
-    
+
     private void initializeTextIndices() {
         availableTextIndices.clear();
         for (int i = 0; i < islandText.length; i++) {
@@ -186,13 +177,13 @@ public class DynamicIsland extends Module {
     public static DynamicIsland getInstance() {
         return (DynamicIsland) nightsky.NightSky.moduleManager.getModule("DynamicIsland");
     }
-    
+
     @EventTarget
     public void onKey(KeyEvent event) {
         if (event.getKey() == Keyboard.KEY_PERIOD && !commandInterface.isActive() && mc.currentScreen == null) {
             commandInterface.activate();
         }
-        
+
         if (event.getKey() == Keyboard.KEY_TAB && mc.currentScreen == null) {
             if (!tabPressed) {
                 tabPressed = true;
@@ -200,27 +191,27 @@ public class DynamicIsland extends Module {
             }
         }
     }
+
     public boolean isCommandActive() {
         return commandInterface.isActive();
     }
 
     @EventTarget
     public void onRender2D(Render2DEvent event) {
-        if(!this.isEnabled()) {
+        if (!this.isEnabled()) {
             return;
         }
-        
+
         NotificationRenderer.toggleBgRadius = 18f;
         NotificationRenderer.toggleButtonRadius = 10f;
-        
+
         long currentTime = System.currentTimeMillis();
         float deltaTime = (currentTime - lastUpdateTime) / 1000.0f;
         lastUpdateTime = currentTime;
-        
+
         updateTextRotation(deltaTime);
         updateTabState(deltaTime);
-        
-        
+
         ChestStealer chestStealer = (ChestStealer) nightsky.NightSky.moduleManager.modules.get(ChestStealer.class);
         chestExpanded = chestStealer != null && chestStealer.isEnabled() && ChestData.getInstance().isChestOpen() && !commandInterface.isActive();
 
@@ -229,19 +220,19 @@ public class DynamicIsland extends Module {
 
         List<Notification> activeNotifications = NotificationManager.getInstance().getActiveNotifications();
         boolean hasNotifications = !activeNotifications.isEmpty() && showNotifications.getValue();
-        
+
         if (wasShowingNotifications && !hasNotifications) {
             mainInterfaceSlideStartTime = currentTime;
-            mainInterfaceSlideOffset = (float)currentWidth;
+            mainInterfaceSlideOffset = (float) currentWidth;
         }
         wasShowingNotifications = hasNotifications;
-        
+
         if (!hasNotifications && mainInterfaceSlideOffset > 0) {
             long elapsed = currentTime - mainInterfaceSlideStartTime;
-            float progress = Math.min(1.0f, elapsed / (float)MAIN_INTERFACE_SLIDE_DURATION);
+            float progress = Math.min(1.0f, elapsed / (float) MAIN_INTERFACE_SLIDE_DURATION);
             float eased = easeOutCubic(progress);
-            mainInterfaceSlideOffset = (float)currentWidth * (1 - eased);
-            
+            mainInterfaceSlideOffset = (float) currentWidth * (1 - eased);
+
             if (progress >= 1.0f) {
                 mainInterfaceSlideOffset = 0.0f;
             }
@@ -249,14 +240,13 @@ public class DynamicIsland extends Module {
 
         double padding = 12;
 
-            if (chestExpanded) {
+        if (chestExpanded) {
             ChestData chestData = ChestData.getInstance();
             int chestSize = chestData.getChestSize();
             int rows = Math.max(3, chestSize / 9);
             targetWidth = 9 * 20 + 12 * 3;
             targetHeight = rows * 20 + 12 * 3;
-            } else
-            if (commandInterface.isActive()) {
+        } else if (commandInterface.isActive()) {
             targetWidth = commandInterface.getExpandedWidth();
             targetHeight = commandInterface.getExpandedHeight();
 
@@ -266,22 +256,22 @@ public class DynamicIsland extends Module {
                     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
                         commandInterface.handleMouseMove(mouseX, mouseY);
                     }
-                    
+
                     @Override
                     public boolean doesGuiPauseGame() {
                         return true;
                     }
-                    
+
                     @Override
                     protected void keyTyped(char typedChar, int keyCode) {
                         commandInterface.handleKeyInput(keyCode, typedChar);
                     }
-                    
+
                     @Override
                     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
                         commandInterface.handleMouseClick(mouseX, mouseY, mouseButton);
                     }
-                    
+
                     @Override
                     public void handleMouseInput() throws java.io.IOException {
                         super.handleMouseInput();
@@ -290,12 +280,12 @@ public class DynamicIsland extends Module {
                 });
             }
         } else {
-            if (mc.currentScreen != null && mc.currentScreen.getClass().isAnonymousClass() && 
-                mc.currentScreen.getClass().getEnclosingClass() == DynamicIsland.class) {
+            if (mc.currentScreen != null && mc.currentScreen.getClass().isAnonymousClass() &&
+                    mc.currentScreen.getClass().getEnclosingClass() == DynamicIsland.class) {
                 mc.displayGuiScreen(null);
             }
         }
-            
+
         if (commandInterface.isActive()) {
         } else if (showingPlayerList) {
             Collection<NetworkPlayerInfo> playerInfos = mc.getNetHandler().getPlayerInfoMap();
@@ -309,7 +299,7 @@ public class DynamicIsland extends Module {
         } else if (hasNotifications) {
             double notificationContentWidth = calculateNotificationContentWidth(activeNotifications);
             targetWidth = notificationContentWidth + padding;
-            
+
             float scale = 0.8f;
             float totalHeight = 0;
             for (Notification notification : activeNotifications) {
@@ -318,11 +308,11 @@ public class DynamicIsland extends Module {
             targetHeight = totalHeight + padding * 2;
         } else {
             String serverIP = getServerIP();
-            int ping = mc.getCurrentServerData() != null ? (int)mc.getCurrentServerData().pingToServer : 0;
+            int ping = mc.getCurrentServerData() != null ? (int) mc.getCurrentServerData().pingToServer : 0;
             int fps = net.minecraft.client.Minecraft.getDebugFPS();
 
             float scale = 0.58f;
-            
+
             FontTransformer transformer = FontTransformer.getInstance();
             Font mainFont = transformer.getFont("MicrosoftYaHei", 50);
             Font islandTextFont = transformer.getFont("MicrosoftYaHei", 38);
@@ -339,19 +329,19 @@ public class DynamicIsland extends Module {
 
             String line2Base = dateStr + " " + weekStr + " " + timeStr + " " + ping + "ms to " + serverIP + " " + fps + " FPS";
             float line2BaseWidth = CustomFontRenderer.getStringWidth(line2Base, contentFont) * scale;
-            
+
             if (minLine2Width == 0.0f) {
                 minLine2Width = line2BaseWidth;
             }
-            
+
             String currentText = islandText[currentTextIndex];
-            
+
             float nightskyWidth = CustomFontRenderer.getStringWidth("NightSky", mainFont);
             float currentTextWidth = CustomFontRenderer.getStringWidth(currentText, islandTextFont);
-            
+
             float line1BaseWidth = nightskyWidth + 10;
             float line1TotalWidth = (line1BaseWidth + currentTextWidth) * scale;
-            
+
             float requiredWidth = line1TotalWidth + 80 * scale;
 
             if (currentDisplayWidth == 0.0f) {
@@ -365,11 +355,11 @@ public class DynamicIsland extends Module {
                     currentDisplayWidth = requiredWidth;
                 }
             }
-            
+
             int mainFontHeight = CustomFontRenderer.getFontHeight(mainFont);
             int contentFontHeight = CustomFontRenderer.getFontHeight(contentFont);
             float lineSpacing = 4 * scale;
-            
+
             targetWidth = currentDisplayWidth + padding * 3.5;
             targetHeight = (mainFontHeight * scale + contentFontHeight * scale + lineSpacing) + padding * 1.2;
         }
@@ -378,23 +368,22 @@ public class DynamicIsland extends Module {
 
         double finalWidth = getBreathingWidth();
         double finalHeight = getBreathingHeight();
-        
+
         if (animationStartTime > 0) {
             finalWidth = Math.max(finalWidth, getBounceWidth());
             finalHeight = Math.max(finalHeight, getBounceHeight());
         }
-        
+
         drawDynamicIsland(sr, finalWidth, finalHeight);
     }
-
 
     public boolean shouldHideTabList() {
         return this.isEnabled() && showingPlayerList;
     }
-    
+
     private void updateTextRotation(float deltaTime) {
         long currentTime = System.currentTimeMillis();
-        
+
         if (currentTime - lastTextChangeTime >= TEXT_CHANGE_INTERVAL) {
             if (!textFadingOut) {
                 textFadingOut = true;
@@ -404,9 +393,9 @@ public class DynamicIsland extends Module {
                 nextTextIndex = availableTextIndices.remove(0);
             }
         }
-        
+
         float fadeSpeed = 3.0f;
-        
+
         if (textFadingOut) {
             textAlpha -= fadeSpeed * deltaTime;
             if (textAlpha <= 0.0f) {
@@ -424,7 +413,7 @@ public class DynamicIsland extends Module {
             }
         }
     }
-    
+
     private void updateTabState(float deltaTime) {
         if (tabPressed && !Keyboard.isKeyDown(Keyboard.KEY_TAB)) {
             tabPressed = false;
@@ -439,76 +428,76 @@ public class DynamicIsland extends Module {
             playerListAlpha = Math.max(0.0f, playerListAlpha - PLAYER_LIST_FADE_SPEED * deltaTime);
         }
     }
-    
+
     private float easeOutCubic(float t) {
-        return 1 - (float)Math.pow(1 - t, 3);
+        return 1 - (float) Math.pow(1 - t, 3);
     }
-    
+
     private float applyEasing(float t, String type) {
         switch (type) {
             case "Linear":
                 return t;
             case "EaseInSine":
-                return (float)Math.sin((t - 1) * Math.PI / 2) + 1;
+                return (float) Math.sin((t - 1) * Math.PI / 2) + 1;
             case "EaseOutSine":
-                return (float)Math.sin(t * Math.PI / 2);
+                return (float) Math.sin(t * Math.PI / 2);
             case "EaseInOutSine":
-                return -(float)Math.cos(Math.PI * t) / 2 + 0.5f;
+                return -(float) Math.cos(Math.PI * t) / 2 + 0.5f;
             case "EaseInQuad":
                 return t * t;
             case "EaseOutQuad":
                 return 1 - (1 - t) * (1 - t);
             case "EaseInOutQuad":
-                return t < 0.5f ? 2 * t * t : 1 - (float)Math.pow(-2 * t + 2, 2) / 2;
+                return t < 0.5f ? 2 * t * t : 1 - (float) Math.pow(-2 * t + 2, 2) / 2;
             case "EaseInCubic":
                 return t * t * t;
             case "EaseOutCubic":
-                return 1 - (float)Math.pow(1 - t, 3);
+                return 1 - (float) Math.pow(1 - t, 3);
             case "EaseInOutCubic":
-                return t < 0.5f ? 4 * t * t * t : 1 - (float)Math.pow(-2 * t + 2, 3) / 2;
+                return t < 0.5f ? 4 * t * t * t : 1 - (float) Math.pow(-2 * t + 2, 3) / 2;
             case "EaseInQuart":
                 return t * t * t * t;
             case "EaseOutQuart":
-                return 1 - (float)Math.pow(1 - t, 4);
+                return 1 - (float) Math.pow(1 - t, 4);
             case "EaseInOutQuart":
-                return t < 0.5f ? 8 * t * t * t * t : 1 - (float)Math.pow(-2 * t + 2, 4) / 2;
+                return t < 0.5f ? 8 * t * t * t * t : 1 - (float) Math.pow(-2 * t + 2, 4) / 2;
             case "EaseInQuint":
                 return t * t * t * t * t;
             case "EaseOutQuint":
-                return 1 - (float)Math.pow(1 - t, 5);
+                return 1 - (float) Math.pow(1 - t, 5);
             case "EaseInOutQuint":
-                return t < 0.5f ? 16 * t * t * t * t * t : 1 - (float)Math.pow(-2 * t + 2, 5) / 2;
+                return t < 0.5f ? 16 * t * t * t * t * t : 1 - (float) Math.pow(-2 * t + 2, 5) / 2;
             case "EaseInExpo":
-                return t == 0 ? 0 : (float)Math.pow(2, 10 * t - 10);
+                return t == 0 ? 0 : (float) Math.pow(2, 10 * t - 10);
             case "EaseOutExpo":
-                return t == 1 ? 1 : 1 - (float)Math.pow(2, -10 * t);
+                return t == 1 ? 1 : 1 - (float) Math.pow(2, -10 * t);
             case "EaseInOutExpo":
-                return t == 0 ? 0 : t == 1 ? 1 : t < 0.5f ? (float)Math.pow(2, 20 * t - 10) / 2 : (2 - (float)Math.pow(2, -20 * t + 10)) / 2;
+                return t == 0 ? 0 : t == 1 ? 1 : t < 0.5f ? (float) Math.pow(2, 20 * t - 10) / 2 : (2 - (float) Math.pow(2, -20 * t + 10)) / 2;
             case "EaseInCirc":
-                return 1 - (float)Math.sqrt(1 - Math.pow(t, 2));
+                return 1 - (float) Math.sqrt(1 - Math.pow(t, 2));
             case "EaseOutCirc":
-                return (float)Math.sqrt(1 - Math.pow(t - 1, 2));
+                return (float) Math.sqrt(1 - Math.pow(t - 1, 2));
             case "EaseInOutCirc":
-                return t < 0.5f ? (1 - (float)Math.sqrt(1 - Math.pow(2 * t, 2))) / 2 : ((float)Math.sqrt(1 - Math.pow(-2 * t + 2, 2)) + 1) / 2;
+                return t < 0.5f ? (1 - (float) Math.sqrt(1 - Math.pow(2 * t, 2))) / 2 : ((float) Math.sqrt(1 - Math.pow(-2 * t + 2, 2)) + 1) / 2;
             case "EaseInBack":
                 float c1 = 1.70158f;
                 float c3 = c1 + 1;
                 return c3 * t * t * t - c1 * t * t;
             case "EaseOutBack":
                 float c2 = 1.70158f;
-                return 1 + c2 * (float)Math.pow(t - 1, 3) + c2 * (float)Math.pow(t - 1, 2);
+                return 1 + c2 * (float) Math.pow(t - 1, 3) + c2 * (float) Math.pow(t - 1, 2);
             case "EaseInOutBack":
                 float c4 = 1.70158f * 1.525f;
-                return t < 0.5f ? (float)Math.pow(2 * t, 2) * ((c4 + 1) * 2 * t - c4) / 2 : ((float)Math.pow(2 * t - 2, 2) * ((c4 + 1) * (t * 2 - 2) + c4) + 2) / 2;
+                return t < 0.5f ? (float) Math.pow(2 * t, 2) * ((c4 + 1) * 2 * t - c4) / 2 : ((float) Math.pow(2 * t - 2, 2) * ((c4 + 1) * (t * 2 - 2) + c4) + 2) / 2;
             case "EaseInElastic":
                 if (t == 0 || t == 1) return t;
-                return -(float)Math.pow(2, 10 * t - 10) * (float)Math.sin((t * 10 - 10.75) * (2 * Math.PI) / 3);
+                return -(float) Math.pow(2, 10 * t - 10) * (float) Math.sin((t * 10 - 10.75) * (2 * Math.PI) / 3);
             case "EaseOutElastic":
                 if (t == 0 || t == 1) return t;
-                return (float)Math.pow(2, -10 * t) * (float)Math.sin((t * 10 - 0.75) * (2 * Math.PI) / 3) + 1;
+                return (float) Math.pow(2, -10 * t) * (float) Math.sin((t * 10 - 0.75) * (2 * Math.PI) / 3) + 1;
             case "EaseInOutElastic":
                 if (t == 0 || t == 1) return t;
-                return t < 0.5f ? -(float)Math.pow(2, 20 * t - 10) * (float)Math.sin((20 * t - 11.125) * (2 * Math.PI) / 4.5) / 2 : (float)Math.pow(2, -20 * t + 10) * (float)Math.sin((20 * t - 11.125) * (2 * Math.PI) / 4.5) / 2 + 1;
+                return t < 0.5f ? -(float) Math.pow(2, 20 * t - 10) * (float) Math.sin((20 * t - 11.125) * (2 * Math.PI) / 4.5) / 2 : (float) Math.pow(2, -20 * t + 10) * (float) Math.sin((20 * t - 11.125) * (2 * Math.PI) / 4.5) / 2 + 1;
             case "EaseInBounce":
                 return 1 - applyEasing(1 - t, "EaseOutBounce");
             case "EaseOutBounce":
@@ -531,24 +520,24 @@ public class DynamicIsland extends Module {
                 return easeOutCubic(t);
         }
     }
-    
+
     private float applyCustomSpring(float t) {
         float tension = customSpringTension.getValue();
         float friction = customSpringFriction.getValue();
         float mass = customMass.getValue();
-        
+
         springPositionX += animationVelocityX * mass;
         springPositionY += animationVelocityY * mass;
-        
+
         animationVelocityX -= (springPositionX - targetWidth) * tension / mass;
         animationVelocityY -= (springPositionY - targetHeight) * tension / mass;
-        
+
         animationVelocityX *= friction;
         animationVelocityY *= friction;
-        
+
         springPositionX = currentWidth;
         springPositionY = currentHeight;
-        
+
         return t;
     }
 
@@ -560,7 +549,7 @@ public class DynamicIsland extends Module {
 
     private void updateAnimations() {
         long currentTime = System.currentTimeMillis();
-        
+
         List<Notification> activeNotifications = NotificationManager.getInstance().getActiveNotifications();
         boolean hasNotifications = !activeNotifications.isEmpty() && showNotifications.getValue();
 
@@ -579,12 +568,12 @@ public class DynamicIsland extends Module {
         }
 
         if (chestExpanded) {
-        ChestData chestData = ChestData.getInstance();
-        int chestSize = chestData.getChestSize();
-        int rows = Math.max(3, chestSize / 9);
-        targetWidth = 9 * 20 + 12 * 3;
-        targetHeight = rows * 20 + 12 * 3;
-    }
+            ChestData chestData = ChestData.getInstance();
+            int chestSize = chestData.getChestSize();
+            int rows = Math.max(3, chestSize / 9);
+            targetWidth = 9 * 20 + 12 * 3;
+            targetHeight = rows * 20 + 12 * 3;
+        }
 
         if (targetWidth != lastTargetWidth || targetHeight != lastTargetHeight) {
             if (animationMode.getModeString().equals("Custom") && enableAnticipation.getValue()) {
@@ -597,7 +586,7 @@ public class DynamicIsland extends Module {
             lastTargetHeight = targetHeight;
             isExpanding = targetWidth > currentWidth || targetHeight > currentHeight;
             currentBounceCount = 0;
-            
+
             if (animationMode.getModeString().equals("Custom")) {
                 animationVelocityX = 0;
                 animationVelocityY = 0;
@@ -605,16 +594,16 @@ public class DynamicIsland extends Module {
                 springPositionY = currentHeight;
             }
         }
-        
+
         wasInNoticeState = hasNotifications;
-        
+
         if (animationMode.getModeString().equals("Normal")) {
             updateNormalAnimations();
         } else if (animationMode.getModeString().equals("Custom")) {
             updateCustomAnimations(currentTime);
         }
     }
-    
+
     private void updateNormalAnimations() {
         double widthDiff = targetWidth - currentWidth;
         double heightDiff = targetHeight - currentHeight;
@@ -622,17 +611,17 @@ public class DynamicIsland extends Module {
         float speed = animationSpeed.getValue() * 0.01f;
 
         if (Math.abs(widthDiff) > 0.1) {
-        currentWidth += widthDiff * speed;
+            currentWidth += widthDiff * speed;
         } else {
-           currentWidth = targetWidth;
+            currentWidth = targetWidth;
         }
 
         if (Math.abs(heightDiff) > 0.1) {
             currentHeight += heightDiff * speed;
         } else {
-        currentHeight = targetHeight;
+            currentHeight = targetHeight;
         }
-        
+
         if (Math.abs(widthDiff) < 0.5) {
             currentWidth = targetWidth;
         }
@@ -640,19 +629,19 @@ public class DynamicIsland extends Module {
             currentHeight = targetHeight;
         }
     }
-    
+
     private void updateCustomAnimations(long currentTime) {
         float deltaTime = (currentTime - lastUpdateTime) / 1000.0f;
-        
+
         if (isInAnticipation) {
             long anticipationElapsed = currentTime - anticipationStartTime;
             if (anticipationElapsed < anticipationDuration.getValue()) {
                 float anticipationProgress = anticipationElapsed / anticipationDuration.getValue();
                 float anticipationScale = 1.0f - anticipationAmount.getValue() * applyEasing(anticipationProgress, easingType.getModeString());
-                
+
                 double centerX = (currentWidth + targetWidth) / 2;
                 double centerY = (currentHeight + targetHeight) / 2;
-                
+
                 currentWidth = centerX + (currentWidth - centerX) * anticipationScale;
                 currentHeight = centerY + (currentHeight - centerY) * anticipationScale;
                 return;
@@ -661,40 +650,40 @@ public class DynamicIsland extends Module {
                 animationStartTime = currentTime;
             }
         }
-        
+
         long animationElapsed = currentTime - animationStartTime;
         float animationDuration = 500.0f / (animationSpeed.getValue() / 12.0f);
         float progress = Math.min(animationElapsed / animationDuration, 1.0f);
-        
-                String easing = easingType.getModeString();
+
+        String easing = easingType.getModeString();
         float easedProgress = applyEasing(progress, easing);
-        
+
         double startWidth = lastTargetWidth;
         double startHeight = lastTargetHeight;
-        
+
         if (easing.equals("CustomSpring")) {
             float tension = customSpringTension.getValue();
             float friction = customSpringFriction.getValue();
             float mass = customMass.getValue();
             float stiffness = customStiffness.getValue();
-            
+
             double widthForce = (targetWidth - currentWidth) * stiffness;
             double heightForce = (targetHeight - currentHeight) * stiffness;
-            
+
             animationVelocityX += widthForce / mass;
             animationVelocityY += heightForce / mass;
-            
+
             animationVelocityX *= friction;
             animationVelocityY *= friction;
-            
+
             currentWidth += animationVelocityX * deltaTime;
             currentHeight += animationVelocityY * deltaTime;
-            
+
             if (enableOvershoot.getValue() && Math.abs(targetWidth - currentWidth) < 1.0) {
                 double overshootForce = (targetWidth - currentWidth) * overshootAmount.getValue();
                 animationVelocityX += overshootForce / mass;
             }
-            
+
             if (enableOvershoot.getValue() && Math.abs(targetHeight - currentHeight) < 1.0) {
                 double overshootForce = (targetHeight - currentHeight) * overshootAmount.getValue();
                 animationVelocityY += overshootForce / mass;
@@ -702,13 +691,13 @@ public class DynamicIsland extends Module {
         } else {
             currentWidth = startWidth + (targetWidth - startWidth) * easedProgress;
             currentHeight = startHeight + (targetHeight - startHeight) * easedProgress;
-            
+
             if (enableOvershoot.getValue() && progress < 1.0f) {
                 float overshoot = overshootAmount.getValue();
                 if (easedProgress > 0.8f) {
                     float overshootProgress = (easedProgress - 0.8f) / 0.2f;
-                    float overshootEasing = (float)Math.sin(overshootProgress * Math.PI) * overshoot;
-                    
+                    float overshootEasing = (float) Math.sin(overshootProgress * Math.PI) * overshoot;
+
                     if (isExpanding) {
                         currentWidth = targetWidth * (1.0f + overshootEasing);
                         currentHeight = targetHeight * (1.0f + overshootEasing);
@@ -716,7 +705,7 @@ public class DynamicIsland extends Module {
                 }
             }
         }
-        
+
         if (progress >= 1.0f && Math.abs(targetWidth - currentWidth) < 0.5 && Math.abs(targetHeight - currentHeight) < 0.5) {
             currentWidth = targetWidth;
             currentHeight = targetHeight;
@@ -734,104 +723,104 @@ public class DynamicIsland extends Module {
             targetRadius = 32.0f;
         }
     }
-    
+
     private double getBounceWidth() {
         if (animationMode.getModeString().equals("Custom") && !enableBounce.getValue()) {
             return currentWidth;
         }
-        
+
         long currentTime = System.currentTimeMillis();
-        
+
         if (targetWidth != lastTargetWidth || targetHeight != lastTargetHeight) {
             return currentWidth;
         }
-        
+
         List<Notification> activeNotifications = NotificationManager.getInstance().getActiveNotifications();
         boolean hasNotifications = !activeNotifications.isEmpty() && showNotifications.getValue();
         boolean isEnteringNoticeState = hasNotifications && !wasInNoticeState;
-        
+
         float animationDuration = isExpanding ? bounceDuration.getValue() : bounceDuration.getValue() + 50.0f;
         int maxBounces = (isExpanding && isEnteringNoticeState) ? bounceCount.getValue() : 0;
         float currentBounceDuration = isExpanding ? (currentBounceCount == 0 ? 0.0f : bounceDuration.getValue()) : 0.0f;
-        
+
         float totalProgress = Math.min((currentTime - animationStartTime) / animationDuration, 1.0f);
         float bounceProgress = Math.min((currentTime - bounceStartTime) / currentBounceDuration, 1.0f);
-        
+
         if (totalProgress < 1.0f && currentBounceCount < maxBounces) {
             if (bounceProgress >= 1.0f) {
                 currentBounceCount++;
                 bounceStartTime = currentTime;
                 bounceProgress = 0;
             }
-            
+
             float intensity = animationMode.getModeString().equals("Custom") ? bounceIntensity.getValue() : 0.09f;
             float bounceIntensityValue = currentBounceCount == 0 ? 0.0f : intensity;
-            
+
             if (bounceProgress < 0.5f) {
                 float expandProgress = bounceProgress * 2;
-                float overshoot = (float)Math.sin(expandProgress * Math.PI) * bounceIntensityValue;
+                float overshoot = (float) Math.sin(expandProgress * Math.PI) * bounceIntensityValue;
                 return currentWidth * (1.0f + overshoot);
             } else {
                 float contractProgress = (bounceProgress - 0.5f) * 2;
-                float undershoot = (float)Math.sin(contractProgress * Math.PI) * bounceIntensityValue * 0.5f;
+                float undershoot = (float) Math.sin(contractProgress * Math.PI) * bounceIntensityValue * 0.5f;
                 return currentWidth * (1.0f - undershoot);
             }
         }
-        
+
         return currentWidth;
     }
-    
+
     private double getBounceHeight() {
         if (animationMode.getModeString().equals("Custom") && !enableBounce.getValue()) {
             return currentHeight;
         }
-        
+
         long currentTime = System.currentTimeMillis();
-        
+
         if (targetWidth != lastTargetWidth || targetHeight != lastTargetHeight) {
             return currentHeight;
         }
-        
+
         List<Notification> activeNotifications = NotificationManager.getInstance().getActiveNotifications();
         boolean hasNotifications = !activeNotifications.isEmpty() && showNotifications.getValue();
         boolean isEnteringNoticeState = hasNotifications && !wasInNoticeState;
-        
+
         float animationDuration = isExpanding ? bounceDuration.getValue() : bounceDuration.getValue() + 50.0f;
         int maxBounces = (isExpanding && isEnteringNoticeState) ? bounceCount.getValue() : 0;
         float currentBounceDuration = isExpanding ? (currentBounceCount == 0 ? 0.0f : bounceDuration.getValue()) : 0.0f;
-        
+
         float totalProgress = Math.min((currentTime - animationStartTime) / animationDuration, 1.0f);
         float bounceProgress = Math.min((currentTime - bounceStartTime) / currentBounceDuration, 1.0f);
-        
+
         if (totalProgress < 1.0f && currentBounceCount < maxBounces) {
             if (bounceProgress >= 1.0f) {
                 currentBounceCount++;
                 bounceStartTime = currentTime;
                 bounceProgress = 0;
             }
-            
+
             float intensity = animationMode.getModeString().equals("Custom") ? bounceIntensity.getValue() : 0.09f;
             float bounceIntensityValue = currentBounceCount == 0 ? 0.0f : intensity;
-            
+
             if (bounceProgress < 0.5f) {
                 float expandProgress = bounceProgress * 2;
-                float overshoot = (float)Math.sin(expandProgress * Math.PI) * bounceIntensityValue;
+                float overshoot = (float) Math.sin(expandProgress * Math.PI) * bounceIntensityValue;
                 return currentHeight * (1.0f + overshoot);
             } else {
                 float contractProgress = (bounceProgress - 0.5f) * 2;
-                float undershoot = (float)Math.sin(contractProgress * Math.PI) * bounceIntensityValue * 0.5f;
+                float undershoot = (float) Math.sin(contractProgress * Math.PI) * bounceIntensityValue * 0.5f;
                 return currentHeight * (1.0f - undershoot);
             }
         }
-        
+
         return currentHeight;
     }
-    
+
     private double getBreathingWidth() {
         if (animationMode.getModeString().equals("Custom") && !enableBreathing.getValue()) {
             return currentWidth;
         }
-        
+
         List<Notification> activeNotifications = NotificationManager.getInstance().getActiveNotifications();
         boolean hasNotifications = !activeNotifications.isEmpty() && showNotifications.getValue();
 
@@ -840,27 +829,26 @@ public class DynamicIsland extends Module {
             float intensity = animationMode.getModeString().equals("Custom") ? breathingIntensity.getValue() : 0.03f;
             float speed = animationMode.getModeString().equals("Custom") ? breathingSpeed.getValue() : 3000.0f;
             float breathingCycle = (currentTime - breathingStartTime) / speed;
-            float breathingIntensity = (float)(Math.sin(breathingCycle * Math.PI * 2) * 0.5 + 0.5);
+            float breathingIntensity = (float) (Math.sin(breathingCycle * Math.PI * 2) * 0.5 + 0.5);
             float breathingScale = 1.0f + breathingIntensity * intensity;
             return currentWidth * breathingScale;
-        }
-        else if (commandInterface.isActive() && commandInterface.isShowingKeyboard()) {
+        } else if (commandInterface.isActive() && commandInterface.isShowingKeyboard()) {
             long currentTime = System.currentTimeMillis();
             float intensity = animationMode.getModeString().equals("Custom") ? breathingIntensity.getValue() * 0.3f : 0.01f;
             float speed = animationMode.getModeString().equals("Custom") ? breathingSpeed.getValue() : 3000.0f;
             float breathingCycle = (currentTime - breathingStartTime) / speed;
-            float breathingIntensity = (float)(Math.sin(breathingCycle * Math.PI * 2) * 0.5 + 0.5);
+            float breathingIntensity = (float) (Math.sin(breathingCycle * Math.PI * 2) * 0.5 + 0.5);
             float breathingScale = 1.0f + breathingIntensity * intensity;
             return currentWidth * breathingScale;
         }
         return currentWidth;
     }
-    
+
     private double getBreathingHeight() {
         if (animationMode.getModeString().equals("Custom") && !enableBreathing.getValue()) {
             return currentHeight;
         }
-        
+
         List<Notification> activeNotifications = NotificationManager.getInstance().getActiveNotifications();
         boolean hasNotifications = !activeNotifications.isEmpty() && showNotifications.getValue();
 
@@ -869,22 +857,20 @@ public class DynamicIsland extends Module {
             float intensity = animationMode.getModeString().equals("Custom") ? breathingIntensity.getValue() : 0.03f;
             float speed = animationMode.getModeString().equals("Custom") ? breathingSpeed.getValue() : 3000.0f;
             float breathingCycle = (currentTime - breathingStartTime) / speed;
-            float breathingIntensity = (float)(Math.sin(breathingCycle * Math.PI * 2) * 0.5 + 0.5);
+            float breathingIntensity = (float) (Math.sin(breathingCycle * Math.PI * 2) * 0.5 + 0.5);
             float breathingScale = 1.0f + breathingIntensity * intensity;
             return currentHeight * breathingScale;
-        }
-        else if (commandInterface.isActive() && commandInterface.isShowingKeyboard()) {
+        } else if (commandInterface.isActive() && commandInterface.isShowingKeyboard()) {
             long currentTime = System.currentTimeMillis();
             float intensity = animationMode.getModeString().equals("Custom") ? breathingIntensity.getValue() * 0.3f : 0.01f;
             float speed = animationMode.getModeString().equals("Custom") ? breathingSpeed.getValue() : 3000.0f;
             float breathingCycle = (currentTime - breathingStartTime) / speed;
-            float breathingIntensity = (float)(Math.sin(breathingCycle * Math.PI * 2) * 0.5 + 0.5);
+            float breathingIntensity = (float) (Math.sin(breathingCycle * Math.PI * 2) * 0.5 + 0.5);
             float breathingScale = 1.0f + breathingIntensity * intensity;
             return currentHeight * breathingScale;
         }
         return currentHeight;
     }
-    
 
     private void drawDynamicIsland(ScaledResolution sr, double width, double height) {
 
@@ -899,35 +885,25 @@ public class DynamicIsland extends Module {
         GL11.glEnable(GL11.GL_LINE_SMOOTH);
         GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST);
 
-        if (dropShadow.getValue()) {
-            drawDropShadowBackground((float)x, (float)y, (float)width, (float)height, radius);
-        }
+        float finalRadius = radius;
+        PostProcessing.drawBlur((float) x, (float) y, (float) (x + width), (float) (y + height), () -> () -> nightsky.util.render.RenderUtil.drawRoundedRect((float) x, (float) y, (float) width, (float) height, finalRadius, -1));
 
-        if (blur.getValue()) {
-            BlurUtil.blurAreaRounded((float)x, (float)y, (float)(x + width), (float)(y + height), radius, blurStrength.getValue().floatValue());
-        }
-
-        nightsky.util.render.RenderUtil.drawRoundedRect((float)x, (float)y, (float)width, (float)height, radius, new Color(0, 0, 0, bgAlpha.getValue()));
-
+        nightsky.util.render.RenderUtil.drawRoundedRect((float) x, (float) y, (float) width, (float) height, radius, new Color(0, 0, 0, bgAlpha.getValue()));
 
         List<Notification> activeNotifications = NotificationManager.getInstance().getActiveNotifications();
         boolean hasNotifications = !activeNotifications.isEmpty() && showNotifications.getValue();
 
         if (chestExpanded) {
             radius = 12.0f;
-        } else
-                if(hasNotifications){
+        } else if (hasNotifications) {
             radius = 36.0f;
         } else {
             radius = 32.0f;
         }
 
-        Framebuffer bloomBuffer = null;
-        if (bloom.getValue()) {
-            bloomBuffer = BloomShader.beginFramebuffer();
-            Color color = new Color(bloomColor.getValue());
-            int glowColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), 255).getRGB();
-            nightsky.util.render.RenderUtil.drawRoundedRect((float)x, (float)y, (float)width, (float)height, radius, glowColor);
+        Framebuffer bloomBuffer = PostProcessing.beginBloom();
+        if (bloomBuffer != null) {
+            nightsky.util.render.RenderUtil.drawRoundedRect((float) x, (float) y, (float) width, (float) height, radius, nightsky.module.modules.render.PostProcessing.getBloomColor());
             mc.getFramebuffer().bindFramebuffer(false);
         }
 
@@ -935,20 +911,10 @@ public class DynamicIsland extends Module {
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
         GL11.glEnable(GL11.GL_LINE_SMOOTH);
         GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST);
-        
-        if (dropShadow.getValue()) {
-            drawDropShadowBackground((float)x, (float)y, (float)width, (float)height, radius);
-        }
-        
-        if (blur.getValue()) {
-            BlurUtil.blurAreaRounded((float)x, (float)y, (float)(x + width), (float)(y + height), radius, blurStrength.getValue().floatValue());
-        }
-        
-        nightsky.util.render.RenderUtil.drawRoundedRect((float)x, (float)y, (float)width, (float)height, radius, new Color(0, 0, 0, bgAlpha.getValue()));
 
-        if (bloomBuffer != null) {
-            BloomShader.renderBloom(bloomBuffer.framebufferTexture, bloomIterations.getValue(), bloomOffset.getValue());
-        }
+        nightsky.util.render.RenderUtil.drawRoundedRect((float) x, (float) y, (float) width, (float) height, radius, new Color(0, 0, 0, bgAlpha.getValue()));
+
+        PostProcessing.endBloom(bloomBuffer);
 
         GL11.glDisable(GL11.GL_LINE_SMOOTH);
 

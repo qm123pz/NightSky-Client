@@ -1,6 +1,7 @@
 package nightsky.ui.mainmenu;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
@@ -19,6 +20,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -30,12 +34,20 @@ import static org.lwjgl.opengl.GL11.*;
 
 public class GuiMainMenu extends GuiScreen {
     private static boolean videoInitialized = false;
+    private static boolean videoPreferenceChecked = false;
+    private static boolean videoEnabled = false;
+    private static boolean preferenceLoaded = false;
 
     private MainButtonContainer buttonContainer;
 
     @Override
     public void initGui() {
-        if (!videoInitialized) {
+        ensurePreferenceLoaded();
+        if (!videoPreferenceChecked) {
+            this.mc.displayGuiScreen(new VideoPrompt(this));
+            return;
+        }
+        if (videoEnabled && !videoInitialized) {
             try {
                 VideoComponent.ensureVideoExists();
                 VideoComponent.startVideoPlayback();
@@ -64,10 +76,17 @@ public class GuiMainMenu extends GuiScreen {
 
     private void drawBackground() {
         ScaledResolution sr = new ScaledResolution(this.mc);
-
+        boolean renderedVideo = false;
         try {
-            VideoPlayer.render(0, 0, sr.getScaledWidth(), sr.getScaledHeight());
+            if (videoEnabled && videoInitialized) {
+                VideoPlayer.render(0, 0, sr.getScaledWidth(), sr.getScaledHeight());
+                renderedVideo = true;
+            }
         } catch (Exception e) {
+            renderedVideo = false;
+        }
+        if (!renderedVideo) {
+            this.drawDefaultBackground();
         }
 
         GlStateManager.disableTexture2D();
@@ -276,6 +295,113 @@ public class GuiMainMenu extends GuiScreen {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, this.imageWidth, this.imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, this.imageBuffer);
+        }
+    }
+
+    private static void ensurePreferenceLoaded() {
+        if (preferenceLoaded) return;
+        preferenceLoaded = true;
+        try {
+            Path path = new File(Minecraft.getMinecraft().mcDataDir, "nightsky_android.pref").toPath();
+            if (Files.exists(path)) {
+                String value = new String(Files.readAllBytes(path), StandardCharsets.UTF_8).trim();
+                boolean pref = Boolean.parseBoolean(value);
+                nightsky.NightSky.android = pref;
+                videoEnabled = !pref;
+                videoPreferenceChecked = true;
+            } else if (nightsky.NightSky.android != null) {
+                videoEnabled = !nightsky.NightSky.android;
+                videoPreferenceChecked = true;
+            }
+        } catch (Exception e) {
+        }
+    }
+
+    private static void savePreference() {
+        try {
+            Path path = new File(Minecraft.getMinecraft().mcDataDir, "nightsky_android.pref").toPath();
+            Files.write(path, String.valueOf(nightsky.NightSky.android).getBytes(StandardCharsets.UTF_8));
+        } catch (Exception e) {
+        }
+    }
+
+    private static class VideoPrompt extends GuiScreen {
+        private final GuiScreen parent;
+        private int enableX1;
+        private int enableY1;
+        private int enableX2;
+        private int enableY2;
+        private int disableX1;
+        private int disableY1;
+        private int disableX2;
+        private int disableY2;
+
+        public VideoPrompt(GuiScreen parent) {
+            this.parent = parent;
+        }
+
+        @Override
+        public void initGui() {
+            int centerX = this.width / 2;
+            int centerY = this.height / 2;
+            this.enableX1 = centerX - 110;
+            this.enableX2 = centerX + 110;
+            this.enableY1 = centerY - 10;
+            this.enableY2 = centerY + 20;
+            this.disableX1 = centerX - 110;
+            this.disableX2 = centerX + 110;
+            this.disableY1 = centerY + 30;
+            this.disableY2 = centerY + 60;
+        }
+
+        @Override
+        public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+            this.drawDefaultBackground();
+            this.drawCenteredString(this.fontRendererObj, "Load animated video background?", this.width / 2, this.height / 2 - 40, 0xFFFFFF);
+            boolean enableHover = isHovering(mouseX, mouseY, enableX1, enableY1, enableX2, enableY2);
+            boolean disableHover = isHovering(mouseX, mouseY, disableX1, disableY1, disableX2, disableY2);
+            drawOption(enableX1, enableY1, enableX2, enableY2, enableHover, "Enable(老安卓请点我)");
+            drawOption(disableX1, disableY1, disableX2, disableY2, disableHover, "Disable(老安卓别碰我)");
+        }
+
+        private void drawOption(int x1, int y1, int x2, int y2, boolean hover, String text) {
+            int base = hover ? 0xAA1E90FF : 0xAA000000;
+            int border = hover ? 0xFFFFFFFF : 0x55FFFFFF;
+            drawRect(x1, y1, x2, y2, base);
+            drawHorizontalLine(x1, x2, y1, border);
+            drawHorizontalLine(x1, x2, y2, border);
+            drawVerticalLine(x1, y1, y2, border);
+            drawVerticalLine(x2, y1, y2, border);
+            this.drawCenteredString(this.fontRendererObj, text, (x1 + x2) / 2, y1 + 6, 0xFFFFFF);
+        }
+
+        private boolean isHovering(int mouseX, int mouseY, int x1, int y1, int x2, int y2) {
+            return mouseX >= x1 && mouseX <= x2 && mouseY >= y1 && mouseY <= y2;
+        }
+
+        @Override
+        protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+            if (isHovering(mouseX, mouseY, enableX1, enableY1, enableX2, enableY2)) {
+                select(true);
+            } else if (isHovering(mouseX, mouseY, disableX1, disableY1, disableX2, disableY2)) {
+                select(false);
+            }
+            super.mouseClicked(mouseX, mouseY, mouseButton);
+        }
+
+        private void select(boolean enableVideo) {
+            videoEnabled = enableVideo;
+            nightsky.NightSky.android = !enableVideo;
+            videoPreferenceChecked = true;
+            savePreference();
+            if (!videoEnabled) {
+                try {
+                    VideoPlayer.stop();
+                } catch (Exception e) {
+                }
+                videoInitialized = false;
+            }
+            this.mc.displayGuiScreen(parent);
         }
     }
 }

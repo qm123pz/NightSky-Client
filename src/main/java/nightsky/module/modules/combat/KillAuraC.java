@@ -53,7 +53,7 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Random;
 
-public class KillAura extends Module {
+public class KillAuraC extends Module { 
     private static final Minecraft mc = Minecraft.getMinecraft();
     private static final DecimalFormat df = new DecimalFormat("+0.0;-0.0", new DecimalFormatSymbols(Locale.US));
     private final TimerUtil timer = new TimerUtil();
@@ -64,9 +64,12 @@ public class KillAura extends Module {
     private boolean isBlocking = false;
     private boolean fakeBlockState = false;
     private boolean blinkReset = false;
+    private boolean swapped = false; 
     private long attackDelayMS = 0L;
     private int blockTick = 0;
     private int lastTickProcessed;
+
+    
     public final ModeValue mode;
     public final ModeValue sort;
     public final ModeValue autoBlock;
@@ -87,7 +90,7 @@ public class KillAura extends Module {
     public final BooleanValue requirePress;
     public final BooleanValue allowMining;
     public final BooleanValue weaponsOnly;
-    public final BooleanValue allowTools;
+    public final BooleanValue allowTools; 
     public final BooleanValue inventoryCheck;
     public final BooleanValue botCheck;
     public final BooleanValue players;
@@ -97,27 +100,35 @@ public class KillAura extends Module {
     public final BooleanValue golems;
     public final BooleanValue silverfish;
     public final BooleanValue teams;
-    public final ModeValue showTarget;
-    public final ModeValue debugLog;
-    private boolean swapped;
+    public final ModeValue showTarget; 
+    public final ModeValue debugLog; 
+
 
     private long getAttackDelay() {
-        return this.isBlocking ? (long) (1000.0F / this.autoBlockCPS.getValue()) : 1000L / RandomUtil.nextLong(this.minCPS.getValue(), this.maxCPS.getValue());
+        
+        return this.isBlocking ? (long) (1000.0F / this.autoBlockCPS.getValue()) :
+               1000L / RandomUtil.nextLong(this.minCPS.getValue(), this.maxCPS.getValue()); 
     }
 
     private boolean performAttack(float yaw, float pitch) {
+        
         if (!NightSky.playerStateManager.digging && !NightSky.playerStateManager.placing) {
+            
             if (this.isPlayerBlocking() && this.autoBlock.getValue() != 1) {
                 return false;
             } else if (this.attackDelayMS > 0L) {
+                
                 return false;
             } else {
                 this.attackDelayMS = this.attackDelayMS + this.getAttackDelay();
                 mc.thePlayer.swingItem();
-                if ((this.rotations.getValue() != 0 || !this.isBoxInAttackRange(this.target.getBox()))
-                        && RotationUtil.rayTrace(this.target.getBox(), yaw, pitch, this.attackRange.getValue()) == null) {
+
+                
+                if ((this.rotations.getValue() != 0 || !this.isBoxInAttackRange(this.target.getBox())) &&
+                    RotationUtil.rayTrace(this.target.getBox(), yaw, pitch, this.attackRange.getValue()) == null) {
                     return false;
                 } else {
+                    
                     ((IAccessorPlayerControllerMP) mc.playerController).callSyncCurrentPlayItem();
                     PacketUtil.sendPacket(new C02PacketUseEntity(this.target.getEntity(), Action.ATTACK));
                     if (mc.playerController.getCurrentGameType() != GameType.SPECTATOR) {
@@ -151,9 +162,10 @@ public class KillAura extends Module {
 
     private void interactAttack(float yaw, float pitch) {
         if (this.target != null) {
-            MovingObjectPosition mop = RotationUtil.rayTrace(this.target.getBox(), yaw, pitch, 8.0);
+            MovingObjectPosition mop = RotationUtil.rayTrace(this.target.getBox(), yaw, pitch, 8.0); 
             if (mop != null) {
                 ((IAccessorPlayerControllerMP) mc.playerController).callSyncCurrentPlayItem();
+                
                 PacketUtil.sendPacket(
                         new C02PacketUseEntity(
                                 this.target.getEntity(),
@@ -171,14 +183,13 @@ public class KillAura extends Module {
     private boolean canAttack() {
         if (this.inventoryCheck.getValue() && mc.currentScreen instanceof GuiContainer) {
             return false;
-        } else if (!(java.lang.Boolean) this.weaponsOnly.getValue()
-                || ItemUtil.hasRawUnbreakingEnchant()
-                || this.allowTools.getValue() && ItemUtil.isHoldingTool()) {
+        } else if (!this.weaponsOnly.getValue() || ItemUtil.hasRawUnbreakingEnchant() || (this.allowTools.getValue() && ItemUtil.isHoldingTool())) {
             if (((IAccessorPlayerControllerMP) mc.playerController).getIsHittingBlock()) {
                 return false;
             } else if ((ItemUtil.isEating() || ItemUtil.isUsingBow()) && PlayerUtil.isUsingItem()) {
                 return false;
             } else {
+                
                 AutoHeal autoHeal = (AutoHeal) NightSky.moduleManager.modules.get(AutoHeal.class);
                 if (autoHeal.isEnabled() && autoHeal.isSwitching()) {
                     return false;
@@ -189,14 +200,15 @@ public class KillAura extends Module {
                     } else if (NightSky.moduleManager.modules.get(Scaffold.class).isEnabled()) {
                         return false;
                     } else if (this.requirePress.getValue()) {
-                        return PlayerUtil.isAttacking();
+                        return PlayerUtil.isAttacking(); 
                     } else {
+                        
                         return !this.allowMining.getValue() || !mc.objectMouseOver.typeOfHit.equals(MovingObjectType.BLOCK) || !PlayerUtil.isAttacking();
                     }
                 }
             }
         } else {
-            return false;
+            return false; 
         }
     }
 
@@ -204,11 +216,12 @@ public class KillAura extends Module {
         if (!ItemUtil.isHoldingSword()) {
             return false;
         } else {
+            
             return !this.autoBlockRequirePress.getValue() || PlayerUtil.isUsingItem();
         }
     }
 
-    private boolean hasValidTarget() {
+    public boolean hasValidTarget() {
         return mc.theWorld
                 .loadedEntityList
                 .stream()
@@ -230,13 +243,14 @@ public class KillAura extends Module {
             } else if (RotationUtil.angleToEntity(entityLivingBase) > this.fov.getValue().floatValue()) {
                 return false;
             } else if (!this.throughWalls.getValue() && RotationUtil.rayTrace(entityLivingBase) != null) {
-                return false;
+                return false; 
             } else if (entityLivingBase instanceof EntityOtherPlayerMP) {
                 if (!this.players.getValue()) {
                     return false;
                 } else if (TeamUtil.isFriend((EntityPlayer) entityLivingBase)) {
                     return false;
                 } else {
+                    
                     return (!this.teams.getValue() || !TeamUtil.isSameTeam((EntityPlayer) entityLivingBase)) && (!this.botCheck.getValue() || !TeamUtil.isBot((EntityPlayer) entityLivingBase));
                 }
             } else if (entityLivingBase instanceof EntityDragon || entityLivingBase instanceof EntityWither) {
@@ -250,6 +264,7 @@ public class KillAura extends Module {
                 } else if (!(entityLivingBase instanceof EntityIronGolem)) {
                     return false;
                 } else {
+                    
                     return this.golems.getValue() && (!this.teams.getValue() || !TeamUtil.hasTeamColor(entityLivingBase));
                 }
             } else if (!(entityLivingBase instanceof EntitySilverfish)) {
@@ -319,32 +334,35 @@ public class KillAura extends Module {
         return -1;
     }
 
-    public KillAura() {
-        super("KillAura", false);
+    public KillAuraC() { 
+        super("KillAuraC", false); 
         this.lastTickProcessed = 0;
-        this.mode = new ModeValue("Mode", 0, new String[]{"Single", "Switch"});
-        this.sort = new ModeValue("Sort", 0, new String[]{"Distance", "Health", "HurtTime", "FOV"});
+        
+        this.mode = new ModeValue("Mode", 0, new String[]{"SINGLE", "SWITCH"}); 
+        this.sort = new ModeValue("Sort", 0, new String[]{"DISTANCE", "HEALTH", "HURT_TIME", "FOV"}); 
         this.autoBlock = new ModeValue(
-                "AutoBlock", 3, new String[]{"NONE", "Vanilla", "Spoof", "HypixelBlink", "Hypixel", "Interact", "Swap", "Legit", "Fake", "HypixelFull", "HypixelTest"}
+                "AutoBlock", 3, new String[]{"NONE", "VANILLA", "SPOOF", "Grim", "Blink", "INTERACT", "SWAP", "LEGIT", "FAKE", "NEW", "BLINK2", "HYPIXEL", "HYPIXEL2"}
         );
-        this.autoBlockCPS = new FloatValue("AutoBlockCPS", 10.0F, 1.0F, 10.0F);
+        this.autoBlockCPS = new FloatValue("AutoBlockCPS", 10.0F, 1.0F, 20.0F); 
         this.autoBlockRequirePress = new BooleanValue("AutoBlockRequirePress", false);
         this.autoBlockRange = new FloatValue("AutoBlockRange", 6.0F, 3.0F, 8.0F);
         this.swingRange = new FloatValue("SwingRange", 3.5F, 3.0F, 6.0F);
         this.attackRange = new FloatValue("AttackRange", 3.0F, 3.0F, 6.0F);
         this.fov = new IntValue("FOV", 360, 30, 360);
-        this.minCPS = new IntValue("MinCPS", 14, 1, 20);
-        this.maxCPS = new IntValue("MaxCPS", 14, 1, 20);
+        this.minCPS = new IntValue("MinCPS", 14, 1, 20); 
+        this.maxCPS = new IntValue("MaxCPS", 14, 1, 20); 
         this.switchDelay = new IntValue("SwitchDelay", 150, 0, 1000);
-        this.rotations = new ModeValue("Rotations", 2, new String[]{"NONE", "Legit", "Silent", "LockView"});
-        this.moveFix = new ModeValue("MoveFix", 1, new String[]{"NONE", "Silent", "Strict"});
+        this.rotations = new ModeValue("Rotations", 2, new String[]{"NONE", "LEGIT", "SILENT", "LOCK_VIEW"}); 
+        this.moveFix = new ModeValue("MoveFix", 1, new String[]{"NONE", "SILENT", "STRICT"}); 
         this.smoothing = new PercentValue("Smoothing", 0);
         this.angleStep = new IntValue("AngleStep", 90, 30, 180);
         this.throughWalls = new BooleanValue("ThroughWalls", true);
         this.requirePress = new BooleanValue("RequirePress", false);
         this.allowMining = new BooleanValue("AllowMining", true);
         this.weaponsOnly = new BooleanValue("WeaponsOnly", true);
-        this.allowTools = new BooleanValue("AllowTools", false, this.weaponsOnly::getValue);
+        
+        BooleanValue weaponsOnlyRef = this.weaponsOnly;
+        this.allowTools = new BooleanValue("AllowTools", false, () -> !weaponsOnlyRef.getValue() || ItemUtil.hasRawUnbreakingEnchant()); 
         this.inventoryCheck = new BooleanValue("InventoryCheck", true);
         this.botCheck = new BooleanValue("BotCheck", true);
         this.players = new BooleanValue("Players", true);
@@ -354,8 +372,9 @@ public class KillAura extends Module {
         this.golems = new BooleanValue("Golems", false);
         this.silverfish = new BooleanValue("Silverfish", false);
         this.teams = new BooleanValue("Teams", true);
-        this.showTarget = new ModeValue("ShowTarget", 0, new String[]{"NONE", "Default"});
-        this.debugLog = new ModeValue("Debug", 0, new String[]{"NONE", "Health"});
+        
+        this.showTarget = new ModeValue("ShowTarget", 0, new String[]{"NONE", "DEFAULT", "HUD"}); 
+        this.debugLog = new ModeValue("Debug", 0, new String[]{"NONE", "HEALTH"}); 
     }
 
     public EntityLivingBase getTarget() {
@@ -366,9 +385,8 @@ public class KillAura extends Module {
         Scaffold scaffold = (Scaffold) NightSky.moduleManager.modules.get(Scaffold.class);
         if (scaffold.isEnabled()) {
             return false;
-        } else if (!this.weaponsOnly.getValue()
-                || ItemUtil.hasRawUnbreakingEnchant()
-                || this.allowTools.getValue() && ItemUtil.isHoldingTool()) {
+        } else if (!this.weaponsOnly.getValue() || ItemUtil.hasRawUnbreakingEnchant() || (this.allowTools.getValue() && ItemUtil.isHoldingTool())) {
+             
             return !this.requirePress.getValue() || KeyBindUtil.isKeyDown(mc.gameSettings.keyBindAttack.getKeyCode());
         } else {
             return false;
@@ -377,6 +395,7 @@ public class KillAura extends Module {
 
     public boolean shouldAutoBlock() {
         if (this.isPlayerBlocking() && this.isBlocking) {
+            
             return !mc.thePlayer.isInWater() && !mc.thePlayer.isInLava() && (this.autoBlock.getValue() == 3
                     || this.autoBlock.getValue() == 4
                     || this.autoBlock.getValue() == 5
@@ -404,22 +423,25 @@ public class KillAura extends Module {
         }
         if (this.isEnabled() && event.getType() == EventType.PRE) {
             if (this.attackDelayMS > 0L) {
-                this.attackDelayMS -= 50L;
+                this.attackDelayMS -= 50L; 
             }
             boolean attack = this.target != null && this.canAttack();
             boolean block = attack && this.canAutoBlock();
+
             if (!block) {
                 NightSky.blinkManager.setBlinkState(false, BlinkModules.AUTO_BLOCK);
                 this.isBlocking = false;
                 this.fakeBlockState = false;
                 this.blockTick = 0;
             }
+
             if (attack) {
                 boolean swap = false;
                 boolean blocked = false;
                 if (block) {
+                    
                     switch (this.autoBlock.getValue()) {
-                        case 0:
+                        case 0: 
                             if (PlayerUtil.isUsingItem()) {
                                 this.isBlocking = true;
                                 if (!this.isPlayerBlocking() && !NightSky.playerStateManager.digging && !NightSky.playerStateManager.placing) {
@@ -434,7 +456,7 @@ public class KillAura extends Module {
                             NightSky.blinkManager.setBlinkState(false, BlinkModules.AUTO_BLOCK);
                             this.fakeBlockState = false;
                             break;
-                        case 1:
+                        case 1: 
                             if (this.hasValidTarget()) {
                                 if (!this.isPlayerBlocking() && !NightSky.playerStateManager.digging && !NightSky.playerStateManager.placing) {
                                     swap = true;
@@ -448,91 +470,72 @@ public class KillAura extends Module {
                                 this.fakeBlockState = false;
                             }
                             break;
-                        case 2:
-                            if (this.hasValidTarget()) {
-                                int item = ((IAccessorPlayerControllerMP) mc.playerController).getCurrentPlayerItem();
-                                if (NightSky.playerStateManager.digging
-                                        || NightSky.playerStateManager.placing
-                                        || mc.thePlayer.inventory.currentItem != item
-                                        || this.isPlayerBlocking() && this.blockTick != 0
-                                        || this.attackDelayMS > 0L && this.attackDelayMS <= 50L) {
-                                    this.blockTick = 0;
-                                } else {
-                                    int slot = this.findEmptySlot(item);
-                                    PacketUtil.sendPacket(new C09PacketHeldItemChange(slot));
-                                    PacketUtil.sendPacket(new C09PacketHeldItemChange(item));
-                                    swap = true;
-                                    this.blockTick = 1;
-                                }
+                        case 2: 
+                            if (!this.hasValidTarget()) {
                                 NightSky.blinkManager.setBlinkState(false, BlinkModules.AUTO_BLOCK);
-                                this.isBlocking = true;
+                                this.isBlocking = false;
                                 this.fakeBlockState = false;
+                                break;
+                            }
+                            int currentSlot = ((IAccessorPlayerControllerMP) mc.playerController).getCurrentPlayerItem();
+                            if (!NightSky.playerStateManager.digging && !NightSky.playerStateManager.placing && mc.thePlayer.inventory.currentItem == currentSlot && (!this.isPlayerBlocking() || this.blockTick == 0) && (this.attackDelayMS <= 0L || this.attackDelayMS > 50L)) {
+                                int slot = this.findEmptySlot(currentSlot);
+                                PacketUtil.sendPacket(new C09PacketHeldItemChange(slot));
+                                PacketUtil.sendPacket(new C09PacketHeldItemChange(currentSlot));
+                                swap = true;
+                                this.blockTick = 1;
+                            } else {
+                                this.blockTick = 0;
+                            }
+                            NightSky.blinkManager.setBlinkState(false, BlinkModules.AUTO_BLOCK);
+                            this.isBlocking = true;
+                            this.fakeBlockState = false;
+                            break;
+                        case 3: 
+                            if (this.hasValidTarget()) {
+                                if (!NightSky.playerStateManager.digging && !NightSky.playerStateManager.placing) {
+                                    switch (this.blockTick) {
+                                        case 0:
+                                            if (!this.isPlayerBlocking()) {
+                                                swap = true;
+                                            }
+                                            this.blinkReset = true;
+                                            this.blockTick = 1;
+                                            break;
+                                        case 1:
+                                            if (this.isPlayerBlocking()) {
+                                                this.stopBlock();
+                                                attack = false;
+                                            }
+                                            if (this.attackDelayMS <= 80L) { 
+                                                this.blockTick = 0;
+                                            }
+                                            break;
+                                        default:
+                                            this.blockTick = 0;
+                                    }
+                                }
+                                this.isBlocking = true;
+                                this.fakeBlockState = true;
                             } else {
                                 NightSky.blinkManager.setBlinkState(false, BlinkModules.AUTO_BLOCK);
                                 this.isBlocking = false;
                                 this.fakeBlockState = false;
                             }
                             break;
-                        case 3:
-                            if (this.hasValidTarget()) {
-                                if (!NightSky.playerStateManager.digging && !NightSky.playerStateManager.placing) {
-                                    switch (this.blockTick) {
-                                        case 0:
-                                            setCurrentSlot();
-                                            if (!this.isPlayerBlocking()) {
-                                                swap = true;
-                                            }
-                                            blocked = true;
-                                            this.blockTick = 1;
-                                            break;
-                                        case 1:
-                                            this.stopBlock();
-                                            attack = false;
-                                            setNextSlot();
-                                            if (this.attackDelayMS <= 50L) {
-                                                this.blockTick = 0;
-                                            }
-                                            break;
-                                        default:
-                                            this.blockTick = 0;
-                                            setCurrentSlot();
-                                    }
-                                }
-                                this.isBlocking = true;
-                                this.fakeBlockState = true;
-                            } else {
-                                if (this.blockTick == 1 && this.isPlayerBlocking()) {
-                                    this.stopBlock();
-                                    setNextSlot();
-                                }
-                                this.blockTick = 0;
-                                setCurrentSlot();
-                                NightSky.blinkManager.setBlinkState(false, BlinkModules.AUTO_BLOCK);
-                                this.isBlocking = false;
-                                this.fakeBlockState = false;
-                        }
-                        break;
-                        case 4:
-                            if (this.hasValidTarget()) {
+                        case 4: 
+                             if (this.hasValidTarget()) {
                                 if (!NightSky.playerStateManager.digging && !NightSky.playerStateManager.placing) {
                                     switch (this.blockTick) {
                                         case 0:
                                             if (!this.isPlayerBlocking()) {
                                                 swap = true;
                                             }
-                                            blocked = true;
+                                            this.blinkReset = true;
                                             this.blockTick = 1;
                                             break;
                                         case 1:
                                             if (this.isPlayerBlocking()) {
-                                                if(NightSky.moduleManager.modules.get(NoSlow.class).isEnabled()){
-                                                    int randomSlot = new Random().nextInt(9);
-                                                    while (randomSlot == mc.thePlayer.inventory.currentItem) {
-                                                        randomSlot = new Random().nextInt(9);
-                                                    }
-                                                    PacketUtil.sendPacket(new C09PacketHeldItemChange(randomSlot));
-                                                    PacketUtil.sendPacket(new C09PacketHeldItemChange(mc.thePlayer.inventory.currentItem));
-                                                }
                                                 this.stopBlock();
                                                 attack = false;
                                             }
@@ -552,8 +555,8 @@ public class KillAura extends Module {
                                 this.fakeBlockState = false;
                             }
                             break;
-                        case 5:
-                            if (this.hasValidTarget()) {
+                        case 5: 
+                             if (this.hasValidTarget()) {
                                 int item = ((IAccessorPlayerControllerMP) mc.playerController).getCurrentPlayerItem();
                                 if (mc.thePlayer.inventory.currentItem == item && !NightSky.playerStateManager.digging && !NightSky.playerStateManager.placing) {
                                     switch (this.blockTick) {
@@ -587,8 +590,8 @@ public class KillAura extends Module {
                                 this.fakeBlockState = false;
                             }
                             break;
-                        case 6:
-                            if (this.hasValidTarget()) {
+                        case 6: 
+                             if (this.hasValidTarget()) {
                                 int item = ((IAccessorPlayerControllerMP) mc.playerController).getCurrentPlayerItem();
                                 if (mc.thePlayer.inventory.currentItem == item && !NightSky.playerStateManager.digging && !NightSky.playerStateManager.placing) {
                                     switch (this.blockTick) {
@@ -628,8 +631,8 @@ public class KillAura extends Module {
                             this.isBlocking = false;
                             this.fakeBlockState = false;
                             break;
-                        case 7:
-                            if (this.hasValidTarget()) {
+                        case 7: 
+                             if (this.hasValidTarget()) {
                                 if (!NightSky.playerStateManager.digging && !NightSky.playerStateManager.placing) {
                                     switch (this.blockTick) {
                                         case 0:
@@ -660,8 +663,8 @@ public class KillAura extends Module {
                                 this.fakeBlockState = false;
                             }
                             break;
-                        case 8:
-                            NightSky.blinkManager.setBlinkState(false, BlinkModules.AUTO_BLOCK);
+                        case 8: 
+                             NightSky.blinkManager.setBlinkState(false, BlinkModules.AUTO_BLOCK);
                             this.isBlocking = false;
                             this.fakeBlockState = this.hasValidTarget();
                             if (PlayerUtil.isUsingItem()
@@ -671,11 +674,11 @@ public class KillAura extends Module {
                                 swap = true;
                             }
                             break;
-                        case 9:
-                            if (this.hasValidTarget()) {
+                        case 9: 
+                             if (this.hasValidTarget()) {
                                 if (!NightSky.playerStateManager.digging && !NightSky.playerStateManager.placing) {
                                     switch (this.blockTick) {
-                                        case 0: {
+                                        case 0:
                                             this.setCurrentSlot();
                                             if (!this.isPlayerBlocking()) {
                                                 swap = true;
@@ -683,33 +686,38 @@ public class KillAura extends Module {
                                             blocked = true;
                                             this.blockTick = 1;
                                             break;
-                                        }
-                                        case 1: {
-                                            if (this.isPlayerBlocking()) {
-                                                this.stopBlock();
-                                                attack = false;
-                                            }
-                                            if (this.attackDelayMS > 50L) break;
+                                        case 1:
+                                            this.stopBlock();
+                                            attack = false;
                                             this.setNextSlot();
-                                            this.blockTick = 0;
+                                            if (this.attackDelayMS <= 50L) {
+                                                this.blockTick = 0;
+                                            }
                                             break;
-                                        }
-                                        default: {
+                                        default:
                                             this.blockTick = 0;
                                             this.setCurrentSlot();
-                                        }
                                     }
                                 }
                                 this.isBlocking = true;
                                 this.fakeBlockState = true;
-                                break;
-
-                        }
-                        case 10:
-                            if (this.hasValidTarget()) {
+                            } else {
+                                if (this.blockTick == 1 && this.isPlayerBlocking()) {
+                                    this.stopBlock();
+                                    this.setNextSlot();
+                                }
+                                this.blockTick = 0;
+                                this.setCurrentSlot();
+                                NightSky.blinkManager.setBlinkState(false, BlinkModules.AUTO_BLOCK);
+                                this.isBlocking = false;
+                                this.fakeBlockState = false;
+                            }
+                            break;
+                        case 10: 
+                             if (this.hasValidTarget()) {
                                 if (!NightSky.playerStateManager.digging && !NightSky.playerStateManager.placing) {
                                     switch (this.blockTick) {
-                                        case 0: {
+                                        case 0:
                                             this.setCurrentSlot();
                                             if (!this.isPlayerBlocking()) {
                                                 swap = true;
@@ -717,53 +725,137 @@ public class KillAura extends Module {
                                             blocked = true;
                                             this.blockTick = 1;
                                             break;
-                                        }
-                                        case 1: {
+                                        case 1:
                                             if (this.isPlayerBlocking()) {
                                                 this.stopBlock();
-                                                attack = false;
                                             }
-                                            if (this.attackDelayMS > 50L) break;
-                                            this.setNextSlot();
-                                            this.blockTick = 0;
+                                            attack = false;
+                                            int randomSlot = this.findEmptySlot(mc.thePlayer.inventory.currentItem);
+                                            PacketUtil.sendPacket(new C09PacketHeldItemChange(randomSlot));
+                                            this.swapped = true; 
+                                            if (this.attackDelayMS <= 50L) {
+                                                this.blockTick = 0;
+                                            }
                                             break;
-                                        }
-                                        default: {
+                                        default:
                                             this.blockTick = 0;
                                             this.setCurrentSlot();
-                                        }
                                     }
                                 }
                                 this.isBlocking = true;
                                 this.fakeBlockState = true;
+                            } else {
+                                if (this.blockTick == 1 && this.isPlayerBlocking()) {
+                                    this.stopBlock();
+                                    this.setCurrentSlot();
+                                }
+                                this.blockTick = 0;
+                                NightSky.blinkManager.setBlinkState(false, BlinkModules.AUTO_BLOCK);
+                                this.isBlocking = false;
+                                this.fakeBlockState = false;
+                            }
+                            break;
+                        case 11: 
+                             if (!this.hasValidTarget()) {
+                                NightSky.blinkManager.setBlinkState(false, BlinkModules.AUTO_BLOCK);
+                                this.isBlocking = false;
+                                this.fakeBlockState = false;
                                 break;
                             }
-                            if (this.blockTick == 1 && this.isPlayerBlocking()) {
-                                this.stopBlock();
-                                this.setNextSlot();
+                            if (!NightSky.playerStateManager.digging && !NightSky.playerStateManager.placing) {
+                                switch (this.blockTick) {
+                                   case 0:
+                                      if (!this.isPlayerBlocking()) {
+                                         swap = true;
+                                      }
+                                      blocked = true;
+                                      this.blockTick = 1;
+                                      break;
+                                   case 1:
+                                      if (this.isPlayerBlocking()) {
+                                         
+                                         if (NightSky.moduleManager.modules.get(NoSlow.class).isEnabled()) {
+                                             int randomSlot = (new Random()).nextInt(9);
+                                             while (randomSlot == mc.thePlayer.inventory.currentItem) {
+                                                 randomSlot = (new Random()).nextInt(9);
+                                             }
+                                             PacketUtil.sendPacket(new C09PacketHeldItemChange(randomSlot));
+                                             PacketUtil.sendPacket(new C09PacketHeldItemChange(mc.thePlayer.inventory.currentItem));
+                                         }
+                                         this.stopBlock();
+                                         attack = false;
+                                      }
+                                      if (this.attackDelayMS <= 50L) {
+                                         this.blockTick = 0;
+                                      }
+                                      break;
+                                   default:
+                                      this.blockTick = 0;
+                               }
                             }
-                            this.blockTick = 0;
-                            this.setCurrentSlot();
-                            NightSky.blinkManager.setBlinkState(false, BlinkModules.AUTO_BLOCK);
-                            this.isBlocking = false;
-                            this.fakeBlockState = false;
+                            this.isBlocking = true;
+                            this.fakeBlockState = true;
+                            break;
+                        case 12: 
+                             if (this.hasValidTarget()) {
+                                if (!NightSky.playerStateManager.digging && !NightSky.playerStateManager.placing) {
+                                    switch (this.blockTick) {
+                                        case 0:
+                                            this.setCurrentSlot();
+                                            if (!this.isPlayerBlocking()) {
+                                                swap = true;
+                                            }
+                                            blocked = true;
+                                            this.blockTick = 1;
+                                            break;
+                                        case 1:
+                                            if (this.isPlayerBlocking()) {
+                                                this.stopBlock();
+                                                attack = false;
+                                            }
+                                            if (this.attackDelayMS <= 50L) {
+                                                this.setNextSlot();
+                                                this.blockTick = 0;
+                                            }
+                                            break;
+                                        default:
+                                            this.blockTick = 0;
+                                            this.setCurrentSlot();
+                                    }
+                                }
+                                this.isBlocking = true;
+                                this.fakeBlockState = true;
+                            } else {
+                                if (this.blockTick == 1 && this.isPlayerBlocking()) {
+                                    this.stopBlock();
+                                    this.setNextSlot();
+                                }
+                                this.blockTick = 0;
+                                this.setCurrentSlot();
+                                NightSky.blinkManager.setBlinkState(false, BlinkModules.AUTO_BLOCK);
+                                this.isBlocking = false;
+                                this.fakeBlockState = false;
+                            }
+                            break;
                     }
                 }
+
                 boolean attacked = false;
                 if (this.isBoxInSwingRange(this.target.getBox())) {
+                    
                     if (this.rotations.getValue() == 2 || this.rotations.getValue() == 3) {
                         float[] rotations = RotationUtil.getRotationsToBox(
                                 this.target.getBox(),
                                 event.getYaw(),
                                 event.getPitch(),
-                                (float) this.angleStep.getValue() + RandomUtil.nextFloat(-5.0F, 5.0F),
-                                (float) this.smoothing.getValue() / 100.0F
+                                (float) this.angleStep.getValue() + RandomUtil.nextFloat(-5.0F, 5.0F), 
+                                (float) this.smoothing.getValue() / 100.0F 
                         );
                         event.setRotation(rotations[0], rotations[1], 1);
-                        if (this.rotations.getValue() == 3) {
+                        if (this.rotations.getValue() == 3) { 
                             NightSky.rotationManager.setRotation(rotations[0], rotations[1], 1, true);
                         }
-                        if (this.moveFix.getValue() != 0 || this.rotations.getValue() == 3) {
+                        if (this.moveFix.getValue() != 0 || this.rotations.getValue() == 3) { 
                             event.setPervRotation(rotations[0], 1);
                         }
                     }
@@ -779,6 +871,7 @@ public class KillAura extends Module {
                     }
                 }
                 if (blocked) {
+                    
                     NightSky.blinkManager.setBlinkState(false, BlinkModules.AUTO_BLOCK);
                     NightSky.blinkManager.setBlinkState(true, BlinkModules.AUTO_BLOCK);
                 }
@@ -791,6 +884,7 @@ public class KillAura extends Module {
         if (this.isEnabled()) {
             switch (event.getType()) {
                 case PRE:
+                    
                     if (this.target == null
                             || !this.isValidTarget(this.target.getEntity())
                             || !this.isBoxInAttackRange(this.target.getBox())
@@ -808,6 +902,7 @@ public class KillAura extends Module {
                         if (targets.isEmpty()) {
                             this.target = null;
                         } else {
+                            
                             if (targets.stream().anyMatch(this::isInSwingRange)) {
                                 targets.removeIf(entityLivingBase -> !this.isInSwingRange(entityLivingBase));
                             }
@@ -817,42 +912,47 @@ public class KillAura extends Module {
                             if (targets.stream().anyMatch(this::isPlayerTarget)) {
                                 targets.removeIf(entityLivingBase -> !this.isPlayerTarget(entityLivingBase));
                             }
+                            
                             targets.sort(
                                     (entityLivingBase1, entityLivingBase2) -> {
                                         int sortBase = 0;
                                         switch (this.sort.getValue()) {
-                                            case 1:
+                                            case 1: 
                                                 sortBase = Float.compare(TeamUtil.getHealthScore(entityLivingBase1), TeamUtil.getHealthScore(entityLivingBase2));
                                                 break;
-                                            case 2:
+                                            case 2: 
                                                 sortBase = Integer.compare(entityLivingBase1.hurtResistantTime, entityLivingBase2.hurtResistantTime);
                                                 break;
-                                            case 3:
+                                            case 3: 
                                                 sortBase = Float.compare(
                                                         RotationUtil.angleToEntity(entityLivingBase1),
                                                         RotationUtil.angleToEntity(entityLivingBase2)
                                                 );
                                         }
+                                        
                                         return sortBase != 0
                                                 ? sortBase
                                                 : Double.compare(RotationUtil.distanceToEntity(entityLivingBase1), RotationUtil.distanceToEntity(entityLivingBase2));
                                     }
                             );
-                            if (this.mode.getValue() == 1 && this.hitRegistered) {
+                            
+                            if (this.mode.getValue() == 1 && this.hitRegistered) { 
                                 this.hitRegistered = false;
                                 this.switchTick++;
                             }
-                            if (this.mode.getValue() == 0 || this.switchTick >= targets.size()) {
+                            if (this.mode.getValue() == 0 || this.switchTick >= targets.size()) { 
                                 this.switchTick = 0;
                             }
                             this.target = new AttackData(targets.get(this.switchTick));
                         }
                     }
                     if (this.target != null) {
+                        
                         this.target = new AttackData(this.target.getEntity());
                     }
                     break;
                 case POST:
+                    
                     if (this.isPlayerBlocking() && !mc.thePlayer.isBlocking()) {
                         mc.thePlayer.setItemInUse(mc.thePlayer.getHeldItem(), mc.thePlayer.getHeldItem().getMaxItemUseDuration());
                     }
@@ -875,17 +975,18 @@ public class KillAura extends Module {
                     mc.thePlayer.stopUsingItem();
                 }
             }
+            
             if (this.debugLog.getValue() == 1 && this.isAttackAllowed()) {
                 if (event.getPacket() instanceof S06PacketUpdateHealth) {
-                    float packet = ((S06PacketUpdateHealth) event.getPacket()).getHealth() - mc.thePlayer.getHealth();
-                    if (packet != 0.0F && this.lastTickProcessed != mc.thePlayer.ticksExisted) {
+                    float packetHealthDiff = ((S06PacketUpdateHealth) event.getPacket()).getHealth() - mc.thePlayer.getHealth();
+                    if (packetHealthDiff != 0.0F && this.lastTickProcessed != mc.thePlayer.ticksExisted) {
                         this.lastTickProcessed = mc.thePlayer.ticksExisted;
                         ChatUtil.sendFormatted(
                                 String.format(
-                                        "%sHealth: %s&l%s&r (&otick: %d&r)&r",
+                                        "%sHealth: %s&l%.1f&r (&otick: %d&r)&r",
                                         NightSky.clientName,
-                                        packet > 0.0F ? "&a" : "&c",
-                                        df.format(packet),
+                                        packetHealthDiff > 0.0F ? "&a" : "&c",
+                                        packetHealthDiff, 
                                         mc.thePlayer.ticksExisted
                                 )
                         );
@@ -895,16 +996,16 @@ public class KillAura extends Module {
                     S1CPacketEntityMetadata packet = (S1CPacketEntityMetadata) event.getPacket();
                     if (packet.getEntityId() == mc.thePlayer.getEntityId()) {
                         for (WatchableObject watchableObject : packet.func_149376_c()) {
-                            if (watchableObject.getDataValueId() == 6) {
-                                float diff = (Float) watchableObject.getObject() - mc.thePlayer.getHealth();
-                                if (diff != 0.0F && this.lastTickProcessed != mc.thePlayer.ticksExisted) {
+                            if (watchableObject.getDataValueId() == 6) { 
+                                float metaHealthDiff = (Float) watchableObject.getObject() - mc.thePlayer.getHealth();
+                                if (metaHealthDiff != 0.0F && this.lastTickProcessed != mc.thePlayer.ticksExisted) {
                                     this.lastTickProcessed = mc.thePlayer.ticksExisted;
                                     ChatUtil.sendFormatted(
                                             String.format(
-                                                    "%sHealth: %s&l%s&r (&otick: %d&r)&r",
+                                                    "%sHealth: %s&l%.1f&r (&otick: %d&r)&r",
                                                     NightSky.clientName,
-                                                    diff > 0.0F ? "&a" : "&c",
-                                                    df.format(diff),
+                                                    metaHealthDiff > 0.0F ? "&a" : "&c",
+                                                    metaHealthDiff,
                                                     mc.thePlayer.ticksExisted
                                             )
                                     );
@@ -920,13 +1021,15 @@ public class KillAura extends Module {
     @EventTarget
     public void onMove(MoveInputEvent event) {
         if (this.isEnabled()) {
-            if (this.moveFix.getValue() == 1
-                    && this.rotations.getValue() != 3
+            
+            if (this.moveFix.getValue() == 1 
+                    && this.rotations.getValue() != 3 
                     && RotationState.isActived()
                     && RotationState.getPriority() == 1.0F
                     && MoveUtil.isForwardPressed()) {
                 MoveUtil.fixStrafe(RotationState.getSmoothedYaw());
             }
+            
             if (this.shouldAutoBlock()) {
                 mc.thePlayer.movementInput.jump = false;
             }
@@ -936,17 +1039,43 @@ public class KillAura extends Module {
     @EventTarget
     public void onRender(Render3DEvent event) {
         if (this.isEnabled() && target != null) {
+            
             if (this.showTarget.getValue() != 0
                     && TeamUtil.isEntityLoaded(this.target.getEntity())
                     && this.isAttackAllowed()) {
                 Color color = new Color(-1);
                 switch (this.showTarget.getValue()) {
-                    case 1:
+                    case 1: 
                         if (this.target.getEntity().hurtTime > 0) {
-                            color = new Color(16733525);
+                            color = new Color(16733525); 
                         } else {
-                            color = new Color(5635925);
+                            color = new Color(5635925);  
                         }
+                        break;
+                    case 2: 
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         if (this.target.getEntity().hurtTime > 0) {
+                             color = new Color(16733525);
+                         } else {
+                             color = new Color(5635925);
+                         }
+                         
                         break;
                 }
                 RenderUtil.enableRenderState();
@@ -958,6 +1087,7 @@ public class KillAura extends Module {
 
     @EventTarget
     public void onLeftClick(LeftClickMouseEvent event) {
+        
         if (this.isBlocking) {
             event.setCancelled(true);
         } else {
@@ -969,7 +1099,8 @@ public class KillAura extends Module {
 
     @EventTarget
     public void onRightClick(RightClickMouseEvent event) {
-        if (this.isBlocking) {
+        
+         if (this.isBlocking) {
             event.setCancelled(true);
         } else {
             if (this.isEnabled() && this.target != null && this.canAttack()) {
@@ -980,7 +1111,8 @@ public class KillAura extends Module {
 
     @EventTarget
     public void onHitBlock(HitBlockEvent event) {
-        if (this.isBlocking) {
+        
+         if (this.isBlocking) {
             event.setCancelled(true);
         } else {
             if (this.isEnabled() && this.target != null && this.canAttack()) {
@@ -991,7 +1123,8 @@ public class KillAura extends Module {
 
     @EventTarget
     public void onCancelUse(CancelUseEvent event) {
-        if (this.isBlocking) {
+        
+         if (this.isBlocking) {
             event.setCancelled(true);
         }
     }
@@ -1003,6 +1136,7 @@ public class KillAura extends Module {
         this.hitRegistered = false;
         this.attackDelayMS = 0L;
         this.blockTick = 0;
+        this.swapped = false; 
     }
 
     @Override
@@ -1011,10 +1145,12 @@ public class KillAura extends Module {
         this.blockingState = false;
         this.isBlocking = false;
         this.fakeBlockState = false;
+        this.swapped = false; 
     }
 
     @Override
     public void verifyValue(String mode) {
+        
         if (!this.autoBlock.getName().equals(mode) && !this.autoBlockCPS.getName().equals(mode)) {
             if (this.swingRange.getName().equals(mode)) {
                 if (this.swingRange.getValue() < this.attackRange.getValue()) {
@@ -1034,12 +1170,8 @@ public class KillAura extends Module {
                 }
             }
         } else {
-            boolean badCps = this.autoBlock.getValue() == 2
-                    || this.autoBlock.getValue() == 3
-                    || this.autoBlock.getValue() == 4
-                    || this.autoBlock.getValue() == 5
-                    || this.autoBlock.getValue() == 6
-                    || this.autoBlock.getValue() == 7;
+            
+            boolean badCps = this.autoBlock.getValue() >= 2 && this.autoBlock.getValue() <= 11;
             if (badCps && this.autoBlockCPS.getValue() > 10.0F) {
                 this.autoBlockCPS.setValue(10.0F);
             }
@@ -1048,6 +1180,7 @@ public class KillAura extends Module {
 
     @Override
     public String[] getSuffix() {
+        
         return new String[]{CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, this.mode.getModeString())};
     }
 
@@ -1057,7 +1190,6 @@ public class KillAura extends Module {
         private final double x;
         private final double y;
         private final double z;
-        public int hurtTime;
 
         public AttackData(EntityLivingBase entityLivingBase) {
             this.entity = entityLivingBase;
@@ -1089,9 +1221,10 @@ public class KillAura extends Module {
         }
     }
 
+    
     private void setNextSlot() {
         int bestSwapSlot = getNextSlot();
-        mc.thePlayer.sendQueue.addToSendQueue(new C09PacketHeldItemChange(bestSwapSlot));
+        PacketUtil.sendPacket(new C09PacketHeldItemChange(bestSwapSlot)); 
         swapped = true;
     }
 
@@ -1099,7 +1232,7 @@ public class KillAura extends Module {
         if (!swapped) {
             return;
         }
-        mc.thePlayer.sendQueue.addToSendQueue(new C09PacketHeldItemChange(mc.thePlayer.inventory.currentItem));
+        PacketUtil.sendPacket(new C09PacketHeldItemChange(mc.thePlayer.inventory.currentItem)); 
         swapped = false;
     }
 
@@ -1108,8 +1241,7 @@ public class KillAura extends Module {
         int next = -1;
         if (currentSlot < 8) {
             next = currentSlot + 1;
-        }
-        else {
+        } else {
             next = currentSlot - 1;
         }
         return next;

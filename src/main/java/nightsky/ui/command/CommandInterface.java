@@ -1,12 +1,12 @@
 package nightsky.ui.command;
 
 import nightsky.NightSky;
-import nightsky.font.FontTransformer;
-import nightsky.font.CustomFontRenderer;
 import nightsky.module.Module;
+import nightsky.font.CustomFontRenderer;
+import nightsky.font.FontTransformer;
 import nightsky.module.modules.render.dynamicisland.DynamicIsland;
 import nightsky.powershell.PowerShell;
-import nightsky.util.render.BlurUtil;
+import nightsky.util.render.PostProcessing;
 import nightsky.util.render.RenderUtil;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -780,7 +780,7 @@ public class CommandInterface {
                 float scaledKeyX = keyX + scaleOffsetX;
                 float scaledKeyY = keyY + scaleOffsetY;
 
-                BlurUtil.blurAreaRounded(scaledKeyX - 1, scaledKeyY - 1, scaledKeyX + scaledWidth + 1, scaledKeyY + scaledHeight + 1, 8, blurStrength);
+                PostProcessing.drawBlur(scaledKeyX - 1, scaledKeyY - 1, scaledKeyX + scaledWidth + 1, scaledKeyY + scaledHeight + 1, () -> () -> RenderUtil.drawRoundedRect(scaledKeyX - 1, scaledKeyY - 1, scaledWidth + 2, scaledHeight + 2, 8, -1));
 
                 RenderUtil.drawRoundedRect(scaledKeyX, scaledKeyY, scaledWidth, scaledHeight, 8, keyColor);
 

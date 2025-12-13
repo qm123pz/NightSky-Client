@@ -7,10 +7,10 @@ import nightsky.ui.clickgui.dropdown.components.ModuleRect;
 import nightsky.ui.clickgui.dropdown.utils.DropdownFontRenderer;
 import nightsky.ui.clickgui.dropdown.utils.ScrollUtil;
 import nightsky.util.render.ColorUtil;
-import nightsky.util.render.StencilUtil;
-import nightsky.util.render.BlurUtil;
 import nightsky.util.DragUtil;
 import net.minecraft.client.gui.Gui;
+import nightsky.util.render.PostProcessing;
+import nightsky.util.render.StencilUtil;
 import nightsky.util.render.animations.advanced.Animation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
@@ -84,8 +84,8 @@ public class CategoryPanel {
         boolean hoveringMods = isHovering(x, y + categoryRectHeight, rectWidth, allowedHeight, mouseX, mouseY);
 
         float realHeight = Math.min(actualHeight, allowedHeight);
-        
-        BlurUtil.blurArea(x, y, x + rectWidth, y + realHeight + categoryRectHeight, 97);
+
+        PostProcessing.drawBlurRect(x, y, x + rectWidth, y + realHeight + categoryRectHeight);
         
         GlStateManager.enableBlend();
         

@@ -5,11 +5,10 @@ import net.minecraft.client.gui.ScaledResolution;
 import nightsky.ui.mainmenu.GuiMainMenu;
 import nightsky.checkerLOL.AuthManager;
 import nightsky.checkerLOL.KamiActivationManager;
-import nightsky.util.render.BlurUtil;
+import nightsky.util.render.PostProcessing;
 import nightsky.util.render.RenderUtil;
 import nightsky.font.FontRenderer;
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
 
 import java.awt.Color;
 import java.awt.Desktop;
@@ -80,7 +79,7 @@ public class GuiAuthMain extends GuiScreen {
         int panelY = centerY - panelHeight / 2;
         
         float panelAlpha = loginSuccess ? successAlpha : 1.0f;
-        BlurUtil.blurAreaRounded(panelX, panelY, panelX + panelWidth, panelY + panelHeight, 15, 50f * panelAlpha);
+        PostProcessing.drawBlur(panelX, panelY, panelX + panelWidth, panelY + panelHeight, () -> () -> RenderUtil.drawRoundedRect(panelX, panelY, panelWidth, panelHeight, 15, -1));
         RenderUtil.drawRoundedRect(panelX, panelY, panelWidth, panelHeight, 15, new Color(0, 0, 0, (int)(80 * panelAlpha)));
         
         drawCurrentMode(mouseX, mouseY, panelX, panelY, panelWidth, panelHeight);

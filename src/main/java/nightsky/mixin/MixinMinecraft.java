@@ -194,7 +194,7 @@ public abstract class MixinMinecraft {
     private void replaceMainMenu(GuiScreen guiScreenIn, CallbackInfo ci) {
 
         //-----警告-您已进入安卓区域-不适合新手游玩-----
-        if (!NightSky.android) {
+        if (NightSky.android == null || !NightSky.android) {
 
         if (this.currentScreen instanceof net.minecraft.client.gui.GuiMainMenu) {
             //dev模式

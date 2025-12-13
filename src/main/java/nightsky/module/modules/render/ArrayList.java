@@ -3,6 +3,7 @@ package nightsky.module.modules.render;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.shader.Framebuffer;
 import nightsky.NightSky;
 import nightsky.events.Render2DEvent;
@@ -10,42 +11,34 @@ import nightsky.event.EventTarget;
 import nightsky.module.Module;
 import nightsky.util.render.animations.advanced.Direction;
 import nightsky.value.values.BooleanValue;
-import nightsky.value.values.ColorValue;
 import nightsky.value.values.FloatValue;
 import nightsky.value.values.IntValue;
 import nightsky.value.values.ModeValue;
 import nightsky.util.render.ColorUtil;
 import nightsky.util.render.RenderUtil;
-import nightsky.util.render.BlurUtil;
 import nightsky.font.FontRenderer;
 import nightsky.util.render.animations.Translate;
 import nightsky.util.render.animations.advanced.Animation;
-import nightsky.util.shader.BloomShader;
+import nightsky.util.render.PostProcessing;
 
 import java.awt.*;
 import java.util.Comparator;
 
 public class ArrayList extends Module {
+
     private final Minecraft mc = Minecraft.getMinecraft();
 
     public final ModeValue animation = new ModeValue("Animation", 0, new String[]{"Scale In", "Move In", "Slide In"});
     public final ModeValue rectangleValue = new ModeValue("Rectangle", 1, new String[]{"None", "Top", "Side"});
     public final BooleanValue backgroundValue = new BooleanValue("Back Ground", true);
     public final IntValue bgAlpha = new IntValue("Back Ground Alpha", 100, 1, 255);
-    public final BooleanValue blurBackground = new BooleanValue("Blur", true);
-    public final IntValue blurStrength = new IntValue("Blur Strength", 10, 1, 70);
-    public final BooleanValue bloom = new BooleanValue("Bloom", false);
-    public final BooleanValue bloomColorFromInterface = new BooleanValue("Bloom Color From Interface", false);
-    public final ColorValue bloomColor = new ColorValue("Bloom Color", new Color(0, 0, 0).getRGB());
-    public final IntValue bloomIterations = new IntValue("Bloom Iterations", 5, 1, 10);
-    public final IntValue bloomOffset = new IntValue("Bloom Offset", 3, 1, 10);
     public final IntValue positionOffset = new IntValue("Position", 0, -1, 100);
     public final FloatValue textHeight = new FloatValue("Text Height", 4f, 0f, 10f);
 
     public ArrayList() {
         super("Arraylist", true);
     }
-    
+
     private String getFormattedTag(String tag) {
         if (tag == null || tag.isEmpty()) return "";
         return " " + tag;
@@ -55,18 +48,18 @@ public class ArrayList extends Module {
     public void onRender2D(Render2DEvent event) {
         if (!this.isEnabled()) return;
         ScaledResolution sr = new ScaledResolution(mc);
-        
+
         moduleList(sr);
     }
-    
+
     public void moduleList(ScaledResolution sr) {
         int count = 1;
         float fontHeight = textHeight.getValue();
         float yValue = 1 + positionOffset.getValue();
-        
+
         int screenWidth = sr.getScaledWidth();
         nightsky.module.modules.render.Interface interfaceModule = (nightsky.module.modules.render.Interface) NightSky.moduleManager.getModule("Interface");
-        
+
         Comparator<Module> sort = (m1, m2) -> {
             double ab = FontRenderer.getStringWidth(m1.getName() + getFormattedTag(m1.getTag()));
             double bb = FontRenderer.getStringWidth(m2.getName() + getFormattedTag(m2.getTag()));
@@ -74,7 +67,7 @@ public class ArrayList extends Module {
         };
 
         java.util.ArrayList<Module> enabledMods = new java.util.ArrayList<>(NightSky.moduleManager.modules.values());
-        
+
         java.util.ArrayList<float[]> moduleRects = new java.util.ArrayList<>();
 
         if (animation.getModeString().equals("Slide In")) {
@@ -105,10 +98,29 @@ public class ArrayList extends Module {
                 }
             }
 
-
-
-            if (backgroundValue.getValue() && blurBackground.getValue() && !moduleRects.isEmpty()) {
-                BlurUtil.blurArrayListShape(moduleRects, blurStrength.getValue().floatValue());
+            if (backgroundValue.getValue() && !moduleRects.isEmpty()) {
+                float minX = Float.MAX_VALUE;
+                float minY = Float.MAX_VALUE;
+                float maxX = -Float.MAX_VALUE;
+                float maxY = -Float.MAX_VALUE;
+                for (float[] rect : moduleRects) {
+                    minX = Math.min(minX, rect[0]);
+                    minY = Math.min(minY, rect[1]);
+                    maxX = Math.max(maxX, rect[0] + rect[2]);
+                    maxY = Math.max(maxY, rect[1] + rect[3]);
+                }
+                PostProcessing.drawBlur(minX, minY, maxX, maxY, () -> () -> {
+                    GlStateManager.enableBlend();
+                    GlStateManager.disableTexture2D();
+                    GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+                    nightsky.util.render.RenderUtil.setup2DRendering(() -> {
+                        for (float[] rect : moduleRects) {
+                            net.minecraft.client.gui.Gui.drawRect((int) rect[0], (int) rect[1], (int) (rect[0] + rect[2]), (int) (rect[1] + rect[3]), -1);
+                        }
+                    });
+                    GlStateManager.enableTexture2D();
+                    GlStateManager.disableBlend();
+                });
             }
 
             if (backgroundValue.getValue()) {
@@ -118,18 +130,19 @@ public class ArrayList extends Module {
                 }
             }
 
-            if (backgroundValue.getValue() && bloom.getValue() && !moduleRects.isEmpty()) {
-                Framebuffer bloomBuffer = BloomShader.beginFramebuffer();
-                int index = 0;
-                for (float[] rect : moduleRects) {
-                    int color = bloomColorFromInterface.getValue() && interfaceModule != null
-                        ? interfaceModule.color(index)
-                        : bloomColor.getValue();
-                    RenderUtil.drawRect(rect[0], rect[1], rect[2], rect[3], ColorUtil.swapAlpha(color, 255));
-                    index++;
+            if (backgroundValue.getValue() && !moduleRects.isEmpty()) {
+                Framebuffer bloomBuffer = PostProcessing.beginBloom();
+                if (bloomBuffer != null) {
+                    int index = 0;
+                    for (float[] rect : moduleRects) {
+                        int color = nightsky.module.modules.render.PostProcessing.isArrayListBloomFromInterface() && interfaceModule != null
+                                ? interfaceModule.color(index)
+                                : nightsky.module.modules.render.PostProcessing.getBloomColor(index);
+                        RenderUtil.drawRect(rect[0], rect[1], rect[2], rect[3], ColorUtil.swapAlpha(color, 255));
+                        index++;
+                    }
+                    PostProcessing.endBloom(bloomBuffer);
                 }
-                mc.getFramebuffer().bindFramebuffer(false);
-                BloomShader.renderBloom(bloomBuffer.framebufferTexture, bloomIterations.getValue(), bloomOffset.getValue());
             }
 
             yValue = 1 + positionOffset.getValue();
@@ -220,10 +233,29 @@ public class ArrayList extends Module {
                 yValue += (float) (moduleAnimation.getOutput() * (FontRenderer.getFontHeight() + fontHeight));
             }
 
-
-
-            if (backgroundValue.getValue() && blurBackground.getValue() && !moduleRects.isEmpty()) {
-                BlurUtil.blurArrayListShape(moduleRects, blurStrength.getValue().floatValue());
+            if (backgroundValue.getValue() && !moduleRects.isEmpty()) {
+                float minX = Float.MAX_VALUE;
+                float minY = Float.MAX_VALUE;
+                float maxX = -Float.MAX_VALUE;
+                float maxY = -Float.MAX_VALUE;
+                for (float[] rect : moduleRects) {
+                    minX = Math.min(minX, rect[0]);
+                    minY = Math.min(minY, rect[1]);
+                    maxX = Math.max(maxX, rect[0] + rect[2]);
+                    maxY = Math.max(maxY, rect[1] + rect[3]);
+                }
+                PostProcessing.drawBlur(minX, minY, maxX, maxY, () -> () -> {
+                    GlStateManager.enableBlend();
+                    GlStateManager.disableTexture2D();
+                    GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+                    nightsky.util.render.RenderUtil.setup2DRendering(() -> {
+                        for (float[] rect : moduleRects) {
+                            net.minecraft.client.gui.Gui.drawRect((int) rect[0], (int) rect[1], (int) (rect[0] + rect[2]), (int) (rect[1] + rect[3]), -1);
+                        }
+                    });
+                    GlStateManager.enableTexture2D();
+                    GlStateManager.disableBlend();
+                });
             }
 
             if (backgroundValue.getValue()) {
@@ -233,18 +265,19 @@ public class ArrayList extends Module {
                 }
             }
 
-            if (backgroundValue.getValue() && bloom.getValue() && !moduleRects.isEmpty()) {
-                Framebuffer bloomBuffer = BloomShader.beginFramebuffer();
-                int index = 0;
-                for (float[] rect : moduleRects) {
-                    int color = bloomColorFromInterface.getValue() && interfaceModule != null
-                        ? interfaceModule.color(index)
-                        : bloomColor.getValue();
-                    RenderUtil.drawRect(rect[0], rect[1], rect[2], rect[3], ColorUtil.swapAlpha(color, 255));
-                    index++;
+            if (backgroundValue.getValue() && !moduleRects.isEmpty()) {
+                Framebuffer bloomBuffer = PostProcessing.beginBloom();
+                if (bloomBuffer != null) {
+                    int index = 0;
+                    for (float[] rect : moduleRects) {
+                        int color = nightsky.module.modules.render.PostProcessing.isArrayListBloomFromInterface() && interfaceModule != null
+                                ? interfaceModule.color(index)
+                                : nightsky.module.modules.render.PostProcessing.getBloomColor(index);
+                        RenderUtil.drawRect(rect[0], rect[1], rect[2], rect[3], ColorUtil.swapAlpha(color, 255));
+                        index++;
+                    }
+                    PostProcessing.endBloom(bloomBuffer);
                 }
-                mc.getFramebuffer().bindFramebuffer(false);
-                BloomShader.renderBloom(bloomBuffer.framebufferTexture, bloomIterations.getValue(), bloomOffset.getValue());
             }
 
             yValue = 1 + positionOffset.getValue();

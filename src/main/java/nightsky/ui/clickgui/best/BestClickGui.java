@@ -10,7 +10,7 @@ import nightsky.font.CustomFontRenderer;
 import nightsky.font.FontTransformer;
 import nightsky.module.Module;
 import nightsky.module.ModuleCategory;
-import nightsky.util.render.BlurUtil;
+import nightsky.util.render.PostProcessing;
 import nightsky.util.render.RenderUtil;
 import nightsky.value.Value;
 import nightsky.value.values.*;
@@ -194,7 +194,7 @@ public class BestClickGui extends GuiScreen {
 
         drawDropShadow(x, y, bgWidth, bgHeight, openAnimation);
 
-        BlurUtil.blurAreaRounded(x, y, x + bgWidth, y + bgHeight, CORNER_RADIUS, 12f * openAnimation);
+        PostProcessing.drawBlur(x, y, x + bgWidth, y + bgHeight, () -> () -> RenderUtil.drawRoundedRect(x, y, bgWidth, bgHeight, CORNER_RADIUS, -1));
 
         Color bgColor = new Color(255, 255, 255, (int)(BG_ALPHA * openAnimation));
         RenderUtil.drawRoundedRect(x, y, bgWidth, bgHeight, CORNER_RADIUS, bgColor);
