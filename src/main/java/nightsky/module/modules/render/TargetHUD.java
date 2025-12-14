@@ -60,7 +60,7 @@ public class TargetHUD extends Module {
     private boolean isAnimatingOut = false;
     private boolean targetLost = false;
     private EntityLivingBase lastRenderTarget = null;
-    public final ModeValue mode = new ModeValue("Mode", 0, new String[]{"Myau", "Exhibition"});
+    public final ModeValue mode = new ModeValue("Mode", 1, new String[]{"Myau", "Exhibition"});
     public final ModeValue color = new ModeValue("Color", 0, new String[]{"Default", "Hud"});
     public final ModeValue posX = new ModeValue("PositionX", 1, new String[]{"Left", "Middle", "Right"});
     public final ModeValue posY = new ModeValue("PositionY", 1, new String[]{"Top", "Middle", "Bottom"});

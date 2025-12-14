@@ -43,14 +43,14 @@ public class Velocity extends Module {
     private long blinkStartTime = System.currentTimeMillis();
     private final long blinkDuration = 95L;
     private long reverseStartTime = 0L;
-    public final ModeValue mode = new ModeValue("Mode", 0, new String[]{"Vanilla", "Jump", "Prediction"});
+    public final ModeValue mode = new ModeValue("Mode", 2, new String[]{"Vanilla", "Jump", "Prediction"});
     public final PercentValue chance = new PercentValue("Chance", 100);
     public final PercentValue horizontal = new PercentValue("Horizontal", 100);
     public final PercentValue vertical = new PercentValue("Vertical", 100);
     public final PercentValue explosionHorizontal = new PercentValue("ExplosionsHorizontal", 100);
     public final PercentValue explosionVertical = new PercentValue("ExplosionsVertical", 100);
     public final BooleanValue fakeCheck = new BooleanValue("FakeCheck", true);
-    public final BooleanValue debugLog = new BooleanValue("DebugLog", false);
+    public final BooleanValue debugLog = new BooleanValue("DebugLog", true);
     public final IntValue delayTicks = new IntValue("DelayTicks", 1, 1, 20, () -> this.mode.getValue() == 2);
     public final PercentValue delayChance = new PercentValue("DelayChange", 100, () -> this.mode.getValue() == 2);
     public final BooleanValue jumpReset = new BooleanValue("JumpReset", true, () -> this.mode.getValue() == 2);

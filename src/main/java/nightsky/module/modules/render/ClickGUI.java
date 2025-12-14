@@ -8,7 +8,7 @@ import org.lwjgl.input.Keyboard;
 
 public class ClickGUI extends Module {
     
-    private final ModeValue mode = new ModeValue("Mode", 0, new String[]{"IDEA", "Augustus", "Best", "Dropdown", "WebGUI"});
+    private final ModeValue mode = new ModeValue("Mode", 4, new String[]{"IDEA", "Augustus", "Best", "Dropdown", "WebGUI"});
 
     public ClickGUI() {
         super("ClickGUI", false);

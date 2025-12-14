@@ -20,7 +20,7 @@ public class WaterMark extends Module {
     private final ResourceLocation logoTexture3 = new ResourceLocation("minecraft", "nightsky/logo/Logo3.png");
     private final ResourceLocation logoTexture4 = new ResourceLocation("minecraft", "nightsky/logo/op.png");
     public WaterMark() {
-        super("WaterMark", true);
+        super("WaterMark", false);
     }
 
     @EventTarget

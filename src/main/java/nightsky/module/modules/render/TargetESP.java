@@ -46,7 +46,7 @@ import net.minecraft.client.renderer.texture.DynamicTexture;
 public class TargetESP extends Module {
     private static final Minecraft mc = Minecraft.getMinecraft();
 
-    private final ModeValue mode = new ModeValue("MarkMode", 0, new String[]{"Points", "Ghost", "Image", "Exhi", "Circle"});
+    private final ModeValue mode = new ModeValue("MarkMode", 1, new String[]{"Points", "Ghost", "Image", "Exhi", "Circle"});
     private final ModeValue imageMode = new ModeValue("ImageMode", 0, new String[]{"Rectangle", "QuadStapple", "TriangleStapple", "TriangleStipple", "Aim","Custom"}, () -> mode.getValue() == 2);
     private final BooleanValue animation = new BooleanValue("Animation", true, () -> mode.getValue() == 2 && imageMode.getValue() == 5);
     private final BooleanValue selectImage = new BooleanValue("SelectImage", false, () -> mode.getValue() == 2 && imageMode.getValue() == 5) {

@@ -28,7 +28,7 @@ public class Disabler extends Module {
     private static final Minecraft mc = Minecraft.getMinecraft();
     public final ModeValue mode = new ModeValue("Mode", 0, new String[]{"PredictionInventory", "NewInventory", "Inventory"});
     public final BooleanValue Jump = new BooleanValue("Jump", false);
-    public final BooleanValue digValue = new BooleanValue("Spoof Dig Release", true);
+    public final BooleanValue digValue = new BooleanValue("Spoof Dig Release", false);
     public final BooleanValue debug = new BooleanValue("Debug", false);
 
     private final List<Packet<?>> inventoryPackets = new ArrayList<>();

@@ -28,12 +28,12 @@ public class ArrayList extends Module {
 
     private final Minecraft mc = Minecraft.getMinecraft();
 
-    public final ModeValue animation = new ModeValue("Animation", 0, new String[]{"Scale In", "Move In", "Slide In"});
+    public final ModeValue animation = new ModeValue("Animation", 2, new String[]{"Scale In", "Move In", "Slide In"});
     public final ModeValue rectangleValue = new ModeValue("Rectangle", 1, new String[]{"None", "Top", "Side"});
     public final BooleanValue backgroundValue = new BooleanValue("Back Ground", true);
-    public final IntValue bgAlpha = new IntValue("Back Ground Alpha", 100, 1, 255);
+    public final IntValue bgAlpha = new IntValue("Back Ground Alpha", 40, 1, 255);
     public final IntValue positionOffset = new IntValue("Position", 0, -1, 100);
-    public final FloatValue textHeight = new FloatValue("Text Height", 4f, 0f, 10f);
+    public final FloatValue textHeight = new FloatValue("Text Height", 5f, 0f, 10f);
 
     public ArrayList() {
         super("Arraylist", true);

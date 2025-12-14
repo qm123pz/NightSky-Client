@@ -14,7 +14,7 @@ public class Animations extends Module {
     public final FloatValue scale = new FloatValue("Item-Size", 0f, -0.5f, 0.5f);
 
     public Animations() {
-        super("Animations", false);
+        super("Animations", true);
         INSTANCE = this;
     }
 
