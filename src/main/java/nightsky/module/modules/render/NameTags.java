@@ -1,12 +1,18 @@
 package nightsky.module.modules.render;
 
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.shader.Framebuffer;
 import nightsky.NightSky;
 import nightsky.enums.ChatColors;
 import nightsky.event.EventTarget;
+import nightsky.events.Render2DEvent;
 import nightsky.events.Render3DEvent;
+import nightsky.mixin.IAccessorEntityRenderer;
 import nightsky.mixin.IAccessorRenderManager;
 import nightsky.module.Module;
+import nightsky.font.FontRenderer;
 import nightsky.util.ColorUtil;
+import nightsky.util.GLUtil;
 import nightsky.util.RenderUtil;
 import nightsky.util.TeamUtil;
 import nightsky.value.values.*;
@@ -14,6 +20,9 @@ import nightsky.value.values.BooleanValue;
 import nightsky.value.values.ModeValue;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.boss.EntityDragon;
@@ -31,7 +40,9 @@ import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.ResourceLocation;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.text.DecimalFormat;
@@ -44,14 +55,21 @@ import java.util.stream.Collectors;
 public class NameTags extends Module {
     private static final Minecraft mc = Minecraft.getMinecraft();
     private static final DecimalFormat healthFormatter = new DecimalFormat("0.0", new DecimalFormatSymbols(Locale.US));
+
+    private static final ResourceLocation POSITIONING_ICON = new ResourceLocation("nightsky/texture/nametags/Positioning.png");
+    public static final ResourceLocation HEART_ICON = new ResourceLocation("nightsky/texture/nametags/Heart.png");
+
+    public final ModeValue mode = new ModeValue("Mode", 1, new String[]{"Myau", "Better"});
+    public final IntValue amount = new IntValue("Amount", 20, 1, 200);
     public final FloatValue scale = new FloatValue("Scale", 1.0F, 0.5F, 2.0F);
-    public final BooleanValue autoScale = new BooleanValue("AutoScale", true);
-    public final PercentValue backgroundOpacity = new PercentValue("Background", 25);
-    public final BooleanValue shadow = new BooleanValue("Shadow", true);
-    public final ModeValue distanceMode = new ModeValue("Distance", 0, new String[]{"None", "Default", "Vape"});
-    public final ModeValue healthMode = new ModeValue("Health", 2, new String[]{"None", "HP", "Hearts", "Tab"});
-    public final BooleanValue armor = new BooleanValue("Armor", true);
-    public final BooleanValue effects = new BooleanValue("Effects", true);
+    public final FloatValue height = new FloatValue("Height", 0.4F, -1.0F, 2.0F);
+    public final BooleanValue autoScale = new BooleanValue("AutoScale", true, () -> isMyauMode());
+    public final PercentValue backgroundOpacity = new PercentValue("Background", 25, () -> isMyauMode());
+    public final BooleanValue shadow = new BooleanValue("Shadow", true, () -> isMyauMode());
+    public final ModeValue distanceMode = new ModeValue("Distance", 0, new String[]{"None", "Default", "Vape"}, () -> isMyauMode());
+    public final ModeValue healthMode = new ModeValue("Health", 2, new String[]{"None", "HP", "Hearts", "Tab"}, () -> isMyauMode());
+    public final BooleanValue armor = new BooleanValue("Armor", true, () -> isMyauMode());
+    public final BooleanValue effects = new BooleanValue("Effects", true, () -> isMyauMode());
     public final BooleanValue players = new BooleanValue("Players", true);
     public final BooleanValue friends = new BooleanValue("Friends", true);
     public final BooleanValue enemies = new BooleanValue("Enemies", true);
@@ -66,6 +84,34 @@ public class NameTags extends Module {
 
     public NameTags() {
         super("NameTags", false);
+    }
+
+    private boolean isMyauMode() {
+        return this.mode.getValue() == 0;
+    }
+
+    private static void drawTexturedRect(float x1, float y1, float x2, float y2) {
+        Tessellator tessellator = Tessellator.getInstance();
+        WorldRenderer wr = tessellator.getWorldRenderer();
+        wr.begin(7, DefaultVertexFormats.POSITION_TEX);
+        wr.pos(x1, y2, 0.0).tex(0.0, 1.0).endVertex();
+        wr.pos(x2, y2, 0.0).tex(1.0, 1.0).endVertex();
+        wr.pos(x2, y1, 0.0).tex(1.0, 0.0).endVertex();
+        wr.pos(x1, y1, 0.0).tex(0.0, 0.0).endVertex();
+        tessellator.draw();
+    }
+
+    private static float clamp(float v, float min, float max) {
+        return Math.max(min, Math.min(max, v));
+    }
+
+    private static int getTagPriority(EntityLivingBase entity) {
+        if (entity instanceof EntityPlayer) {
+            EntityPlayer player = (EntityPlayer) entity;
+            if (TeamUtil.isTarget(player)) return 0;
+            if (TeamUtil.isFriend(player)) return 1;
+        }
+        return 2;
     }
 
     public boolean shouldRenderTags(EntityLivingBase entityLivingBase) {
@@ -102,9 +148,181 @@ public class NameTags extends Module {
     }
 
     @EventTarget
+    public void onRender2D(Render2DEvent event) {
+        if (!this.isEnabled()) return;
+        if (this.isMyauMode()) return;
+
+        int remaining = this.amount.getValue();
+
+        for (Entity entity : TeamUtil.getLoadedEntitiesSorted().stream()
+                .filter(e -> e instanceof EntityLivingBase)
+                .sorted((a, b) -> {
+                    int pa = getTagPriority((EntityLivingBase) a);
+                    int pb = getTagPriority((EntityLivingBase) b);
+                    if (pa != pb) return Integer.compare(pa, pb);
+                    double da = mc.getRenderViewEntity().getDistanceToEntity(a);
+                    double db = mc.getRenderViewEntity().getDistanceToEntity(b);
+                    return Double.compare(da, db);
+                })
+                .collect(Collectors.toList())) {
+            if (remaining-- <= 0) break;
+            if (!(entity instanceof EntityLivingBase)) continue;
+            if (!this.shouldRenderTags((EntityLivingBase) entity)) continue;
+            if (!(entity instanceof EntityPlayer)) continue;
+            if (!(entity.ignoreFrustumCheck || RenderUtil.isInViewFrustum(entity.getEntityBoundingBox(), 10.0))) continue;
+
+            String teamName = TeamUtil.stripName(entity);
+            String namePlain = EnumChatFormatting.getTextWithoutFormattingCodes(teamName);
+            if (StringUtils.isBlank(namePlain)) continue;
+
+            double distance = mc.getRenderViewEntity().getDistanceToEntity(entity);
+            EntityPlayer player = (EntityPlayer) entity;
+
+            ScaledResolution sr = new ScaledResolution(mc);
+            int scaleFactor = sr.getScaleFactor();
+
+            double wx = RenderUtil.lerpDouble(entity.posX, entity.lastTickPosX, event.getPartialTicks());
+            double wy = RenderUtil.lerpDouble(entity.posY, entity.lastTickPosY, event.getPartialTicks()) + entity.getEyeHeight() + (entity.isSneaking() ? 0.225 : this.height.getValue());
+            double wz = RenderUtil.lerpDouble(entity.posZ, entity.lastTickPosZ, event.getPartialTicks());
+
+            ((IAccessorEntityRenderer) mc.entityRenderer).callSetupCameraTransform(event.getPartialTicks(), 0);
+            float[] projected = GLUtil.project2D(
+                    (float) (wx - ((IAccessorRenderManager) mc.getRenderManager()).getRenderPosX()),
+                    (float) (wy - ((IAccessorRenderManager) mc.getRenderManager()).getRenderPosY()),
+                    (float) (wz - ((IAccessorRenderManager) mc.getRenderManager()).getRenderPosZ()),
+                    scaleFactor
+            );
+            mc.entityRenderer.setupOverlayRendering();
+
+            if (projected == null || projected[2] < 0.0F || projected[2] >= 1.0F) continue;
+
+            float screenX = projected[0];
+            float screenY = projected[1];
+
+            float tagScale = this.scale.getValue();
+
+            int bgColor = new Color(0, 0, 0, 140).getRGB();
+            float baseH = 36.0f;
+            float baseW = baseH * 4.0f / 3.0f;
+
+            String distText = String.format("%dm", (int) distance);
+            float health = player.getHealth();
+            float absorption = player.getAbsorptionAmount();
+            float shownHealth = clamp(health + absorption, 0.0f, 999.0f);
+            String hpText = String.format("%d", (int) shownHealth);
+
+            float iconSize = 10.0f;
+            float itemSize = 12.0f;
+            float padX = 4.0f;
+            float padY = 3.0f;
+
+            float distW = iconSize + 2.0f + FontRenderer.getStringWidth(distText);
+            float hpW = FontRenderer.getStringWidth(hpText) + 2.0f + iconSize;
+            float itemsW = 5.0f * itemSize + 4.0f * 1.0f;
+            float contentW = distW + 6.0f + itemsW + 6.0f + hpW;
+            float nameW = FontRenderer.getStringWidth(namePlain);
+            float bgW = Math.max(baseW, Math.max(contentW + padX * 2.0f, nameW + padX * 2.0f));
+            float bgH = baseH;
+            float r = 3.5f;
+
+            float left;
+            float top = 0;
+            float right = screenX + bgW / 2.0f;
+            float bottom = screenY;
+
+            if (tagScale != 1.0F) {
+                float centerX = screenX;
+                float centerY = top + bgH / 2.0f;
+                GlStateManager.pushMatrix();
+                GlStateManager.translate(centerX, centerY, 0.0F);
+                GlStateManager.scale(tagScale, tagScale, 1.0F);
+                GlStateManager.translate(-centerX, -centerY, 0.0F);
+                left = centerX - (bgW / 2.0f) * tagScale;
+                right = centerX + (bgW / 2.0f) * tagScale;
+                top = centerY - (bgH / 2.0f) * tagScale;
+                bottom = centerY + (bgH / 2.0f) * tagScale;
+            } else {
+                top = screenY - bgH;
+                left = screenX - bgW / 2.0f;
+            }
+
+            float finalTop = top;
+            nightsky.util.render.PostProcessing.drawBlur(left, top, right, bottom, () -> () ->
+                    nightsky.util.render.RenderUtil.drawRoundedRect(left, finalTop, bgW, bgH, r, -1)
+            );
+
+            Framebuffer bloomBuffer = nightsky.util.render.PostProcessing.beginBloom();
+            if (bloomBuffer != null) {
+                nightsky.util.render.RenderUtil.drawRoundedRect(left, top, bgW, bgH, r, PostProcessing.getBloomColor());
+                mc.getFramebuffer().bindFramebuffer(false);
+            }
+
+            nightsky.util.render.RenderUtil.drawRoundedRect(left, top, bgW, bgH, r, bgColor);
+
+            GlStateManager.disableDepth();
+            GlStateManager.enableBlend();
+            GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+            GlStateManager.color(1f, 1f, 1f, 1f);
+
+            float row1Y = top + padY;
+            float row2Y = bottom - padY - mc.fontRendererObj.FONT_HEIGHT;
+
+            float cursorX = screenX - contentW / 2.0f;
+
+            mc.getTextureManager().bindTexture(POSITIONING_ICON);
+            drawTexturedRect(cursorX, row1Y, cursorX + iconSize, row1Y + iconSize);
+            cursorX += iconSize + 2.0f;
+            FontRenderer.drawString(distText, cursorX, row1Y + 1.0f, 0xFFFFFFFF);
+            cursorX += FontRenderer.getStringWidth(distText) + 6.0f;
+
+            ArrayList<ItemStack> items = getItemStacks(player);
+            for (int i = 0; i < items.size(); i++) {
+                ItemStack st = items.get(i);
+                if (st != null) {
+                    GlStateManager.pushMatrix();
+                    GlStateManager.translate(cursorX + (i * (itemSize + 1.0f)), row1Y - 2.0f, 0.0f);
+                    float sItem = itemSize / 16.0f;
+                    GlStateManager.scale(sItem, sItem, 1.0f);
+                    RenderUtil.renderItemInGUI(st, 0, 0);
+                    GlStateManager.popMatrix();
+                }
+            }
+            cursorX += itemsW + 6.0f;
+
+            FontRenderer.drawString(hpText, cursorX, row1Y + 1.0f, 0xFFFFFFFF);
+            cursorX += FontRenderer.getStringWidth(hpText) + 2.0f;
+            mc.getTextureManager().bindTexture(HEART_ICON);
+            drawTexturedRect(cursorX, row1Y, cursorX + iconSize, row1Y + iconSize);
+
+            FontRenderer.drawString(namePlain, screenX - nameW / 2.0f, row2Y, 0xFFFFFFFF);
+
+            GlStateManager.enableDepth();
+            GlStateManager.disableBlend();
+
+            nightsky.util.render.PostProcessing.endBloom(bloomBuffer);
+
+            if (tagScale != 1.0F) {
+                GlStateManager.popMatrix();
+            }
+        }
+    }
+
+    @EventTarget
     public void onRender(Render3DEvent event) {
         if (this.isEnabled()) {
-            for (Entity entity : TeamUtil.getLoadedEntitiesSorted()) {
+            int remaining = this.amount.getValue();
+            for (Entity entity : TeamUtil.getLoadedEntitiesSorted().stream()
+                    .filter(e -> e instanceof EntityLivingBase)
+                    .sorted((a, b) -> {
+                        int pa = getTagPriority((EntityLivingBase) a);
+                        int pb = getTagPriority((EntityLivingBase) b);
+                        if (pa != pb) return Integer.compare(pa, pb);
+                        double da = mc.getRenderViewEntity().getDistanceToEntity(a);
+                        double db = mc.getRenderViewEntity().getDistanceToEntity(b);
+                        return Double.compare(da, db);
+                    })
+                    .collect(Collectors.toList())) {
+                if (remaining-- <= 0) break;
                 if (entity instanceof EntityLivingBase
                         && this.shouldRenderTags((EntityLivingBase) entity)
                         && (entity.ignoreFrustumCheck || RenderUtil.isInViewFrustum(entity.getEntityBoundingBox(), 10.0))) {
@@ -119,12 +337,13 @@ public class NameTags extends Module {
                                 - ((IAccessorRenderManager) mc.getRenderManager()).getRenderPosZ();
                         double distance = mc.getRenderViewEntity().getDistanceToEntity(entity);
                         GlStateManager.pushMatrix();
-                        GlStateManager.translate(x, y + (entity.isSneaking() ? 0.225 : 0.4), z);
+                        GlStateManager.translate(x, y + (entity.isSneaking() ? 0.225 : this.height.getValue()), z);
                         GlStateManager.rotate(mc.getRenderManager().playerViewY * -1.0F, 0.0F, 1.0F, 0.0F);
                         float view = mc.gameSettings.thirdPersonView == 2 ? -1.0F : 1.0F;
                         GlStateManager.rotate(mc.getRenderManager().playerViewX, view, 0.0F, 0.0F);
                         double scale = Math.pow(Math.min(Math.max(this.autoScale.getValue() ? distance : 0.0, 6.0), 128.0), 0.75) * 0.0075;
                         GlStateManager.scale(-scale * (double) this.scale.getValue(), -scale * (double) this.scale.getValue(), 1.0);
+
                         String distanceText = "";
                         switch (this.distanceMode.getValue()) {
                             case 1:
@@ -192,18 +411,7 @@ public class NameTags extends Module {
                         if (entity instanceof EntityPlayer) {
                             int height = mc.fontRendererObj.FONT_HEIGHT + 2;
                             if (this.armor.getValue()) {
-                                ArrayList<ItemStack> renderingItems = new ArrayList<>();
-                                for (int i = 4; i >= 0; i--) {
-                                    ItemStack itemStack;
-                                    if (i == 0) {
-                                        itemStack = ((EntityPlayer) entity).getHeldItem();
-                                    } else {
-                                        itemStack = ((EntityPlayer) entity).inventory.armorInventory[i - 1];
-                                    }
-                                    if (itemStack != null) {
-                                        renderingItems.add(itemStack);
-                                    }
-                                }
+                                ArrayList<ItemStack> renderingItems = getItemStacks((EntityPlayer) entity);
                                 if (!renderingItems.isEmpty()) {
                                     int offset = renderingItems.size() * -8;
                                     for (int i = 0; i < renderingItems.size(); i++) {
@@ -253,5 +461,21 @@ public class NameTags extends Module {
                 }
             }
         }
+    }
+
+    private static @NotNull ArrayList<ItemStack> getItemStacks(EntityPlayer entity) {
+        ArrayList<ItemStack> renderingItems = new ArrayList<>();
+        for (int i = 4; i >= 0; i--) {
+            ItemStack itemStack;
+            if (i == 0) {
+                itemStack = entity.getHeldItem();
+            } else {
+                itemStack = entity.inventory.armorInventory[i - 1];
+            }
+            if (itemStack != null) {
+                renderingItems.add(itemStack);
+            }
+        }
+        return renderingItems;
     }
 }

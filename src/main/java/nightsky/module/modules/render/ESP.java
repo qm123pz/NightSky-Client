@@ -15,6 +15,7 @@ import nightsky.util.RenderUtil;
 import nightsky.util.TeamUtil;
 import nightsky.util.shader.GlowShader;
 import nightsky.util.shader.OutlineShader;
+import nightsky.util.shader.BloomShader;
 import nightsky.value.values.BooleanValue;
 import nightsky.value.values.ModeValue;
 import net.minecraft.client.Minecraft;
@@ -35,7 +36,7 @@ public class ESP extends Module {
     private Framebuffer framebuffer = null;
     private boolean outline = true;
     private boolean glow = true;
-    public final ModeValue mode = new ModeValue("Mode", 2, new String[]{"None", "2D", "3D", "Outline"});
+    public final ModeValue mode = new ModeValue("Mode", 4, new String[]{"None", "2D", "3D", "Outline", "Glow"});
     public final ModeValue color = new ModeValue("Color", 0, new String[]{"Default", "Teams", "Hud"});
     public final ModeValue healthBar = new ModeValue("HealthBar", 0, new String[]{"None", "2D", "Raven"});
     public final BooleanValue players = new BooleanValue("Players", true);
@@ -106,7 +107,7 @@ public class ESP extends Module {
 
     @EventTarget(Priority.HIGH)
     public void onRender(Render2DEvent event) {
-        if (this.isEnabled() && (this.mode.getValue() == 1 || this.mode.getValue() == 3 || this.healthBar.getValue() == 1)) {
+        if (this.isEnabled() && (this.mode.getValue() == 1 || this.mode.getValue() == 3 || this.mode.getValue() == 4 || this.healthBar.getValue() == 1)) {
             List<EntityPlayer> renderedEntities = TeamUtil.getLoadedEntitiesSorted().stream().filter(entity -> entity instanceof EntityPlayer && this.shouldRenderPlayer((EntityPlayer) entity)).map(EntityPlayer.class::cast).collect(Collectors.toList());
             if (!renderedEntities.isEmpty()) {
                 if (this.mode.getValue() == 3) {
@@ -142,6 +143,42 @@ public class ESP extends Module {
                     this.outlineRenderer.stop();
                     this.framebuffer.framebufferClear();
                     mc.getFramebuffer().bindFramebuffer(false);
+                    GlStateManager.popAttrib();
+                    GlStateManager.popMatrix();
+                }
+                if (this.mode.getValue() == 4) {
+                    GlStateManager.pushMatrix();
+                    GlStateManager.pushAttrib();
+
+                    Framebuffer bloomBuffer = BloomShader.beginFramebuffer();
+                    ((IAccessorEntityRenderer) mc.entityRenderer).callSetupCameraTransform(event.getPartialTicks(), 0);
+                    boolean shadow = mc.gameSettings.entityShadows;
+                    mc.gameSettings.entityShadows = false;
+                    this.outline = false;
+                    this.glow = false;
+                    this.glowShader.use();
+                    for (EntityPlayer player : renderedEntities) {
+                        Color entityColor = this.getEntityColor(player);
+                        this.glowShader.W(entityColor);
+                        boolean invisible = player.isInvisible();
+                        player.setInvisible(false);
+                        mc.getRenderManager().renderEntityStatic(player, event.getPartialTicks(), true);
+                        player.setInvisible(invisible);
+                    }
+                    this.glowShader.stop();
+                    this.glow = true;
+                    this.outline = true;
+                    mc.gameSettings.entityShadows = shadow;
+
+                    mc.entityRenderer.disableLightmap();
+                    mc.entityRenderer.setupOverlayRendering();
+                    mc.getFramebuffer().bindFramebuffer(false);
+                    BloomShader.renderBloom(bloomBuffer.framebufferTexture, 3, 2);
+
+                    this.outlineRenderer.use();
+                    nightsky.util.RenderUtil.drawFramebuffer(bloomBuffer);
+                    this.outlineRenderer.stop();
+
                     GlStateManager.popAttrib();
                     GlStateManager.popMatrix();
                 }
