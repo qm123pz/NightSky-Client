@@ -61,6 +61,10 @@ public class DynamicIslandNew extends Module {
         if (!this.isEnabled()) return;
         if (mc.thePlayer == null || mc.theWorld == null) return;
 
+        if (mc.currentScreen == null && mc.gameSettings != null && mc.gameSettings.keyBindPlayerList != null && mc.gameSettings.keyBindPlayerList.isKeyDown()) {
+            return;
+        }
+
         ScaledResolution sr = new ScaledResolution(mc);
 
         FontTransformer transformer = FontTransformer.getInstance();
