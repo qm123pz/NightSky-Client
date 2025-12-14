@@ -360,8 +360,8 @@ public class GuiMainMenu extends GuiScreen {
             this.drawCenteredString(this.fontRendererObj, "Load animated video background?", this.width / 2, this.height / 2 - 40, 0xFFFFFF);
             boolean enableHover = isHovering(mouseX, mouseY, enableX1, enableY1, enableX2, enableY2);
             boolean disableHover = isHovering(mouseX, mouseY, disableX1, disableY1, disableX2, disableY2);
-            drawOption(enableX1, enableY1, enableX2, enableY2, enableHover, "Enable(老安卓请点我)");
-            drawOption(disableX1, disableY1, disableX2, disableY2, disableHover, "Disable(老安卓别碰我)");
+            drawOption(enableX1, enableY1, enableX2, enableY2, enableHover, "Enable(老安卓别碰我)");
+            drawOption(disableX1, disableY1, disableX2, disableY2, disableHover, "Disable(老安卓请点我)");
         }
 
         private void drawOption(int x1, int y1, int x2, int y2, boolean hover, String text) {
