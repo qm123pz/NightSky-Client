@@ -14,11 +14,7 @@ import nightsky.enums.BlinkModules;
 import nightsky.enums.DelayModules;
 import nightsky.event.EventTarget;
 import nightsky.event.types.EventType;
-import nightsky.events.KnockbackEvent;
-import nightsky.events.LivingUpdateEvent;
-import nightsky.events.LoadWorldEvent;
-import nightsky.events.PacketEvent;
-import nightsky.events.UpdateEvent;
+import nightsky.events.*;
 import nightsky.mixin.IAccessorEntity;
 import nightsky.module.Module;
 import nightsky.module.modules.movement.LongJump;
@@ -43,7 +39,7 @@ public class Velocity extends Module {
     private long blinkStartTime = System.currentTimeMillis();
     private final long blinkDuration = 95L;
     private long reverseStartTime = 0L;
-    public final ModeValue mode = new ModeValue("Mode", 2, new String[]{"Vanilla", "Jump", "Prediction"});
+    public final ModeValue mode = new ModeValue("Mode", 2, new String[]{"Vanilla", "Jump", "Prediction", "AttackReduce"});
     public final PercentValue chance = new PercentValue("Chance", 100);
     public final PercentValue horizontal = new PercentValue("Horizontal", 100);
     public final PercentValue vertical = new PercentValue("Vertical", 100);
@@ -79,6 +75,32 @@ public class Velocity extends Module {
             this.allowNext = true;
             return;
         }
+
+        if (this.mode.getValue() == 3) {
+            if (this.jumpReset.getValue().booleanValue() && event.getY() > 0.0) {
+                this.jumpFlag = true;
+                if (this.debugLog.getValue().booleanValue()) {
+                    ChatUtil.sendFormatted(String.format("%s[AttackReduce] JumpReset triggered (Y=%.2f)&r", NightSky.clientName, event.getY()));
+                }
+            }
+            if (this.horizontal.getValue() > 0) {
+                event.setX(event.getX() * (double) this.horizontal.getValue().intValue() / 100.0);
+                event.setZ(event.getZ() * (double) this.horizontal.getValue().intValue() / 100.0);
+            } else {
+                event.setX(Velocity.mc.thePlayer.motionX);
+                event.setZ(Velocity.mc.thePlayer.motionZ);
+            }
+            if (this.vertical.getValue() > 0) {
+                event.setY(event.getY() * (double) this.vertical.getValue().intValue() / 100.0);
+            } else {
+                event.setY(Velocity.mc.thePlayer.motionY);
+            }
+            if (this.debugLog.getValue().booleanValue()) {
+                ChatUtil.sendFormatted(NightSky.clientName + "[AttackReduce] Reduce " + this.horizontal.getValue() + "%");
+            }
+            return;
+        }
+
         if (this.mode.getValue() == 2) {
             if (!this.allowNext || !this.fakeCheck.getValue()) {
                 this.allowNext = true;
@@ -224,6 +246,9 @@ public class Velocity extends Module {
         if (this.astolftor.getValue() < 1.0F && mc.thePlayer.hurtTime == this.hurt.getValue() && System.currentTimeMillis() - this.lastAttackTime <= 8000L) {
             mc.thePlayer.motionX *= this.astolftor.getValue();
             mc.thePlayer.motionZ *= this.astolftor.getValue();
+            if (this.debugLog.getValue()) {
+                ChatUtil.sendFormatted(String.format("%s[Prediction] reduce! &r", NightSky.clientName));
+            }
         }
         if (this.reverseFlag) {
             boolean shouldRelease = false;
@@ -252,6 +277,19 @@ public class Velocity extends Module {
             } else {
                 NightSky.blinkManager.setBlinkState(false, BlinkModules.BLINK);
             }
+        }
+    }
+
+    @EventTarget
+    public void onAttack(AttackEvent event) {
+        if (!this.isEnabled() || Velocity.mc.thePlayer == null) {
+            return;
+        }
+        if (this.mode.getValue() != 3) {
+            return;
+        }
+        if (Velocity.mc.thePlayer.hurtTime > 0 && Velocity.mc.thePlayer.hurtTime <= 10 && this.debugLog.getValue().booleanValue()) {
+            ChatUtil.sendFormatted(NightSky.clientName + "[Attack] Reduce " + this.horizontal.getValue() + "%");
         }
     }
 

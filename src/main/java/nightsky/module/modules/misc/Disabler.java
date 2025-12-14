@@ -28,7 +28,7 @@ public class Disabler extends Module {
     private static final Minecraft mc = Minecraft.getMinecraft();
     public final ModeValue mode = new ModeValue("Mode", 0, new String[]{"PredictionInventory", "NewInventory", "Inventory"});
     public final BooleanValue Jump = new BooleanValue("Jump", false);
-    public final BooleanValue digValue = new BooleanValue("Spoof Dig Release", false);
+    public final BooleanValue digValue = new BooleanValue("Spoof Dig Release", true);
     public final BooleanValue debug = new BooleanValue("Debug", false);
 
     private final List<Packet<?>> inventoryPackets = new ArrayList<>();
@@ -38,8 +38,7 @@ public class Disabler extends Module {
     private int groundTicks = 0;
     private int airTicks = 0;
     private double lastY = 0.0;
-    private boolean lastOnGround = true;
-    private int fakeGroundTicks = 0;
+    private boolean shouldForceGround = false;
 
     public Disabler() {
         super("Disabler", false);
@@ -97,8 +96,7 @@ public class Disabler extends Module {
         groundTicks = 0;
         airTicks = 0;
         lastY = mc.thePlayer != null ? mc.thePlayer.posY : 0.0;
-        lastOnGround = true;
-        fakeGroundTicks = 0;
+        shouldForceGround = false;
     }
 
     public void onUpdate() {
@@ -131,7 +129,7 @@ public class Disabler extends Module {
 
         if (Jump.getValue()) {
             if (event.getType() == EventType.SEND && event.getPacket() instanceof C03PacketPlayer) {
-                handleAdvancedOnGroundJump((C03PacketPlayer) event.getPacket(), event);
+                handleAdvancedOnGroundJump((C03PacketPlayer) event.getPacket());
             }
             if (event.getType() == EventType.RECEIVE) {
                 if (event.getPacket() instanceof S08PacketPlayerPosLook) {
@@ -139,6 +137,63 @@ public class Disabler extends Module {
                 }
             }
         }
+    }
+
+    private void handleAdvancedOnGroundJump(C03PacketPlayer packet) {
+        if (mc.thePlayer == null || !Jump.getValue()) return;
+
+
+        if (mc.thePlayer.onGround) {
+            groundTicks++;
+            airTicks = 0;
+            wasOnGround = true;
+            lastY = mc.thePlayer.posY;
+        } else {
+            airTicks++;
+            groundTicks = 0;
+            wasOnGround = false;
+        }
+
+
+        shouldForceGround = false;
+
+        if (!mc.thePlayer.onGround && airTicks <= 6) {
+            double fallDistance = Math.abs(lastY - mc.thePlayer.posY);
+
+            if ((fallDistance < 0.03 && Math.abs(mc.thePlayer.motionY) < 0.08 && mc.thePlayer.fallDistance < 0.1) ||
+                    (fallDistance < 0.05 && airTicks <= 3 && mc.thePlayer.fallDistance < 0.2) ||
+                    (airTicks <= 2 && mc.thePlayer.fallDistance < 0.1)) {
+
+                shouldForceGround = true;
+
+                if (debug.getValue()) {
+                    ChatUtil.sendFormatted("§a[Disabler] Will force onGround (ticks:" + airTicks + ")");
+                }
+            }
+        }
+
+
+        if (groundTicks < 3 && !wasOnGround && !packet.isOnGround()) {
+            if (mc.thePlayer.fallDistance < 2.0f && groundTicks == 0) {
+                shouldForceGround = true;
+
+                if (debug.getValue()) {
+                    ChatUtil.sendFormatted("§a[Disabler] WD Legacy: Will modify C03 onGround");
+                }
+            }
+        }
+    }
+
+
+    public static boolean shouldForceGroundState() {
+        if (mc.theWorld == null || mc.thePlayer == null) return false;
+
+        Disabler disabler = (Disabler) NightSky.moduleManager.getModule("Disabler");
+        if (disabler == null || !disabler.isEnabled() || !disabler.Jump.getValue()) {
+            return false;
+        }
+
+        return disabler.shouldForceGround;
     }
 
     private void handleSpoofDigRelease(PacketEvent event) {
@@ -211,89 +266,6 @@ public class Disabler extends Module {
         }
     }
 
-    private void handleAdvancedOnGroundJump(C03PacketPlayer packet, PacketEvent event) {
-        if (mc.thePlayer == null || !Jump.getValue()) return;
-
-
-        if (mc.thePlayer.onGround) {
-            groundTicks++;
-            airTicks = 0;
-            wasOnGround = true;
-            lastY = mc.thePlayer.posY;
-        } else {
-            airTicks++;
-            groundTicks = 0;
-            wasOnGround = false;
-        }
-
-
-        boolean isActuallyOnGround = mc.thePlayer.onGround;
-        boolean packetClaimsOnGround = packet.isOnGround();
-        boolean shouldFakeGround = false;
-
-
-        if (!isActuallyOnGround && airTicks <= 6) {
-            double fallDistance = Math.abs(lastY - mc.thePlayer.posY);
-
-
-            if (fallDistance < 0.03 && Math.abs(mc.thePlayer.motionY) < 0.08 && mc.thePlayer.fallDistance < 0.1) {
-                shouldFakeGround = true;
-            }
-
-
-            if (fallDistance < 0.05 && airTicks <= 3 && mc.thePlayer.fallDistance < 0.2) {
-                shouldFakeGround = true;
-            }
-
-
-            if (airTicks <= 2 && mc.thePlayer.fallDistance < 0.1) {
-                shouldFakeGround = true;
-            }
-        }
-
-
-        if (shouldFakeGround) {
-            try {
-                java.lang.reflect.Field onGroundField = C03PacketPlayer.class.getDeclaredField("onGround");
-                onGroundField.setAccessible(true);
-                onGroundField.set(packet, true);
-
-                fakeGroundTicks++;
-
-                if (debug.getValue()) {
-                    ChatUtil.sendFormatted("§a[Disabler] ONGROUND FAKE: Forced ground state (ticks:" + airTicks + ", dist:" + String.format("%.3f", Math.abs(lastY - mc.thePlayer.posY)) + ")");
-                }
-            } catch (Exception e) {
-                if (debug.getValue()) {
-                    ChatUtil.sendFormatted("§c[Disabler] Error modifying onGround: " + e.getMessage());
-                }
-            }
-        } else {
-            fakeGroundTicks = 0;
-        }
-
-
-        if (groundTicks < 3 && !wasOnGround && !packet.isOnGround()) {
-            try {
-                java.lang.reflect.Field onGroundField = C03PacketPlayer.class.getDeclaredField("onGround");
-                onGroundField.setAccessible(true);
-                if (mc.thePlayer.fallDistance < 2.0f && groundTicks == 0) {
-                    onGroundField.set(packet, true);
-                    if (debug.getValue()) {
-                        ChatUtil.sendFormatted("§a[Disabler] WD Legacy: Modified C03 onGround");
-                    }
-                }
-            } catch (Exception e) {
-                if (debug.getValue()) {
-                    ChatUtil.sendFormatted("§c[Disabler] Error: " + e.getMessage());
-                }
-            }
-        }
-
-
-        lastOnGround = packet.isOnGround();
-    }
-
     private void handlePlayerPosLook(S08PacketPlayerPosLook packet) {
         if (debug.getValue()) {
             ChatUtil.sendFormatted("§e[Disabler] Received S08 packet. Resetting jump states.");
@@ -305,7 +277,6 @@ public class Disabler extends Module {
         airTicks = 0;
         wasOnGround = true;
         lastY = mc.thePlayer.posY;
-        fakeGroundTicks = 0;
-        lastOnGround = true;
+        shouldForceGround = false;
     }
 }

@@ -23,6 +23,7 @@ public class PostProcessing extends Module {
     public final FloatValue bloomAstolfoOffset = new FloatValue("BloomAstolfoOffset", 5f, 0f, 20f);
     public final FloatValue bloomAstolfoIndex = new FloatValue("BloomAstolfoIndex", 107f, 0f, 200f);
     public final BooleanValue arrayListBloomFromInterface = new BooleanValue("ArrayListBloomFromInterface", true);
+    public final BooleanValue newDynamicIslandBloomFromItSelf = new BooleanValue("NewDynamicIslandBloomFromItSelf", false);
     public final IntValue bloomIterations = new IntValue("BloomIterations", 5, 1, 10);
     public final IntValue bloomOffset = new IntValue("BloomOffset", 3, 1, 10);
 
@@ -109,6 +110,10 @@ public class PostProcessing extends Module {
 
     public static boolean isArrayListBloomFromInterface() {
         return instance != null && instance.arrayListBloomFromInterface.getValue();
+    }
+
+    public static boolean isNewDynamicIslandBloomFromItSelf() {
+        return instance != null && instance.newDynamicIslandBloomFromItSelf.getValue();
     }
 
     public static int getBloomOffset() {

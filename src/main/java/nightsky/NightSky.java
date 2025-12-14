@@ -12,6 +12,7 @@ import nightsky.module.modules.render.*;
 import nightsky.module.modules.render.Item2D;
 import nightsky.module.modules.render.dynamicisland.DynamicIsland;
 import nightsky.module.ModuleManager;
+import nightsky.util.MathUtil;
 import nightsky.value.Value;
 import nightsky.value.ValueHandler;
 
@@ -36,6 +37,7 @@ public class NightSky {
     public static ModuleManager moduleManager;
     public static Handler handler;
     public static GuiManager guiManager;
+    public static MathUtil rand;
 
     public NightSky() {
         this.init();
@@ -86,6 +88,7 @@ public class NightSky {
         moduleManager.modules.put(ChestView.class, new ChestView());
         moduleManager.modules.put(ClickGUI.class, new ClickGUI());
         moduleManager.modules.put(DynamicIsland.class, new DynamicIsland());
+        moduleManager.modules.put(DynamicIslandNew.class, new DynamicIslandNew());
         moduleManager.modules.put(Disabler.class, new Disabler());
         moduleManager.modules.put(Eagle.class, new Eagle());
         moduleManager.modules.put(ESP.class, new ESP());
@@ -124,6 +127,7 @@ public class NightSky {
         moduleManager.modules.put(PostProcessing.class, new PostProcessing());
         moduleManager.modules.put(PartySpammer.class, new PartySpammer());
         moduleManager.modules.put(Reach.class, new Reach());
+        moduleManager.modules.put(Refill.class, new Refill());
         moduleManager.modules.put(SafeWalk.class, new SafeWalk());
         moduleManager.modules.put(Scaffold.class, new Scaffold());
         moduleManager.modules.put(ScaffoldB.class, new ScaffoldB());
