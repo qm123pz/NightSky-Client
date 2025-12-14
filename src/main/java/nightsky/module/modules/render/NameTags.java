@@ -63,6 +63,7 @@ public class NameTags extends Module {
     public final IntValue amount = new IntValue("Amount", 20, 1, 200);
     public final FloatValue scale = new FloatValue("Scale", 1.0F, 0.5F, 2.0F);
     public final FloatValue height = new FloatValue("Height", 0.4F, -1.0F, 2.0F);
+    public final FloatValue rounding = new FloatValue("Rounding", 3.5F, 0.0F, 10.0F);
     public final BooleanValue autoScale = new BooleanValue("AutoScale", true, () -> isMyauMode());
     public final PercentValue backgroundOpacity = new PercentValue("Background", 25, () -> isMyauMode());
     public final BooleanValue shadow = new BooleanValue("Shadow", true, () -> isMyauMode());
@@ -199,8 +200,6 @@ public class NameTags extends Module {
             float screenX = projected[0];
             float screenY = projected[1];
 
-            float tagScale = this.scale.getValue();
-
             int bgColor = new Color(0, 0, 0, 140).getRGB();
             float baseH = 36.0f;
             float baseW = baseH * 4.0f / 3.0f;
@@ -223,93 +222,101 @@ public class NameTags extends Module {
             float nameW = FontRenderer.getStringWidth(namePlain);
             float bgW = Math.max(baseW, Math.max(contentW + padX * 2.0f, nameW + padX * 2.0f));
             float bgH = baseH;
-            float r = 3.5f;
+            float tagScale = this.scale.getValue();
+            float r = this.rounding.getValue();
 
-            float left;
-            float top = 0;
-            float right = screenX + bgW / 2.0f;
+            float sBgW = bgW * tagScale;
+            float sBgH = bgH * tagScale;
+            float sR = r * tagScale;
+
+            float left = screenX - sBgW / 2.0f;
+            float top = screenY - sBgH;
+            float right = screenX + sBgW / 2.0f;
             float bottom = screenY;
 
-            if (tagScale != 1.0F) {
-                float centerX = screenX;
-                float centerY = top + bgH / 2.0f;
-                GlStateManager.pushMatrix();
-                GlStateManager.translate(centerX, centerY, 0.0F);
-                GlStateManager.scale(tagScale, tagScale, 1.0F);
-                GlStateManager.translate(-centerX, -centerY, 0.0F);
-                left = centerX - (bgW / 2.0f) * tagScale;
-                right = centerX + (bgW / 2.0f) * tagScale;
-                top = centerY - (bgH / 2.0f) * tagScale;
-                bottom = centerY + (bgH / 2.0f) * tagScale;
-            } else {
-                top = screenY - bgH;
-                left = screenX - bgW / 2.0f;
-            }
-
-            float finalTop = top;
             nightsky.util.render.PostProcessing.drawBlur(left, top, right, bottom, () -> () ->
-                    nightsky.util.render.RenderUtil.drawRoundedRect(left, finalTop, bgW, bgH, r, -1)
+                    nightsky.util.render.RenderUtil.drawRoundedRect(left, top, sBgW, sBgH, sR, -1)
             );
 
             Framebuffer bloomBuffer = nightsky.util.render.PostProcessing.beginBloom();
             if (bloomBuffer != null) {
-                nightsky.util.render.RenderUtil.drawRoundedRect(left, top, bgW, bgH, r, PostProcessing.getBloomColor());
+                nightsky.util.render.RenderUtil.drawRoundedRect(left, top, sBgW, sBgH, sR, PostProcessing.getBloomColor());
                 mc.getFramebuffer().bindFramebuffer(false);
             }
 
-            nightsky.util.render.RenderUtil.drawRoundedRect(left, top, bgW, bgH, r, bgColor);
+            nightsky.util.render.RenderUtil.drawRoundedRect(left, top, sBgW, sBgH, sR, bgColor);
 
             GlStateManager.disableDepth();
             GlStateManager.enableBlend();
             GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
             GlStateManager.color(1f, 1f, 1f, 1f);
 
-            float row1Y = top + padY;
-            float row2Y = bottom - padY - mc.fontRendererObj.FONT_HEIGHT;
+            float sIcon = iconSize * tagScale;
+            float sItem = itemSize * tagScale;
+            float sPadX = padX * tagScale;
+            float sPadY = padY * tagScale;
 
-            float cursorX = screenX - contentW / 2.0f;
+            float sDistW = sIcon + 2.0f * tagScale + FontRenderer.getStringWidth(distText) * tagScale;
+            float sHpW = FontRenderer.getStringWidth(hpText) * tagScale + 2.0f * tagScale + sIcon;
+            float sItemsW = 5.0f * sItem + 4.0f * (1.0f * tagScale);
+            float sContentW = sDistW + 6.0f * tagScale + sItemsW + 6.0f * tagScale + sHpW;
+            float sNameW = FontRenderer.getStringWidth(namePlain) * tagScale;
+
+            float row1Y = top + sPadY;
+            float row2Y = bottom - sPadY - mc.fontRendererObj.FONT_HEIGHT * tagScale;
+
+            float cursorX = screenX - sContentW / 2.0f;
 
             mc.getTextureManager().bindTexture(POSITIONING_ICON);
-            drawTexturedRect(cursorX, row1Y, cursorX + iconSize, row1Y + iconSize);
-            cursorX += iconSize + 2.0f;
-            FontRenderer.drawString(distText, cursorX, row1Y + 1.0f, 0xFFFFFFFF);
-            cursorX += FontRenderer.getStringWidth(distText) + 6.0f;
+            drawTexturedRect(cursorX, row1Y, cursorX + sIcon, row1Y + sIcon);
+            cursorX += sIcon + 2.0f * tagScale;
+            GlStateManager.pushMatrix();
+            GlStateManager.translate(cursorX, row1Y + 1.0f * tagScale, 0.0f);
+            GlStateManager.scale(tagScale, tagScale, 1.0f);
+            FontRenderer.drawString(distText, 0.0f, 0.0f, 0xFFFFFFFF);
+            GlStateManager.popMatrix();
+            cursorX += FontRenderer.getStringWidth(distText) * tagScale + 6.0f * tagScale;
 
             ArrayList<ItemStack> items = getItemStacks(player);
             for (int i = 0; i < items.size(); i++) {
                 ItemStack st = items.get(i);
                 if (st != null) {
                     GlStateManager.pushMatrix();
-                    GlStateManager.translate(cursorX + (i * (itemSize + 1.0f)), row1Y - 2.0f, 0.0f);
-                    float sItem = itemSize / 16.0f;
-                    GlStateManager.scale(sItem, sItem, 1.0f);
+                    GlStateManager.translate(cursorX + (i * (sItem + (1.0f * tagScale))), row1Y - 2.0f * tagScale, 0.0f);
+                    float itemScale = sItem / 16.0f;
+                    GlStateManager.scale(itemScale, itemScale, 1.0f);
                     RenderUtil.renderItemInGUI(st, 0, 0);
                     GlStateManager.popMatrix();
                 }
             }
-            cursorX += itemsW + 6.0f;
+            cursorX += sItemsW + 6.0f * tagScale;
 
-            FontRenderer.drawString(hpText, cursorX, row1Y + 1.0f, 0xFFFFFFFF);
-            cursorX += FontRenderer.getStringWidth(hpText) + 2.0f;
+            GlStateManager.pushMatrix();
+            GlStateManager.translate(cursorX, row1Y + 1.0f * tagScale, 0.0f);
+            GlStateManager.scale(tagScale, tagScale, 1.0f);
+            FontRenderer.drawString(hpText, 0.0f, 0.0f, 0xFFFFFFFF);
+            GlStateManager.popMatrix();
+            cursorX += FontRenderer.getStringWidth(hpText) * tagScale + 2.0f * tagScale;
             mc.getTextureManager().bindTexture(HEART_ICON);
-            drawTexturedRect(cursorX, row1Y, cursorX + iconSize, row1Y + iconSize);
+            drawTexturedRect(cursorX, row1Y, cursorX + sIcon, row1Y + sIcon);
 
-            FontRenderer.drawString(namePlain, screenX - nameW / 2.0f, row2Y, 0xFFFFFFFF);
+            GlStateManager.pushMatrix();
+            GlStateManager.translate(screenX - sNameW / 2.0f, row2Y, 0.0f);
+            GlStateManager.scale(tagScale, tagScale, 1.0f);
+            FontRenderer.drawString(namePlain, 0.0f, 0.0f, 0xFFFFFFFF);
+            GlStateManager.popMatrix();
 
             GlStateManager.enableDepth();
             GlStateManager.disableBlend();
 
             nightsky.util.render.PostProcessing.endBloom(bloomBuffer);
-
-            if (tagScale != 1.0F) {
-                GlStateManager.popMatrix();
-            }
         }
     }
 
     @EventTarget
     public void onRender(Render3DEvent event) {
-        if (this.isEnabled()) {
+        if (this.isEnabled() && this.isMyauMode()) {
+            RenderUtil.enableRenderState();
             int remaining = this.amount.getValue();
             for (Entity entity : TeamUtil.getLoadedEntitiesSorted().stream()
                     .filter(e -> e instanceof EntityLivingBase)
@@ -337,6 +344,10 @@ public class NameTags extends Module {
                                 - ((IAccessorRenderManager) mc.getRenderManager()).getRenderPosZ();
                         double distance = mc.getRenderViewEntity().getDistanceToEntity(entity);
                         GlStateManager.pushMatrix();
+                        GlStateManager.disableLighting();
+                        GlStateManager.enableBlend();
+                        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+                        GlStateManager.disableAlpha();
                         GlStateManager.translate(x, y + (entity.isSneaking() ? 0.225 : this.height.getValue()), z);
                         GlStateManager.rotate(mc.getRenderManager().playerViewY * -1.0F, 0.0F, 1.0F, 0.0F);
                         float view = mc.gameSettings.thirdPersonView == 2 ? -1.0F : 1.0F;
@@ -456,10 +467,13 @@ public class NameTags extends Module {
                                 RenderUtil.disableRenderState();
                             }
                         }
+                        GlStateManager.enableAlpha();
+                        GlStateManager.disableBlend();
                         GlStateManager.popMatrix();
                     }
                 }
             }
+            RenderUtil.disableRenderState();
         }
     }
 
