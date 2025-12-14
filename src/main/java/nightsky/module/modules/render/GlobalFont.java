@@ -11,8 +11,8 @@ import java.awt.Font;
 public class GlobalFont extends Module {
     private final FontTransformer fontTransformer = FontTransformer.getInstance();
     
-    public final ModeValue fontType = new ModeValue("Font", 0, fontTransformer.getAvailableFonts());
-    public final FloatValue fontSize = new FloatValue("Size", 40.0f, 18.0f, 120.0f);
+    public final ModeValue fontType = new ModeValue("Font", 1, fontTransformer.getAvailableFonts());
+    public final FloatValue fontSize = new FloatValue("Size", 30.0f, 18.0f, 120.0f);
     
     public GlobalFont() {
         super("GlobalFont", true);
