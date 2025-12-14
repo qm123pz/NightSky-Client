@@ -62,11 +62,13 @@ public class NightSky {
         EventManager.register(moduleManager);
         EventManager.register(handler);
         moduleManager.modules.put(AimAssist.class, new AimAssist());
+        moduleManager.modules.put(AimAssistB.class, new AimAssistB());
         moduleManager.modules.put(Animations.class, new Animations());
         moduleManager.modules.put(AntiDebuff.class, new AntiDebuff());
         moduleManager.modules.put(AntiFireball.class, new AntiFireball());
         moduleManager.modules.put(AntiObbyTrap.class, new AntiObbyTrap());
         moduleManager.modules.put(AntiObfuscate.class, new AntiObfuscate());
+        moduleManager.modules.put(AntiOBS.class, new AntiOBS());
         moduleManager.modules.put(AntiVoid.class, new AntiVoid());
         moduleManager.modules.put(ArrayList.class, new ArrayList());
         moduleManager.modules.put(AutoClicker.class, new AutoClicker());
@@ -78,6 +80,7 @@ public class NightSky {
         moduleManager.modules.put(Blink.class, new Blink());
         moduleManager.modules.put(Camera.class, new Camera());
         moduleManager.modules.put(Chams.class, new Chams());
+        moduleManager.modules.put(ChestAura.class, new ChestAura());
         moduleManager.modules.put(ChestESP.class, new ChestESP());
         moduleManager.modules.put(ChestStealer.class, new ChestStealer());
         moduleManager.modules.put(ChestView.class, new ChestView());
@@ -102,6 +105,7 @@ public class NightSky {
         moduleManager.modules.put(KeepSprint.class, new KeepSprint());
         moduleManager.modules.put(KillAura.class, new KillAura());
         moduleManager.modules.put(KillAuraB.class, new KillAuraB());
+        moduleManager.modules.put(KillAuraC.class, new KillAuraC());
         moduleManager.modules.put(LagRange.class, new LagRange());
         moduleManager.modules.put(LightningTracker.class, new LightningTracker());
         moduleManager.modules.put(LongJump.class, new LongJump());
@@ -116,11 +120,13 @@ public class NightSky {
         moduleManager.modules.put(NoSlow.class, new NoSlow());
         moduleManager.modules.put(NoSlow2.class, new NoSlow2());
         moduleManager.modules.put(NotificationDisplay.class, new NotificationDisplay());
+        moduleManager.modules.put(PotionEffects.class, new PotionEffects());
         moduleManager.modules.put(PostProcessing.class, new PostProcessing());
         moduleManager.modules.put(PartySpammer.class, new PartySpammer());
         moduleManager.modules.put(Reach.class, new Reach());
         moduleManager.modules.put(SafeWalk.class, new SafeWalk());
         moduleManager.modules.put(Scaffold.class, new Scaffold());
+        moduleManager.modules.put(ScaffoldB.class, new ScaffoldB());
         moduleManager.modules.put(Scoreboard.class, new Scoreboard());
         moduleManager.modules.put(Session.class, new Session());
         moduleManager.modules.put(Spammer.class, new Spammer());
@@ -138,11 +144,6 @@ public class NightSky {
         moduleManager.modules.put(WaterMark.class, new WaterMark());
         moduleManager.modules.put(Wtap.class, new Wtap());
         moduleManager.modules.put(Xray.class, new Xray());
-        moduleManager.modules.put(AntiOBS.class, new AntiOBS());
-        moduleManager.modules.put(ChestAura.class, new ChestAura());
-        moduleManager.modules.put(KillAuraC.class, new KillAuraC());
-        moduleManager.modules.put(AimAssistB.class, new AimAssistB());
-        moduleManager.modules.put(ScaffoldB.class, new ScaffoldB());
         handler.powerShells.add(new Bind());
         handler.powerShells.add(new Config());
         handler.powerShells.add(new Denick());

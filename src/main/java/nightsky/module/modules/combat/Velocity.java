@@ -3,8 +3,6 @@ package nightsky.module.modules.combat;
 import com.google.common.base.CaseFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
-import net.minecraft.network.Packet;
-import net.minecraft.network.play.INetHandlerPlayClient;
 import net.minecraft.network.play.client.C02PacketUseEntity;
 import net.minecraft.network.play.server.S12PacketEntityVelocity;
 import net.minecraft.network.play.server.S19PacketEntityStatus;
@@ -41,13 +39,11 @@ public class Velocity extends Module {
     private boolean reverseFlag = false;
     private boolean delayActive = false;
     private boolean jumpFlag = false;
-    private boolean delayActiveTick = false;
     private long lastAttackTime = 0L;
     private long blinkStartTime = System.currentTimeMillis();
     private final long blinkDuration = 95L;
     private long reverseStartTime = 0L;
-    private boolean jumpResetQueued = false;
-    public final ModeValue mode = new ModeValue("Mode", 0, new String[]{"VANILLA", "JUMP", "Hypixel"});
+    public final ModeValue mode = new ModeValue("Mode", 0, new String[]{"Vanilla", "Jump", "Prediction"});
     public final PercentValue chance = new PercentValue("Chance", 100);
     public final PercentValue horizontal = new PercentValue("Horizontal", 100);
     public final PercentValue vertical = new PercentValue("Vertical", 100);
@@ -55,14 +51,13 @@ public class Velocity extends Module {
     public final PercentValue explosionVertical = new PercentValue("ExplosionsVertical", 100);
     public final BooleanValue fakeCheck = new BooleanValue("FakeCheck", true);
     public final BooleanValue debugLog = new BooleanValue("DebugLog", false);
-    public final IntValue delayTicks = new IntValue("Re", 3, 1, 20, () -> this.mode.getValue() == 2);
-    public final PercentValue delayChance = new PercentValue("ChanceDelay", 100, () -> this.mode.getValue() == 2);
-    public final BooleanValue jumpReset = new BooleanValue("Alink", true, () -> this.mode.getValue() == 2);
-    public final IntValue hurt = new IntValue("Hurt", 10, 1, 10, () -> this.mode.getValue() == 2);
-    public final FloatValue astolftor = new FloatValue("Astolftor", 0.6F, 0.1F, 1.0F, () -> this.mode.getValue() == 2);
-    public final BooleanValue test = new BooleanValue("Bool", true, () -> this.mode.getValue() == 2);
+    public final IntValue delayTicks = new IntValue("DelayTicks", 1, 1, 20, () -> this.mode.getValue() == 2);
+    public final PercentValue delayChance = new PercentValue("DelayChange", 100, () -> this.mode.getValue() == 2);
+    public final BooleanValue jumpReset = new BooleanValue("JumpReset", true, () -> this.mode.getValue() == 2);
+    public final IntValue hurt = new IntValue("ReduceHurtTime", 10, 1, 10, () -> this.mode.getValue() == 2);
+    public final FloatValue astolftor = new FloatValue("ReduceFactor", 0.6F, 0.1F, 1.0F, () -> this.mode.getValue() == 2);
+    public final BooleanValue test = new BooleanValue("Test", true, () -> this.mode.getValue() == 2);
     public final BooleanValue userDp = new BooleanValue("USer", false, () -> this.mode.getValue() == 1);
-    public final IntValue exhIemDp = new IntValue("ExhIemDP", 1, 1, 5, () -> this.mode.getValue() == 1 && this.userDp.getValue());
 
     public Velocity() {
         super("Velocity", false);
@@ -94,7 +89,7 @@ public class Velocity extends Module {
                     if (this.jumpReset.getValue() && event.getY() > 0.0) {
                         this.jumpFlag = true;
                         if (this.debugLog.getValue()) {
-                            ChatUtil.sendFormatted(String.format("%s[Hypixel] JumpReset triggered (Y=%.2f)&r", NightSky.clientName, event.getY()));
+                            ChatUtil.sendFormatted(String.format("%s[Prediction] jr! &r", NightSky.clientName));
                         }
                     }
                     this.applyMotion(event, this.horizontal.getValue(), this.vertical.getValue());
@@ -185,7 +180,7 @@ public class Velocity extends Module {
                     NightSky.delayManager.delayedPacket.offer(packet);
                     event.setCancelled(true);
                     if (this.debugLog.getValue()) {
-                        ChatUtil.sendFormatted(String.format("%s[Jump] Delayed velocity packet in air&r", NightSky.clientName));
+                        ChatUtil.sendFormatted(String.format("%s[Jump] air delay!&r", NightSky.clientName));
                     }
                     return;
                 }
@@ -267,7 +262,7 @@ public class Velocity extends Module {
             if (mc.thePlayer.onGround && mc.thePlayer.isSprinting() && !mc.thePlayer.isPotionActive(Potion.jump) && !this.isInLiquidOrWeb()) {
                 mc.thePlayer.movementInput.jump = true;
                 if (this.debugLog.getValue()) {
-                    ChatUtil.sendFormatted(String.format("%s[Hypixel] JumpReset successfully executed&r", NightSky.clientName));
+                    ChatUtil.sendFormatted(String.format("%s[Prediction] jr successfully! &r", NightSky.clientName));
                 }
             }
         }

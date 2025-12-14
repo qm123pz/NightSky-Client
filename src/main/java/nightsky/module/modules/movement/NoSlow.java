@@ -66,7 +66,17 @@ public class NoSlow
 
     private boolean isKillAuraAutoBlocking() {
         KillAura killAura = (KillAura) NightSky.moduleManager.modules.get(KillAura.class);
-        return killAura != null && killAura.isEnabled() && killAura.shouldAutoBlock();
+        if (killAura == null || !killAura.isEnabled()) {
+            return false;
+        }
+        if (!ItemUtil.isHoldingSword()) {
+            return false;
+        }
+        int mode = killAura.autoBlock.getValue();
+        if (mode == 0 || mode == 8) {
+            return false;
+        }
+        return killAura.isBlocking() || killAura.isPlayerBlocking();
     }
 
     public boolean isFoodActive() {
