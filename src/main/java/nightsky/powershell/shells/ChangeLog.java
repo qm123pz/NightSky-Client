@@ -414,6 +414,20 @@ public class ChangeLog extends PowerShell {
                     "                <div class=\"timeline-node\"></div>\n" +
                     "                <div class=\"release-card\">\n" +
                     "                    <div class=\"release-header\">\n" +
+                    "                        <div class=\"release-title\">Release B3.1</div>\n" +
+                    "                        <div class=\"version\">v3.1</div>\n" +
+                    "                    </div>\n" +
+                    "                    <div class=\"release-content\">\n" +
+                    "                        <div class=\"release-item\">反正更新了很多牛逼的东西</div>\n" +
+                    "                    </div>\n" +
+                    "                </div>\n" +
+                    "            </div>\n" +
+                    "            \n" +
+                    "        <div class=\"timeline\">\n" +
+                    "            <div class=\"release\">\n" +
+                    "                <div class=\"timeline-node\"></div>\n" +
+                    "                <div class=\"release-card\">\n" +
+                    "                    <div class=\"release-header\">\n" +
                     "                        <div class=\"release-title\">Release B3</div>\n" +
                     "                        <div class=\"version\">v3</div>\n" +
                     "                    </div>\n" +
